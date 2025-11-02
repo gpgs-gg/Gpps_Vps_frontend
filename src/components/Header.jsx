@@ -62,7 +62,8 @@ const Header = () => {
   const navLinks = isHomePage ? (
     <>
       <a href="#home" className="nav-link">Home</a>
-      <a href="#services" className="nav-link">Services & Facilities</a>
+      <a href="/gallery" className="nav-link">Gallery</a>
+      <a href="#services" className="nav-link">Facilities</a>
       <a href="#locations" className="nav-link">Locations</a>
       <a href="#about" className="nav-link">About Us</a>
       <a href="#contact" className="nav-link">Contact Us</a>
@@ -70,9 +71,9 @@ const Header = () => {
   ) : (
     <>
       <Link to="/" className="nav-link">Home</Link>
-      <Link to="/services" className="nav-link">Services & Facilities</Link>
+      <Link to="/gallery" className="nav-link">Gallery</Link>
+      <Link to="/services" className="nav-link">Facilities</Link>
       <Link to="/locations" className="nav-link">Locations</Link>
-      {/* <Link to="/gallery" className="nav-link">Gallery</Link> */}
       <Link to="/about" className="nav-link">About Us</Link>
       <Link to="/contact" className="nav-link">Contact Us</Link>
     </>
@@ -97,7 +98,8 @@ const Header = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex  items-center space-x-2 md:space-x-5">
             {navLinks}
-            <Link to="/gallery" className="nav-link">Gallery</Link>
+
+            {/* <Link to="/gallery" className="nav-link">Gallery</Link> */}
             
             <Link to="/gpgs-actions" className="nav-link"><span className="text-xl">|</span>  My Account</Link>
       
@@ -114,7 +116,6 @@ const Header = () => {
               </div>
             )}
           </nav>
-
           {/* Mobile Menu Button */}
           <div  className="md:hidden flex items-center space-x-2">
             {decryptedUser && (
@@ -142,18 +143,20 @@ const Header = () => {
           {isHomePage ? (
             <>
               <a onClick={() => setMenuOpen(false)} href="#home" className="mobile-link">Home</a>
-              <a onClick={() => setMenuOpen(false)} href="#services" className="mobile-link">Services & Facilities</a>
+                  <a onClick={() => setMenuOpen(false)} href="/gallery" className="mobile-link">Gallery</a>
+              <a onClick={() => setMenuOpen(false)} href="#services" className="mobile-link">Facilities</a>
               <a onClick={() => setMenuOpen(false)} href="#locations" className="mobile-link">Locations</a>
               <a onClick={() => setMenuOpen(false)} href="#about" className="mobile-link">About Us</a>
-              <Link onClick={() => setMenuOpen(false)} to="/gallery" className="mobile-link">Gallery</Link>
+          
               <a onClick={() => setMenuOpen(false)} href="#contact" className="mobile-link">Contact Us</a>
             </>
           ) : (
             <>
               <Link onClick={() => setMenuOpen(false)} to="/" className="mobile-link">Home</Link>
-              <Link onClick={() => setMenuOpen(false)} to="/services" className="mobile-link">Services & Facilities</Link>
+               <Link onClick={() => setMenuOpen(false)} to="/gallery" className="mobile-link">Gallery</Link>
+              <Link onClick={() => setMenuOpen(false)} to="/services" className="mobile-link">Facilities</Link>
               <Link onClick={() => setMenuOpen(false)} to="/locations" className="mobile-link">Locations</Link>
-              <Link onClick={() => setMenuOpen(false)} to="/gallery" className="mobile-link">Gallery</Link>
+             
               <Link onClick={() => setMenuOpen(false)} to="/about" className="mobile-link">About Us</Link>
               <Link onClick={() => setMenuOpen(false)} to="/contact" className="mobile-link">Contact Us</Link>
             </>
@@ -174,3 +177,4 @@ const Header = () => {
 };
 
 export default Header;
+

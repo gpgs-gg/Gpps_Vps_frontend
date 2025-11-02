@@ -141,14 +141,14 @@ const About = () => {
     Ready To Upgrade Your Living Experience?
   </p>
   <div className="text-gray-600 mt-2 text-sm md:text-base w-full flex justify-center">
-    <Link
-      to="/contact"
+    <a
+      href="/contact"
       className="relative py-2 px-8 flex justify-center items-center rounded-full w-full max-w-md mb-8 space-x-2 overflow-hidden border group bg-[#297229]"
     >
       <span className="text-white text-base sm:text-lg md:text-xl group relative z-10 transition-transform duration-300 ease-in-out transform group-hover:scale-110">
         Connect With Us Today
       </span>
-    </Link>
+    </a>
   </div>
 </div>
 
