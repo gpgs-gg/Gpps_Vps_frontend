@@ -74,11 +74,7 @@ const About = () => {
                     <h4 className="text-xl font-semibold text-gray-900 mb-3 flex gap-1 items-center">
                       <img src={ArrowBulbPng} alt="" className='h-10 w-10' />
                       <span> Our Mission & Vision</span></h4>
-                    <p className="text-base text-gray-700">
-                      We believe in providing comfortable homes for everyone — creating spaces that feel just
-                      like your own. We serve beyond business with prompt issue resolutions and professional
-                      services tailored to every need
-                    </p>
+                 
                   </div>
                 </div>
 
