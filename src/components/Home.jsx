@@ -120,7 +120,7 @@ const Home = () => {
 
         {/* Call Button */}
         <a
-          href="tel:+9326262292"
+          href="tel:9326262292"
           className="w-auto min-w-[20px] px-3 h-8 lg:h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg text-white text-2xl
       transform transition-transform duration-300 hover:scale-110 hover:-translate-y-1 hover:shadow-2xl
       active:scale-95 active:shadow-md animate-bounce"
