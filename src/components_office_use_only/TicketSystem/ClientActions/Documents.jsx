@@ -13,7 +13,7 @@ const Documents = () => {
         kyc: [],
         agreement: [],
     });
-  console.log("uploadedDocs: ", uploadedDocs);
+    console.log("uploadedDocs: ", uploadedDocs);
     const [existingDocs, setExistingDocs] = useState({
         kyc: [],
         agreement: [],
@@ -47,40 +47,40 @@ const Documents = () => {
         }
     }, [clientDetailsForDocuments, decryptedUser.name]);
 
-    
-  const handleFileChange = (type, event) => {
-    const newFiles = Array.from(event.target.files);
-    if (!newFiles.length) return;
 
-    setUploadedDocs((prev) => {
-        const currentFiles = prev[type] || [];
-        const existingCount = existingDocs[type]?.length || 0;
+    const handleFileChange = (type, event) => {
+        const newFiles = Array.from(event.target.files);
+        if (!newFiles.length) return;
 
-        const totalFiles = currentFiles.length + newFiles.length + existingCount;
-        if (totalFiles > MAX_FILES) {
-            toast.dismiss();
-            toast.error(`You can upload a maximum of ${MAX_FILES} files for ${type.toUpperCase()}.`);
-            return prev;
-        }
+        setUploadedDocs((prev) => {
+            const currentFiles = prev[type] || [];
+            const existingCount = existingDocs[type]?.length || 0;
 
-        // Rename files to ensure uniqueness
-        const uniqueNewFiles = newFiles.map(file => {
-            const timestamp = Date.now();
-            const uniqueSuffix = `${timestamp}-${Math.floor(Math.random() * 10000)}`;
-            const fileExtension = file.name.split('.').pop();
-            const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-            const newFileName = `${uniqueSuffix}_${baseName}.${fileExtension}`;
-            return new File([file], newFileName, { type: file.type });
+            const totalFiles = currentFiles.length + newFiles.length + existingCount;
+            if (totalFiles > MAX_FILES) {
+                toast.dismiss();
+                toast.error(`You can upload a maximum of ${MAX_FILES} files for ${type.toUpperCase()}.`);
+                return prev;
+            }
+
+            // Rename files to ensure uniqueness
+            const uniqueNewFiles = newFiles.map(file => {
+                const timestamp = Date.now();
+                const uniqueSuffix = `${timestamp}-${Math.floor(Math.random() * 10000)}`;
+                const fileExtension = file.name.split('.').pop();
+                const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+                const newFileName = `${uniqueSuffix}_${baseName}.${fileExtension}`;
+                return new File([file], newFileName, { type: file.type });
+            });
+            return {
+                ...prev,
+                [type]: [...currentFiles, ...uniqueNewFiles],
+            };
         });
-        return {
-            ...prev,
-            [type]: [...currentFiles, ...uniqueNewFiles],
-        };
-    });
 
-    // Reset the input so selecting the same file again will trigger onChange
-    event.target.value = '';
-};
+        // Reset the input so selecting the same file again will trigger onChange
+        event.target.value = '';
+    };
 
 
     const handleUploadClick = (type) => {
@@ -204,8 +204,8 @@ const Documents = () => {
                                             onClick={() => handleSave(doc.type)}
                                             disabled={uploaded.length === 0 || pendingDocType === doc.type}
                                             className={`text-white px-3 py-1.5 text-sm rounded flex items-center ${uploaded.length > 0
-                                                    ? 'bg-green-600 hover:bg-green-700'
-                                                    : 'bg-gray-300 cursor-not-allowed'
+                                                ? 'bg-green-600 hover:bg-green-700'
+                                                : 'bg-gray-300 cursor-not-allowed'
                                                 }`}
                                         >
                                             {pendingDocType === doc.type ? (
@@ -225,31 +225,35 @@ const Documents = () => {
                                 </div>
 
                                 <div className="space-y-2 grid gap-6 grid-cols-2 md:grid-cols-5" >
-                                   
-                                    {/*  Existing Files (from server) */}
-                                    {isDocument ? <LoaderPage/> : existing.map((url, index) => (
-                                        <div
-                                            key={`existing-${index}`}
-                                            className="bg-white w-fit border border-gray-200 rounded px-3 py-2 flex flex-col items-center space-y-2"
-                                        >
-                                            <a
-                                                href={url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                {url.match(/\.(jpg|jpeg|png)$/i) ? (
-                                                    <img
-                                                        src={url}
-                                                        alt={`Existing ${index}`}
-                                                        className="w-40 h-40 object-cover rounded"
-                                                    />
-                                                ) : (
-                                                    <i className="fas fa-file-alt text-gray-500 text-2xl"></i>
-                                                )}
-                                            </a>
-                                        </div>
-                                    ))}
 
+                                    {/*  Existing Files (from server) */}
+                                    {isDocument ? (
+                                        <LoaderPage />
+                                    ) : (
+                                        existing.map((url, index) => (
+                                            <div
+                                                key={`existing-${index}`}
+                                                className="bg-white w-fit border border-gray-200 rounded px-3 py-2 flex flex-col items-center space-y-2"
+                                            >
+                                                <a href={url} target="_blank" rel="noopener noreferrer">
+                                                    {url.match(/\.(jpg|jpeg|png)$/i) ? (
+                                                        <img
+                                                            src={url}
+                                                            alt={`Existing ${index}`}
+                                                            className="w-40 h-40 object-cover rounded"
+                                                        />
+                                                    ) : url.match(/\.pdf$/i) ? (
+                                                        <div className="text-center">
+                                                            <h4 className="font-semibold text-lg text-gray-800">PDF</h4>
+                                                            <p className="text-sm text-gray-500">{url.split('/').pop()}</p>
+                                                        </div>
+                                                    ) : (
+                                                        <i className="fas fa-file-alt text-gray-500 text-2xl"></i>
+                                                    )}
+                                                </a>
+                                            </div>
+                                        ))
+                                    )}
                                     {/* 🟢 Uploaded New Files (preview) */}
                                     {uploaded.map((file, index) => (
                                         <div

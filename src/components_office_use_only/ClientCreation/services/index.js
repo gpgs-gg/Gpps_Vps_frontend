@@ -34,8 +34,6 @@ export const usePropertyData = () => {
 };
 
 
-
-
 // ✅ Update Ticket Sheet
 const updateClientCreation= async (data) => {
   const response = await apiClient.post("/create-client", data);
@@ -53,3 +51,28 @@ export const useUpdateClientCreation = () => {
     },
   });
 };
+
+
+
+const UploadClientDocs = async (formData) => {
+  // No need to set headers manually for FormData
+  const response = await apiClient.post("/client-upload-docs", formData);
+  return response.data;
+};
+
+export const useUploadClientDocs = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: UploadClientDocs,
+    onSuccess: () => {
+      // Invalidate query cache to refetch fresh data
+      queryClient.invalidateQueries(["clientsDetails"]);
+    },
+    onError: (error) => {
+      console.error("Upload failed:", error);
+      // You can add additional error handling here if you want
+    },
+  });
+};
+
