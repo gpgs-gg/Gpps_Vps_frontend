@@ -59,7 +59,11 @@ const About = () => {
                     <h4 className="text-xl font-semibold text-gray-900 mb-3 flex gap-1 items-center">
                       <img src={TeamPng} alt="" className='h-10 w-10' />
                       <span>Who are we?</span></h4>
-                  <span>Who are we?</span>
+                    <p className="text-base text-gray-700">
+                      We are a team of dedicated and qualified professionals with 10+ years of experience
+                      in accommodation and maintenance services. Our structured departments and refined
+                      processes ensure the best possible experience for our residents
+                    </p>
                   </div>
                 </div>
 
