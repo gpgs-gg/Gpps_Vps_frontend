@@ -1205,6 +1205,7 @@ const CreateClient = () => {
                                             ))
                                         )}
                                         {/* 🟢 Uploaded New Files (preview) */}
+                                        
                                         {uploaded.map((file, index) => (
                                             <div
                                                 key={`uploaded-${index}`}
