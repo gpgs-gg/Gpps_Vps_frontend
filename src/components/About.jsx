@@ -24,11 +24,6 @@ import TeamPng from "../logo/Team.png"
 import ArrowBulbPng from "../logo/Arrow-Bulb.png"
 import { Link } from 'react-router-dom';
 
-
-
-
-
-
 const About = () => {
   useEffect(() => {
     AOS.init({

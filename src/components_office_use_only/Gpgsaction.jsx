@@ -4,6 +4,8 @@ import 'aos/dist/aos.css';
 import { Link, useNavigate } from 'react-router-dom';
 import CryptoJS from 'crypto-js';
 import { SECRET_KEY } from "../Config";
+import { PiCalendarCheckThin } from "react-icons/pi";
+
 
 const Gpgsaction = () => {
   const [showSalesOptions, setShowSalesOptions] = useState(false);
@@ -51,6 +53,20 @@ const Gpgsaction = () => {
     <section className="bg-gray-200 min-h-screen py-10 px-4 md:px-6 flex items-center justify-center">
       {decryptedUser?.role === "admin" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-4xl">
+          {/* Hrms  */}
+
+          <Link to="/gpgs-actions/Check-in-out">
+            <div className={cardClasses}>
+              <div className={`${iconClasses} bg-green-100 text-green-600`}>
+               <PiCalendarCheckThin className='text-2xl text-green-600'/>
+              </div>
+              <h3 className={titleClasses}>ATTENDANCE</h3>
+              <button className={`${btnClasses} bg-indigo-600 hover:bg-indigo-700`}>
+                Go For Attendance System
+              </button>
+            </div>
+          </Link>
+
 
           {/* TICKETS SYSTEM */}
           <Link to="/gpgs-actions/tickets">
@@ -103,36 +119,36 @@ const Gpgsaction = () => {
 
           {/* ACCOUNTS */}
           <div>
-          <div
-            className={`${cardClasses} cursor-pointer`}
-            //
-            onClick={() => setShowAccountsOptions(prev => !prev)}
-          >
-            <div className={`${iconClasses} bg-yellow-100 text-yellow-600`}>
-              <i className="fa-solid fa-chart-line text-xl"></i>
-            </div>
-            <h3 className={titleClasses}>ACCOUNTS</h3>
-            <button className={`${btnClasses} bg-green-500 hover:bg-green-600`}>
-              {showAccountsOptions ? 'Hide Sales Options' : 'Show Sales Options'}
-            </button>
-
-            {showAccountsOptions && (
-              <div className="w-full flex flex-col gap-3 mt-5">
-                <Link
-                  to="/gpgs-actions/Client-Creation"
-                  className={`${subBtnClasses} bg-green-100 text-green-800 hover:bg-green-200`}
-                >
-                  Client Creation
-                </Link>
-                <Link
-                  to="/gpgs-actions/accounts"
-                  className={`${subBtnClasses} bg-indigo-100 text-indigo-800 hover:bg-indigo-200`}
-                >
-                  RNR Update
-                </Link>
+            <div
+              className={`${cardClasses} cursor-pointer`}
+              //
+              onClick={() => setShowAccountsOptions(prev => !prev)}
+            >
+              <div className={`${iconClasses} bg-yellow-100 text-yellow-600`}>
+                <i className="fa-solid fa-chart-line text-xl"></i>
               </div>
-            )}
-          </div>
+              <h3 className={titleClasses}>ACCOUNTS</h3>
+              <button className={`${btnClasses} bg-green-500 hover:bg-green-600`}>
+                {showAccountsOptions ? 'Hide Sales Options' : 'Show Sales Options'}
+              </button>
+
+              {showAccountsOptions && (
+                <div className="w-full flex flex-col gap-3 mt-5">
+                  <Link
+                    to="/gpgs-actions/Client-Creation"
+                    className={`${subBtnClasses} bg-green-100 text-green-800 hover:bg-green-200`}
+                  >
+                    Client Creation
+                  </Link>
+                  <Link
+                    to="/gpgs-actions/accounts"
+                    className={`${subBtnClasses} bg-indigo-100 text-indigo-800 hover:bg-indigo-200`}
+                  >
+                    RNR Update
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
 
 
