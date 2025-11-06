@@ -22,6 +22,7 @@ import PageNotFound from './components/PageNotFound';
 import { useAuth } from './context/AuthContext';
 import Profile from './ClientProfile/Profile';
 import CreateClient from './components_office_use_only/ClientCreation/CreateClient';
+import CheckInOut from './components_office_use_only/Hrms_System/CheckInOut';
 // import Footer from './components/Footer';
 // import { useAuth } from './context/AuthContext';
 
@@ -241,6 +242,16 @@ function App() {
         <Route path="*" element={<PageNotFound />} />
         <Route path="/gallery" element={<Gallary />} />
         <Route path="gpgs-actions/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+
+         <Route
+          path="/gpgs-actions/check-in-out"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+             <CheckInOut/>
+            </ProtectedRoute>
+          }
+        />
+
 
         {/* Admin routes */}
         {/* <Route path="/gpgs-actions/tickets" element={
