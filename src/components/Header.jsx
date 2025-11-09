@@ -90,7 +90,7 @@ const Header = () => {
               <img
                 src={gpgsLogo}
                 alt="GPGS Logo"
-                className="h-14  md:h-20"
+                className="h-20  md:h-24"
               />
             </Link>
           </div>

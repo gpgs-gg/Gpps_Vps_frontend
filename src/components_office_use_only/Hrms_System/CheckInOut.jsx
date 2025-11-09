@@ -54,6 +54,8 @@ const CheckInOut = () => {
         return () => window.removeEventListener("resize", checkMobile);
     }, []);
 
+
+
     const getDistanceFromLatLonInMeters = (lat1, lon1, lat2, lon2) => {
         const R = 6371000;
         const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -67,6 +69,9 @@ const CheckInOut = () => {
         return R * c;
     };
 
+
+
+
     const dataURLtoBlob = (dataurl) => {
         const arr = dataurl.split(",");
         const mime = arr[0].match(/:(.*?);/)[1];
@@ -77,12 +82,10 @@ const CheckInOut = () => {
     };
 
 
+    // useEffect(() => {
 
 
-    useEffect(() => {
-
-
-    }, [filteredDataForTotalHours]);
+    // }, [filteredDataForTotalHours]);
 
     useEffect(() => {
         // Format current date like "5 Nov 2025"
@@ -113,9 +116,6 @@ const CheckInOut = () => {
         const hasIntime = isSameDate ? !!todayAttendance?.OutTime : false;
         setOutIsDisabled(isSameDate && hasIntime);
     }, [filteredAttendanceData]);
-
-
-
 
     // const capture = async (action) => {
     //     setModalType(action);
@@ -280,7 +280,6 @@ const CheckInOut = () => {
 
             // ✅ Get data from state or localStorage
             let { InTime, MinHours, HalfDayHrs } = filteredDataForTotalHours || {};
-
             // Fallback if state is not yet updated
             if (!InTime) {
                 const savedData = JSON.parse(localStorage.getItem("lastCheckInData"));
@@ -288,7 +287,6 @@ const CheckInOut = () => {
                 MinHours = savedData?.MinHours || 9;
                 HalfDayHrs = savedData?.HalfDayHrs || 5;
             }
-
             // Prepare form data
             const formData = new FormData();
             formData.append("EmployeeID", user?.id);
@@ -297,9 +295,8 @@ const CheckInOut = () => {
             formData.append("action", action);
 
             if (action === "Check In") {
-                formData.append("InTime", now.toLocaleTimeString());
+                formData.append("InTime", now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }));
                 formData.append("InSelfie", imageBlob, "in_selfie.jpg");
-
                 // ✅ Save locally for later use
                 localStorage.setItem(
                     "lastCheckInData",
@@ -310,7 +307,7 @@ const CheckInOut = () => {
                     })
                 );
             } else if (action === "Check Out") {
-                formData.append("OutTime", now.toLocaleTimeString());
+                formData.append("OutTime", now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }));
                 formData.append("OutSelfie", imageBlob, "out_selfie.jpg");
 
                 if (!InTime) {
@@ -338,7 +335,7 @@ const CheckInOut = () => {
                 const minutes = Math.floor((diffSeconds % 3600) / 60);
 
                 // ✅ Append total working hours
-                formData.append("TotalHours", `${hours}h ${minutes}m`);
+                formData.append("TotalHours", `${hours}H ${minutes}M`);
 
                 // ✅ Calculate attendance status
                 let attendanceStatus = 0;
@@ -354,11 +351,11 @@ const CheckInOut = () => {
                 const formatTime = (seconds) => {
                     const h = Math.floor(seconds / 3600);
                     const m = Math.floor((seconds % 3600) / 60);
-                    return `${h}h ${m}m`;
+                    return `${h}H ${m}M`;
                 };
 
-                let overtime = "0h 0m";
-                let deficit = "0h 0m";
+                let overtime = "0H 0M";
+                let deficit = "0H 0M";
 
                 if (differenceSeconds > 0) overtime = formatTime(differenceSeconds);
                 else if (differenceSeconds < 0)
@@ -367,14 +364,17 @@ const CheckInOut = () => {
                 formData.append("OverTime", overtime);
                 formData.append("DeficitHours", deficit);
 
+
                 console.log({
                     InTime,
                     OutTime: now.toLocaleTimeString(),
-                    TotalHours: `${hours}h ${minutes}m`,
+                    TotalHours: `${hours}H ${minutes}H`,
                     OverTime: overtime,
                     DeficitHours: deficit,
                     AttendanceStatus: attendanceStatus,
                 });
+
+
             }
 
             // ✅ Set captured image preview
@@ -443,12 +443,12 @@ const CheckInOut = () => {
                                 onClick={() => capture("Check In")}
                                 disabled={isDisabled || (isPending && modalType === "Check In")}
                                 className={`px-8 py-3 rounded-lg text-white font-semibold shadow transition-all 
-      ${(isPending && modalType === "Check In")
+                                ${(isPending && modalType === "Check In")
                                         ? "bg-green-400 cursor-wait"
                                         : "bg-green-600 hover:bg-green-700"}`
                                 }
                             >
-                                {isPending && modalType === "Check In" ? (
+                                 {isPending && modalType === "Check In" ? (
                                     <p className="flex justify-center items-center gap-2">
                                         <LoaderPage /> Processing...
                                     </p>
@@ -460,12 +460,12 @@ const CheckInOut = () => {
                                 onClick={() => capture("Check Out")}
                                 disabled={isOutDisabled || (isPending && modalType === "Check Out")}
                                 className={`px-8 py-3 rounded-lg text-white font-semibold shadow transition-all 
-      ${(isPending && modalType === "Check Out")
+                                 ${(isPending && modalType === "Check Out")
                                         ? "bg-red-400 cursor-wait"
                                         : "bg-orange-400 hover:bg-orange-500"}`
                                 }
                             >
-                                {isPending && modalType === "Check Out" ? (
+                                 {isPending && modalType === "Check Out" ? (
                                     <p className="flex justify-center items-center gap-2">
                                         <LoaderPage /> Processing...
                                     </p>
@@ -474,7 +474,7 @@ const CheckInOut = () => {
                         </div>
 
 
-                        {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
+                             {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
                     </div>
 
                 </div>

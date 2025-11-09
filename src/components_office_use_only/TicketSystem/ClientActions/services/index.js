@@ -19,6 +19,12 @@ export const usePropertyData = () => {
   });
 };
 
+
+
+
+
+
+
 const fetchPropertySheetData = async (sheetId) => {
   if (!sheetId || sheetId.length === 0) {
     return [];
@@ -90,5 +96,23 @@ export const useFetchSystemInfo = () => {
   return useQuery({
     queryKey: ["SystemInfo"],
     queryFn: fetchSystemInfo,
+  });
+};
+
+
+
+
+
+
+const fetchDataForAgreementAandSD = async () => {
+  const response = await apiClient.get("/AgreementAndSD");
+  return response.data;
+};
+
+// React Query hook to fetch property data
+export const useDataForAgreementAandSD = () => {
+  return useQuery({
+    queryKey: ["fetch-DataFor-AgreementAandSD"],
+    queryFn: fetchDataForAgreementAandSD,
   });
 };
