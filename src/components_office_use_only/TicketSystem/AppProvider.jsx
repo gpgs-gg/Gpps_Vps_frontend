@@ -37,7 +37,7 @@ export const AppProvider = ({ children }) => {
 
     const isTicketsPage = location.pathname === '/gpgs-actions/tickets';
 
-    const { data, isLoading, error } = useTicketSheetData(isTicketsPage);
+    const { data, isPending, error } = useTicketSheetData(isTicketsPage);
     const { mutate: updateTicketData, isLoading: isticketUpdate } = useUpdateTicketSheetData();
 
 
@@ -236,6 +236,7 @@ export const AppProvider = ({ children }) => {
         myPgTicketsTotal,
         setInput,
         input,
+        isPending
 
     };
 

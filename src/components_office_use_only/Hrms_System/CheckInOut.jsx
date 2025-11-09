@@ -37,7 +37,7 @@ const CheckInOut = () => {
 
     const filteredDataForTotalHours =
         attendanceData?.data?.find(ele => ele.EmployeeID === user?.id && ele.Date === currentDate) || [];
-    
+
 
     const formatDate = (date) => {
         const day = date.getDate();
@@ -117,144 +117,299 @@ const CheckInOut = () => {
 
 
 
+    // const capture = async (action) => {
+    //     setModalType(action);
+    //     if (!navigator.geolocation) {
+    //         setError("Geolocation not supported by your browser.");
+    //         return;
+    //     }
+
+    //     // navigator.geolocation.getCurrentPosition(
+    //     //     async (position) => {
+    //     //         const userLat = parseFloat(position.coords.latitude.toFixed(6));
+    //     //         const userLon = parseFloat(position.coords.longitude.toFixed(6));
+    //     //         const officeLat = parseFloat(OFFICE_LOCATION.latitude.toFixed(6));
+    //     //         const officeLon = parseFloat(OFFICE_LOCATION.longitude.toFixed(6));
+
+    //     //         const distance = getDistanceFromLatLonInMeters(userLat, userLon, officeLat, officeLon);
+
+    //     // Optional location restriction
+    //     // if (distance > MAX_DISTANCE_METERS) {
+    //     //   toast.error(`You are too far (${distance.toFixed(2)}m) from the office.`);
+    //     //   return;
+    //     // }
+
+    //     const imageSrc = webcamRef.current.getScreenshot();
+    //     const imageBlob = dataURLtoBlob(imageSrc);
+    //     const now = new Date();
+
+    //     const formData = new FormData();
+    //     formData.append("EmployeeID", user?.id);
+    //     formData.append("Name", user?.name);
+    //     formData.append("Date", formatDate(now));
+    //     formData.append("action", action);
+    //     // formData.append("latitude", userLat);
+    //     // formData.append("longitude", userLon);
+
+    //     if (action === "Check In") {
+    //         formData.append("InTime", now.toLocaleTimeString());
+    //         formData.append("InSelfie", imageBlob, "in_selfie.jpg");
+    //     } else {
+    //         formData.append("OutTime", now.toLocaleTimeString());
+    //         formData.append("OutSelfie", imageBlob, "out_selfie.jpg");
+
+    //         const { InTime, OutTime, MinHours, HalfDayHrs } = filteredDataForTotalHours || {};
+
+    //         if (InTime && now.toLocaleTimeString()) {
+    //             const parseTime = (timeStr) => {
+    //                 const [time, modifier] = timeStr.split(' ');
+    //                 const [hours, minutes, seconds] = time.split(':').map(Number);
+
+    //                 let h = hours;
+    //                 if (modifier === 'PM' && hours < 12) h += 12;
+    //                 if (modifier === 'AM' && hours === 12) h = 0;
+
+    //                 return h * 3600 + minutes * 60 + seconds;
+    //             };
+
+    //             const inSeconds = parseTime(InTime);
+    //             const outSeconds = parseTime(now.toLocaleTimeString());
+
+    //             let diffSeconds = outSeconds - inSeconds;
+    //             if (diffSeconds < 0) diffSeconds += 24 * 3600;
+
+    //             const hours = Math.floor(diffSeconds / 3600);
+    //             const minutes = Math.floor((diffSeconds % 3600) / 60);
+
+    //             formData.append("TotalHours", `${hours}h ${minutes}m`);
+    //             formData.append("AttendanceStatus", hours >= HalfDayHrs && hours < MinHours ? 0.5 : hours >= HalfDayHrs && hours >= MinHours ? 1 : hours < HalfDayHrs ? 0 : 0);
+
+
+    //             // calculate here total overtime  and DeficitHours
+    //             const totalWorkedSeconds = diffSeconds; // total worked time in seconds
+    //             // Minimum expected time in seconds
+    //             const minSeconds = MinHours * 3600;
+    //             // Calculate difference in seconds
+    //             let differenceSeconds = totalWorkedSeconds - minSeconds;
+    //             // Determine Overtime and Deficit
+    //             let overtimeSeconds = 0;
+    //             let deficitSeconds = 0;
+    //             if (differenceSeconds > 0) {
+    //                 // Worked more than minimum → Overtime
+    //                 overtimeSeconds = differenceSeconds;
+    //             } else if (differenceSeconds < 0) {
+    //                 // Worked less than minimum → Deficit
+    //                 deficitSeconds = Math.abs(differenceSeconds);
+    //             }
+    //             // Convert seconds to hours and minutes
+    //             const formatTime = (seconds) => {
+    //                 const h = Math.floor(seconds / 3600);
+    //                 const m = Math.floor((seconds % 3600) / 60);
+    //                 return `${h}h ${m}m`;
+    //             };
+    //             // Append to formData
+    //             formData.append("OverTime", overtimeSeconds > 0 ? formatTime(overtimeSeconds) : "0h 0m");
+    //             formData.append("DeficitHours", deficitSeconds > 0 ? formatTime(deficitSeconds) : "0h 0m");
+    //             setTotalHours();
+    //         } else {
+    //             setTotalHours("0h 0m");
+    //         }
+    //     }
+    //     setPhoto(imageSrc);
+    //     submitCheckInOut(formData, {
+    //         onSuccess: (response) => {
+
+    //             toast.success(
+    //                 <div className="flex items-center space-x-3">
+    //                     <div>
+    //                         <span className="font-semibold">{action} Successful!</span>
+    //                     </div>
+    //                 </div>
+    //             );
+    //         },
+    //         onError: (response) => {
+    //             toast.error(
+    //                 <div>
+    //                     <p className="font-semibold">Failed to submit check-in/out.</p>
+    //                     <p className="text-sm text-gray-400">{response?.response?.data?.error || "Unknown error"}</p>
+    //                 </div>
+    //             );
+    //         },
+    //     });
+
+
+    //     //     onSuccess: () => toast.success(<div className="flex items-center space-x-3">
+    //     //         <img
+    //     //             src="https://cdn.dribbble.com/userupload/15097592/file/original-11af0dab65a0913fe4ea1d71d9d48f4a.gif"
+    //     //             alt="success"
+    //     //             className="w-10 h-10 rounded-full"
+    //     //         />
+    //     //         <span className="font-semibold">{action} Successful!</span>
+    //     //     </div>),
+    //     //     onError: (err) => {
+    //     //         console.error(err);
+    //     //         toast.error("Failed to submit check-in/out.");
+    //     //     },
+    //     // });
+    //     //     },
+
+
+
+
+
+    //     // );
+
+
+
+
+    // };
+
+
     const capture = async (action) => {
-        setModalType(action);
-        if (!navigator.geolocation) {
-            setError("Geolocation not supported by your browser.");
-            return;
-        }
+        try {
+            setModalType(action);
 
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const userLat = parseFloat(position.coords.latitude.toFixed(6));
-                const userLon = parseFloat(position.coords.longitude.toFixed(6));
-                const officeLat = parseFloat(OFFICE_LOCATION.latitude.toFixed(6));
-                const officeLon = parseFloat(OFFICE_LOCATION.longitude.toFixed(6));
+            if (!navigator.geolocation) {
+                setError("Geolocation not supported by your browser.");
+                return;
+            }
 
-                const distance = getDistanceFromLatLonInMeters(userLat, userLon, officeLat, officeLon);
+            const imageSrc = webcamRef.current.getScreenshot();
+            const imageBlob = dataURLtoBlob(imageSrc);
+            const now = new Date();
 
-                // Optional location restriction
-                // if (distance > MAX_DISTANCE_METERS) {
-                //   toast.error(`You are too far (${distance.toFixed(2)}m) from the office.`);
-                //   return;
-                // }
+            // ✅ Get data from state or localStorage
+            let { InTime, MinHours, HalfDayHrs } = filteredDataForTotalHours || {};
 
-                const imageSrc = webcamRef.current.getScreenshot();
-                const imageBlob = dataURLtoBlob(imageSrc);
-                const now = new Date();
+            // Fallback if state is not yet updated
+            if (!InTime) {
+                const savedData = JSON.parse(localStorage.getItem("lastCheckInData"));
+                InTime = savedData?.InTime || null;
+                MinHours = savedData?.MinHours || 9;
+                HalfDayHrs = savedData?.HalfDayHrs || 5;
+            }
 
-                const formData = new FormData();
-                formData.append("EmployeeID", user?.id);
-                formData.append("Name", user?.name);
-                formData.append("Date", formatDate(now));
-                formData.append("action", action);
-                formData.append("latitude", userLat);
-                formData.append("longitude", userLon);
+            // Prepare form data
+            const formData = new FormData();
+            formData.append("EmployeeID", user?.id);
+            formData.append("Name", user?.name);
+            formData.append("Date", formatDate(now));
+            formData.append("action", action);
 
-                if (action === "Check In") {
-                    formData.append("InTime", now.toLocaleTimeString());
-                    formData.append("InSelfie", imageBlob, "in_selfie.jpg");
-                } else {
-                    formData.append("OutTime", now.toLocaleTimeString());
-                    formData.append("OutSelfie", imageBlob, "out_selfie.jpg");
+            if (action === "Check In") {
+                formData.append("InTime", now.toLocaleTimeString());
+                formData.append("InSelfie", imageBlob, "in_selfie.jpg");
 
-                    const { InTime, OutTime, MinHours , HalfDayHrs } = filteredDataForTotalHours || {};
+                // ✅ Save locally for later use
+                localStorage.setItem(
+                    "lastCheckInData",
+                    JSON.stringify({
+                        InTime: now.toLocaleTimeString(),
+                        MinHours: 9,
+                        HalfDayHrs: 5,
+                    })
+                );
+            } else if (action === "Check Out") {
+                formData.append("OutTime", now.toLocaleTimeString());
+                formData.append("OutSelfie", imageBlob, "out_selfie.jpg");
 
-                    if (InTime && now.toLocaleTimeString()) {
-                        const parseTime = (timeStr) => {
-                            const [time, modifier] = timeStr.split(' ');
-                            const [hours, minutes, seconds] = time.split(':').map(Number);
-
-                            let h = hours;
-                            if (modifier === 'PM' && hours < 12) h += 12;
-                            if (modifier === 'AM' && hours === 12) h = 0;
-
-                            return h * 3600 + minutes * 60 + seconds;
-                        };
-
-                        const inSeconds = parseTime(InTime);
-                        const outSeconds = parseTime(now.toLocaleTimeString());
-
-                        let diffSeconds = outSeconds - inSeconds;
-                        if (diffSeconds < 0) diffSeconds += 24 * 3600;
-
-                        const hours = Math.floor(diffSeconds / 3600);
-                        const minutes = Math.floor((diffSeconds % 3600) / 60);
-
-                        formData.append("TotalHours", `${hours}h ${minutes}m`);
-                        formData.append("AttendanceStatus", hours >= HalfDayHrs && hours < MinHours ? 0.5 : hours >= HalfDayHrs && hours >= MinHours ? 1 : hours < HalfDayHrs ? 0 : 0);
-
-
-                        // calculate here total overtime  and DeficitHours
-                        const totalWorkedSeconds = diffSeconds; // total worked time in seconds
-                        // Minimum expected time in seconds
-                        const minSeconds = MinHours * 3600;
-                        // Calculate difference in seconds
-                        let differenceSeconds = totalWorkedSeconds - minSeconds;
-                        // Determine Overtime and Deficit
-                        let overtimeSeconds = 0;
-                        let deficitSeconds = 0;
-                        if (differenceSeconds > 0) {
-                            // Worked more than minimum → Overtime
-                            overtimeSeconds = differenceSeconds;
-                        } else if (differenceSeconds < 0) {
-                            // Worked less than minimum → Deficit
-                            deficitSeconds = Math.abs(differenceSeconds);
-                        }
-                        // Convert seconds to hours and minutes
-                        const formatTime = (seconds) => {
-                            const h = Math.floor(seconds / 3600);
-                            const m = Math.floor((seconds % 3600) / 60);
-                            return `${h}h ${m}m`;
-                        };
-                        // Append to formData
-                        formData.append("OverTime", overtimeSeconds > 0 ? formatTime(overtimeSeconds) : "0h 0m");
-                        formData.append("DeficitHours", deficitSeconds > 0 ? formatTime(deficitSeconds) : "0h 0m");
-                        setTotalHours();
-                    } else {
-                        setTotalHours("0h 0m");
-                    }
+                if (!InTime) {
+                    toast.error("InTime not found. Please check in first.");
+                    return;
                 }
-                setPhoto(imageSrc);
-                submitCheckInOut(formData, {
-                    onSuccess: (response) => {
 
-                        toast.success(
-                            <div className="flex items-center space-x-3">
-                                <div>
-                                    <span className="font-semibold">{action} Successful!</span>
-                                </div>
-                            </div>
-                        );
-                    },
-                    onError: (response) => {
-                        toast.error(
-                            <div>
-                                <p className="font-semibold">Failed to submit check-in/out.</p>
-                                <p className="text-sm text-gray-400">{response?.response?.data?.error || "Unknown error"}</p>
-                            </div>
-                        );
-                    },
+                // ✅ Time calculation
+                const parseTime = (timeStr) => {
+                    const [time, modifier] = timeStr.split(" ");
+                    const [hours, minutes, seconds] = time.split(":").map(Number);
+                    let h = hours;
+                    if (modifier === "PM" && hours < 12) h += 12;
+                    if (modifier === "AM" && hours === 12) h = 0;
+                    return h * 3600 + minutes * 60 + seconds;
+                };
+
+                const inSeconds = parseTime(InTime);
+                const outSeconds = parseTime(now.toLocaleTimeString());
+
+                let diffSeconds = outSeconds - inSeconds;
+                if (diffSeconds < 0) diffSeconds += 24 * 3600;
+
+                const hours = Math.floor(diffSeconds / 3600);
+                const minutes = Math.floor((diffSeconds % 3600) / 60);
+
+                // ✅ Append total working hours
+                formData.append("TotalHours", `${hours}h ${minutes}m`);
+
+                // ✅ Calculate attendance status
+                let attendanceStatus = 0;
+                if (hours >= MinHours) attendanceStatus = 1;
+                else if (hours >= HalfDayHrs) attendanceStatus = 0.5;
+                formData.append("AttendanceStatus", attendanceStatus);
+
+                // ✅ Calculate overtime / deficit
+                const totalWorkedSeconds = diffSeconds;
+                const minSeconds = MinHours * 3600;
+                const differenceSeconds = totalWorkedSeconds - minSeconds;
+
+                const formatTime = (seconds) => {
+                    const h = Math.floor(seconds / 3600);
+                    const m = Math.floor((seconds % 3600) / 60);
+                    return `${h}h ${m}m`;
+                };
+
+                let overtime = "0h 0m";
+                let deficit = "0h 0m";
+
+                if (differenceSeconds > 0) overtime = formatTime(differenceSeconds);
+                else if (differenceSeconds < 0)
+                    deficit = formatTime(Math.abs(differenceSeconds));
+
+                formData.append("OverTime", overtime);
+                formData.append("DeficitHours", deficit);
+
+                console.log({
+                    InTime,
+                    OutTime: now.toLocaleTimeString(),
+                    TotalHours: `${hours}h ${minutes}m`,
+                    OverTime: overtime,
+                    DeficitHours: deficit,
+                    AttendanceStatus: attendanceStatus,
                 });
+            }
 
+            // ✅ Set captured image preview
+            setPhoto(imageSrc);
 
-                //     onSuccess: () => toast.success(<div className="flex items-center space-x-3">
-                //         <img
-                //             src="https://cdn.dribbble.com/userupload/15097592/file/original-11af0dab65a0913fe4ea1d71d9d48f4a.gif"
-                //             alt="success"
-                //             className="w-10 h-10 rounded-full"
-                //         />
-                //         <span className="font-semibold">{action} Successful!</span>
-                //     </div>),
-                //     onError: (err) => {
-                //         console.error(err);
-                //         toast.error("Failed to submit check-in/out.");
-                //     },
-                // });
-            },
-
-        );
+            // ✅ Submit data to backend
+            submitCheckInOut(formData, {
+                onSuccess: (response) => {
+                    toast.success(
+                        <div className="flex items-center space-x-3">
+                            <div>
+                                <span className="font-semibold">{action} Successful!</span>
+                            </div>
+                        </div>
+                    );
+                },
+                onError: (response) => {
+                    toast.error(
+                        <div>
+                            <p className="font-semibold">Failed to submit check-in/out.</p>
+                            <p className="text-sm text-gray-400">
+                                {response?.response?.data?.error || "Unknown error"}
+                            </p>
+                        </div>
+                    );
+                },
+            });
+        } catch (error) {
+            console.error("Error in capture:", error);
+            toast.error("Something went wrong. Try again.");
+        }
     };
+
+
+
 
     return (
         <div className="bg-gray-100 min-h-screen md:flex  py-10  gap-5">
@@ -283,33 +438,41 @@ const CheckInOut = () => {
                         />
 
                         <div className="flex justify-center gap-6 mt-6">
+                            {/* Check In Button */}
                             <button
                                 onClick={() => capture("Check In")}
-                                disabled={isDisabled}
-
+                                disabled={isDisabled || (isPending && modalType === "Check In")}
                                 className={`px-8 py-3 rounded-lg text-white font-semibold shadow transition-all 
-              ${isPending && modalType === "Check In"
+      ${(isPending && modalType === "Check In")
                                         ? "bg-green-400 cursor-wait"
-                                        : "bg-green-600 hover:bg-green-700"}`}
+                                        : "bg-green-600 hover:bg-green-700"}`
+                                }
                             >
-                                {isPending && modalType === "Check In" ? <p className="flex justify-center items-center gap-2">
-
-                                    <LoaderPage /> Processing...</p> : isDisabled ? "Checked In" : "Check In"}
+                                {isPending && modalType === "Check In" ? (
+                                    <p className="flex justify-center items-center gap-2">
+                                        <LoaderPage /> Processing...
+                                    </p>
+                                ) : isDisabled ? "Checked In" : "Check In"}
                             </button>
 
+                            {/* Check Out Button */}
                             <button
                                 onClick={() => capture("Check Out")}
-                                disabled={isOutDisabled}
+                                disabled={isOutDisabled || (isPending && modalType === "Check Out")}
                                 className={`px-8 py-3 rounded-lg text-white font-semibold shadow transition-all 
-              ${isPending && modalType === "Check Out"
+      ${(isPending && modalType === "Check Out")
                                         ? "bg-red-400 cursor-wait"
-                                        : "bg-orange-400 hover:bg-orange-500"}`}
+                                        : "bg-orange-400 hover:bg-orange-500"}`
+                                }
                             >
-                                {isPending && modalType === "Check Out" ? <p className="flex justify-center items-center gap-2">
-
-                                    <LoaderPage /> Processing...</p> : isOutDisabled ? "Checked Out" : "Check Out"}
+                                {isPending && modalType === "Check Out" ? (
+                                    <p className="flex justify-center items-center gap-2">
+                                        <LoaderPage /> Processing...
+                                    </p>
+                                ) : isOutDisabled ? "Checked Out" : "Check Out"}
                             </button>
                         </div>
+
 
                         {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
                     </div>
@@ -341,10 +504,12 @@ const CheckInOut = () => {
                                         <div className="flex justify-between items-center">
                                             <span className="font-semibold text-gray-800">{entry.EmployeeName}</span>
                                             <span
-                                                className={`text-sm font-semibold ${entry.AttendanceStatus == 1 ? "text-green-600" : "text-red-500"
+                                                className={`px-4 py-3 font-semibold ${entry.AttendanceStatus == 1
+                                                    ? "text-green-600"
+                                                    : entry.AttendanceStatus == 0.5 ? "text-red-500" : entry.AttendanceStatus == 0 ? "" : ""
                                                     }`}
                                             >
-                                                {entry.AttendanceStatus == 1 ? "Present" : "Absent"}
+                                                {entry.AttendanceStatus == 1 ? "Present" : entry.AttendanceStatus == 0.5 ? "Half Day" : entry.AttendanceStatus == 0 ? "Absent" : ""}
                                             </span>
                                         </div>
 
@@ -377,8 +542,16 @@ const CheckInOut = () => {
                                             </div>
                                         </div>
 
-                                        <div className="text-gray-500 text-sm">
-                                            Total Hours: <span className="font-medium">{entry.TotalHours || "0h"}</span>
+                                        <div className="grid grid-cols-3">
+                                            <div className="text-gray-500 text-sm">
+                                                TotalHours: <span className="font-medium">{entry.TotalHours || "0h"}</span>
+                                            </div>
+                                            <div className="text-gray-500 text-sm">
+                                                OverTime: <span className="font-medium">{entry.OverTime || "0h"}</span>
+                                            </div>
+                                            <div className="text-gray-500 text-sm">
+                                                DeficitHours: <span className="font-medium">{entry.DeficitHours || "0h"}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

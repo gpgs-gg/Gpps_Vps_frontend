@@ -150,15 +150,6 @@ const Gpgsaction = () => {
               )}
             </div>
           </div>
-
-
-
-
-
-
-
-
-
           {/* <Link to="/gpgs-actions/accounts">
           <div className={cardClasses}>
             <div className={`${iconClasses} bg-green-100 text-green-600`}>
