@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useApp } from "./AppProvider";
 import { TicketFilters } from "./TicketFilters";
 import LoaderPage from "../NewBooking/LoaderPage";
+import { toast } from "react-toastify";
 
 const TicketRow = React.memo(({ ticket, headers,isPending ,  formatDate, onEdit, onImageClick, videoModalUrl, setVideoModalUrl, isSelected, onSelect }) => {
         
@@ -487,7 +488,6 @@ export const TicketList = () => {
       setSelectedColumns(new Set(allColumnKeys));
     }
   };
-
   // Export functionality
   const handleSelectedColoum = () => { // Get selected tickets data
  setShowColumnSelector(!showColumnSelector)
@@ -502,14 +502,13 @@ export const TicketList = () => {
     const columnsToExport = headers.filter(header => 
       selectedColumns.size > 0 ? selectedColumns.has(header.key) : true
     );
-
+ 
     if (ticketsToExport.length === 0) {
-      alert("No tickets selected for export!");
+      toast.error("No tickets selected for export!")
       return;
     }
-
     if (columnsToExport.length === 0) {
-      alert("No columns selected for export!");
+       toast.error("No columns selected for export!")
       return;
     }
 

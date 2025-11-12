@@ -23,6 +23,8 @@ import { useAuth } from './context/AuthContext';
 import Profile from './ClientProfile/Profile';
 import CreateClient from './components_office_use_only/ClientCreation/CreateClient';
 import CheckInOut from './components_office_use_only/Hrms_System/CheckInOut';
+import AttendanceDetail from './components_office_use_only/Hrms_System/AttendanceDetail';
+import Sallarydetail from './components_office_use_only/Hrms_System/Sallarydetail';
 // import Footer from './components/Footer';
 // import { useAuth } from './context/AuthContext';
 
@@ -248,6 +250,23 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
              <CheckInOut/>
+            </ProtectedRoute>
+          }
+        />
+
+         <Route
+          path="/gpgs-actions/attendance-details"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+             <AttendanceDetail/>
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/gpgs-actions/sallary-details"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+             <Sallarydetail/>
             </ProtectedRoute>
           }
         />

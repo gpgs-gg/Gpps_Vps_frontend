@@ -82,10 +82,11 @@ const CheckInOut = () => {
     };
 
 
+
     // useEffect(() => {
-
-
     // }, [filteredDataForTotalHours]);
+
+
 
     useEffect(() => {
         // Format current date like "5 Nov 2025"
@@ -373,13 +374,9 @@ const CheckInOut = () => {
                     DeficitHours: deficit,
                     AttendanceStatus: attendanceStatus,
                 });
-
-
             }
-
             // ✅ Set captured image preview
             setPhoto(imageSrc);
-
             // ✅ Submit data to backend
             submitCheckInOut(formData, {
                 onSuccess: (response) => {
@@ -408,7 +405,11 @@ const CheckInOut = () => {
         }
     };
 
-
+  if(isPendingAttendance){
+    return <div className="flex justify-center h-screen w-full items-center">
+        <LoaderPage/>
+    </div>
+  }
 
 
     return (

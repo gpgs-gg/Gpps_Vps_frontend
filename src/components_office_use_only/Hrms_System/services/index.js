@@ -34,11 +34,6 @@ export const useCheckInOut = (modalType) => {
 };
 
 
-
-
-
-
-
 // GET request to fetch property data
 const fetchAttendanceData = async () => {
   const response = await apiClient.get("/Attendance-details");
@@ -50,5 +45,20 @@ export const useAttendanceData = () => {
   return useQuery({
     queryKey: ["Check-in-out-req"],
     queryFn: fetchAttendanceData,
+  });
+};
+
+
+// GET request to fetch property data
+const fetchSallaryTrackerDetail = async () => {
+  const response = await apiClient.get("/sallary-tracker-details");
+  return response.data;
+};
+
+// React Query hook to fetch property data
+export const useSallaryTrackerDetail = () => {
+  return useQuery({
+    queryKey: ["sallary-tracker-details"],
+    queryFn: fetchSallaryTrackerDetail,
   });
 };
