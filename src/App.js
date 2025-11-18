@@ -25,6 +25,8 @@ import CreateClient from './components_office_use_only/ClientCreation/CreateClie
 import CheckInOut from './components_office_use_only/Hrms_System/CheckInOut';
 import AttendanceDetail from './components_office_use_only/Hrms_System/AttendanceDetail';
 import Sallarydetail from './components_office_use_only/Hrms_System/Sallarydetail';
+import ClientLeads from './components_office_use_only/LeadsForGpgs/ClientLeads';
+import LeadsTable from './components_office_use_only/LeadsForGpgs/LeadsTable';
 // import Footer from './components/Footer';
 // import { useAuth } from './context/AuthContext';
 
@@ -270,7 +272,25 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+         
+         <Route
+          path="/gpgs-actions/client-leads"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+             <ClientLeads/>
+            </ProtectedRoute>
+          }
+        />
+         
+         <Route
+          path="/gpgs-actions/leads-list"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+             <LeadsTable/>
+            </ProtectedRoute>
+          }
+        />
+         
 
         {/* Admin routes */}
         {/* <Route path="/gpgs-actions/tickets" element={

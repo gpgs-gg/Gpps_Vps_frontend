@@ -13,6 +13,8 @@ export const AppProvider = ({ children }) => {
     const [decryptedUser, setDecryptedUser] = useState(null);
     const [myPgTicketsTotal, setMyPgTicketsTotal] = useState(null)
     const [input, setInput] = useState('');
+      const [selectedClient, setSelectedClient] = useState(null);
+
 
 
     useEffect(() => {
@@ -236,7 +238,9 @@ export const AppProvider = ({ children }) => {
         myPgTicketsTotal,
         setInput,
         input,
-        isPending
+        isPending,
+        setSelectedClient, 
+        selectedClient
 
     };
 

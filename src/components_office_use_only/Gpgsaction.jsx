@@ -96,19 +96,16 @@ const Gpgsaction = () => {
                   >
                   <IoIosPeople className='text-xl text-indigo-600'/>  Attendance Details
                   </Link>
-                  <Link
+                  {/* <Link
                     to="/gpgs-actions/sallary-details"
                     className={`${subBtnClasses} bg-indigo-100 flex justify-center gap-1 items-center text-indigo-800 hover:bg-indigo-200`}
                   >
                   <IoIosPeople className='text-xl text-indigo-600'/>  Sallary Details
-                  </Link>
+                  </Link> */}
                 </div>
               )}
             </div>
           </div>
-
-
-
 
           {/* TICKETS SYSTEM */}
           <Link to="/gpgs-actions/tickets">
@@ -151,6 +148,12 @@ const Gpgsaction = () => {
                     className={`${subBtnClasses} bg-indigo-100 text-indigo-800 hover:bg-indigo-200`}
                   >
                     ➕ New Booking
+                  </Link>
+                  <Link
+                    to="/gpgs-actions/leads-list"
+                    className={`${subBtnClasses} bg-indigo-100 text-indigo-800 hover:bg-indigo-200`}
+                  >
+                    ➕ Our Leads
                   </Link>
                 </div>
               )}

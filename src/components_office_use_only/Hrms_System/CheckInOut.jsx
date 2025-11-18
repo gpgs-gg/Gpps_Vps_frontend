@@ -266,150 +266,356 @@ const CheckInOut = () => {
     // };
 
 
-    const capture = async (action) => {
-        try {
-            setModalType(action);
+    // const capture = async (action) => {
+    //     try {
+    //         setModalType(action);
 
-            if (!navigator.geolocation) {
-                setError("Geolocation not supported by your browser.");
+    //         if (!navigator.geolocation) {
+    //             setError("Geolocation not supported by your browser.");
+    //             return;
+    //         }
+
+    //         const imageSrc = webcamRef.current.getScreenshot();
+    //         const imageBlob = dataURLtoBlob(imageSrc);
+    //         const now = new Date();
+
+    //         // ✅ Get data from state or localStorage
+    //         let { InTime, MinHours, HalfDayHrs } = filteredDataForTotalHours || {};
+    //         // Fallback if state is not yet updated
+    //         if (!InTime) {
+    //             const savedData = JSON.parse(localStorage.getItem("lastCheckInData"));
+    //             InTime = savedData?.InTime || null;
+    //             MinHours = savedData?.MinHours || 9;
+    //             HalfDayHrs = savedData?.HalfDayHrs || 5;
+    //         }
+    //         // Prepare form data
+    //         const formData = new FormData();
+    //         formData.append("EmployeeID", user?.id);
+    //         formData.append("Name", user?.name);
+    //         formData.append("Date", formatDate(now));
+    //         formData.append("action", action);
+
+    //         if (action === "Check In") {
+    //             formData.append("InTime", now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }));
+    //             formData.append("InSelfie", imageBlob, "in_selfie.jpg");
+    //             // ✅ Save locally for later use
+    //             localStorage.setItem(
+    //                 "lastCheckInData",
+    //                 JSON.stringify({
+    //                     InTime: now.toLocaleTimeString(),
+    //                     MinHours: 9,
+    //                     HalfDayHrs: 5,
+    //                 })
+    //             );
+    //         } else if (action === "Check Out") {
+    //             formData.append("OutTime", now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }));
+    //             formData.append("OutSelfie", imageBlob, "out_selfie.jpg");
+
+    //             if (!InTime) {
+    //                 toast.error("InTime not found. Please check in first.");
+    //                 return;
+    //             }
+
+    //             // ✅ Time calculation
+    //             // const parseTime = (timeStr) => {   
+    //             //     const [time, modifier] = timeStr.split(" ");
+    //             //     const [hours, minutes, seconds] = time.split(":").map(Number);
+    //             //     let h = hours;
+    //             //     if (modifier === "PM" && hours < 12) h += 12;
+    //             //     if (modifier === "AM" && hours === 12) h = 0;
+    //             //     return h * 3600 + minutes * 60 + seconds;
+    //             // };
+
+    //             const parseTime = (timeStr) => {
+    //                 const [time, modifier] = timeStr.split(" ");
+    //                 const [hours, minutes, seconds = 0] = time.split(":").map(Number); // ✅ default 0
+    //                 let h = hours;
+    //                 if (modifier === "PM" && hours < 12) h += 12;
+    //                 if (modifier === "AM" && hours === 12) h = 0;
+    //                 return h * 3600 + minutes * 60 + seconds;
+    //             };
+
+
+    //             const inSeconds = parseTime(InTime);
+    //             const outSeconds = parseTime(now.toLocaleTimeString());
+
+    //             let diffSeconds = outSeconds - inSeconds;
+    //             if (diffSeconds < 0) diffSeconds += 24 * 3600;
+
+    //             const hours = Math.floor(diffSeconds / 3600);
+    //             const minutes = Math.floor((diffSeconds % 3600) / 60);
+
+    //             // ✅ Append total working hours
+    //             formData.append("TotalHours", `${hours}H ${minutes}M`);
+
+    //             // ✅ Calculate attendance status
+    //             let attendanceStatus = 0;
+    //             if (hours >= MinHours) attendanceStatus = 1;
+    //             else if (hours >= HalfDayHrs) attendanceStatus = 0.5;
+    //             formData.append("AttendanceStatus", attendanceStatus);
+
+    //             // ✅ Calculate overtime / deficit
+    //             const totalWorkedSeconds = diffSeconds;
+    //             const minSeconds = MinHours * 3600;
+    //             const differenceSeconds = totalWorkedSeconds - minSeconds;
+
+    //             const formatTime = (seconds) => {
+    //                 const h = Math.floor(seconds / 3600);
+    //                 const m = Math.floor((seconds % 3600) / 60);
+    //                 return `${h}H ${m}M`;
+    //             };
+
+    //             let overtime = "0H 0M";
+    //             let deficit = "0H 0M";
+
+    //             if (differenceSeconds > 0) overtime = formatTime(differenceSeconds);
+    //             else if (differenceSeconds < 0)
+    //                 deficit = formatTime(Math.abs(differenceSeconds));
+
+    //             formData.append("OverTime", overtime);
+    //             formData.append("DeficitHours", deficit);
+
+
+    //             console.log({
+    //                 InTime,
+    //                 OutTime: now.toLocaleTimeString(),
+    //                 TotalHours: `${hours}H ${minutes}H`,
+    //                 OverTime: overtime,
+    //                 DeficitHours: deficit,
+    //                 AttendanceStatus: attendanceStatus,
+    //             });
+    //         }
+    //         // ✅ Set captured image preview
+    //         setPhoto(imageSrc);
+    //         // ✅ Submit data to backend
+    //         submitCheckInOut(formData, {
+    //             onSuccess: (response) => {
+    //                 toast.success(
+    //                     <div className="flex items-center space-x-3">
+    //                         <div>
+    //                             <span className="font-semibold">{action} Successful!</span>
+    //                         </div>
+    //                     </div>
+    //                 );
+    //             },
+    //             onError: (response) => {
+    //                 toast.error(
+    //                     <div>
+    //                         <p className="font-semibold">Failed to submit check-in/out.</p>
+    //                         <p className="text-sm text-gray-400">
+    //                             {response?.response?.data?.error || "Unknown error"}
+    //                         </p>
+    //                     </div>
+    //                 );
+    //             },
+    //         });
+    //     } catch (error) {
+    //         console.error("Error in capture:", error);
+    //         toast.error("Something went wrong. Try again.");
+    //     }
+    // };
+
+
+
+const capture = async (action) => {
+    try {
+        setModalType(action);
+
+        if (!navigator.geolocation) {
+            setError("Geolocation not supported by your browser.");
+            return;
+        }
+
+        const imageSrc = webcamRef.current.getScreenshot();
+        const imageBlob = dataURLtoBlob(imageSrc);
+        const now = new Date();
+
+        // Get saved Check-in data
+        let { InTime, MinHours, HalfDayHrs } = filteredDataForTotalHours || {};
+
+        if (!InTime) {
+            const saved = JSON.parse(localStorage.getItem("lastCheckInData"));
+            InTime = saved?.InTime || null;
+            MinHours = saved?.MinHours || 9;
+            HalfDayHrs = saved?.HalfDayHrs || 5;
+        }
+
+        const formatTime12 = (dateObj) =>
+            dateObj.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+            });
+
+        /** FIXED TIME PARSER → Supports 24h & 12h formats */
+        // const parseTime = (timeStr) => {
+        //     if (!timeStr.includes(" ")) {
+        //         const [h, m, s = 0] = timeStr.split(":").map(Number);
+        //         return h * 3600 + m * 60 + s;
+        //     }
+
+        //     const [time, modifier] = timeStr.split(" ");
+        //     const [hours, minutes, seconds = 0] = time.split(":").map(Number);
+
+        //     let h = hours;
+        //     if (modifier === "PM" && hours < 12) h += 12;
+        //     if (modifier === "AM" && hours === 12) h = 0;
+
+        //     return h * 3600 + minutes * 60 + seconds;
+        // };
+
+
+        const parseTime = (timeStr) => {
+    if (!timeStr.includes(" ")) {
+        const [h, m, s = 0] = timeStr.split(":").map(Number);
+        return h * 3600 + m * 60 + s;
+    }
+
+    const [time, modifierRaw] = timeStr.split(" ");
+    const modifier = modifierRaw.trim().toUpperCase(); // <-- FIX HERE
+
+    const [hours, minutes, seconds = 0] = time.split(":").map(Number);
+    let h = hours;
+
+    if (modifier === "PM" && hours < 12) h += 12;
+    if (modifier === "AM" && hours === 12) h = 0;
+
+    return h * 3600 + minutes * 60 + seconds;
+};
+
+
+        // Prepare form data
+        const formData = new FormData();
+        formData.append("EmployeeID", user?.id);
+        formData.append("Name", user?.name);
+        formData.append("Date", formatDate(now));
+        formData.append("action", action);
+
+        /** ============================
+         *        CHECK IN
+         *  ============================ */
+        if (action === "Check In") {
+            const inTimeFormatted = formatTime12(now);
+
+            formData.append("InTime", inTimeFormatted);
+            formData.append("InSelfie", imageBlob, "in_selfie.jpg");
+
+            // Save 12-hour formatted time
+            localStorage.setItem(
+                "lastCheckInData",
+                JSON.stringify({
+                    InTime: inTimeFormatted,
+                    MinHours: 9,
+                    HalfDayHrs: 5,
+                })
+            );
+        }
+
+        /** ============================
+         *        CHECK OUT
+         *  ============================ */
+        else if (action === "Check Out") {
+            const outTimeFormatted = formatTime12(now);
+            formData.append("OutTime", outTimeFormatted);
+            formData.append("OutSelfie", imageBlob, "out_selfie.jpg");
+
+            if (!InTime) {
+                toast.error("InTime not found. Please check in first.");
                 return;
             }
 
-            const imageSrc = webcamRef.current.getScreenshot();
-            const imageBlob = dataURLtoBlob(imageSrc);
-            const now = new Date();
+            // Convert times to seconds
+            const inSeconds = parseTime(InTime);
+            const outSeconds = parseTime(outTimeFormatted);
 
-            // ✅ Get data from state or localStorage
-            let { InTime, MinHours, HalfDayHrs } = filteredDataForTotalHours || {};
-            // Fallback if state is not yet updated
-            if (!InTime) {
-                const savedData = JSON.parse(localStorage.getItem("lastCheckInData"));
-                InTime = savedData?.InTime || null;
-                MinHours = savedData?.MinHours || 9;
-                HalfDayHrs = savedData?.HalfDayHrs || 5;
-            }
-            // Prepare form data
-            const formData = new FormData();
-            formData.append("EmployeeID", user?.id);
-            formData.append("Name", user?.name);
-            formData.append("Date", formatDate(now));
-            formData.append("action", action);
+            // Calculate diff
+            let diffSeconds = outSeconds - inSeconds;
+            if (diffSeconds < 0) diffSeconds += 24 * 3600;
 
-            if (action === "Check In") {
-                formData.append("InTime", now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }));
-                formData.append("InSelfie", imageBlob, "in_selfie.jpg");
-                // ✅ Save locally for later use
-                localStorage.setItem(
-                    "lastCheckInData",
-                    JSON.stringify({
-                        InTime: now.toLocaleTimeString(),
-                        MinHours: 9,
-                        HalfDayHrs: 5,
-                    })
-                );
-            } else if (action === "Check Out") {
-                formData.append("OutTime", now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }));
-                formData.append("OutSelfie", imageBlob, "out_selfie.jpg");
+            const hours = Math.floor(diffSeconds / 3600);
+            const minutes = Math.floor((diffSeconds % 3600) / 60);
 
-                if (!InTime) {
-                    toast.error("InTime not found. Please check in first.");
-                    return;
-                }
+            formData.append("TotalHours", `${hours}H ${minutes}M`);
 
-                // ✅ Time calculation
-                const parseTime = (timeStr) => {
-                    const [time, modifier] = timeStr.split(" ");
-                    const [hours, minutes, seconds] = time.split(":").map(Number);
-                    let h = hours;
-                    if (modifier === "PM" && hours < 12) h += 12;
-                    if (modifier === "AM" && hours === 12) h = 0;
-                    return h * 3600 + minutes * 60 + seconds;
-                };
+            // Attendance status calculation
+            let attendanceStatus = 0;
+            if (hours >= MinHours) attendanceStatus = 1;
+            else if (hours >= HalfDayHrs) attendanceStatus = 0.5;
 
-                const inSeconds = parseTime(InTime);
-                const outSeconds = parseTime(now.toLocaleTimeString());
+            formData.append("AttendanceStatus", attendanceStatus);
 
-                let diffSeconds = outSeconds - inSeconds;
-                if (diffSeconds < 0) diffSeconds += 24 * 3600;
+            // Overtime / deficit
+            const minSeconds = MinHours * 3600;
+            const differenceSeconds = diffSeconds - minSeconds;
 
-                const hours = Math.floor(diffSeconds / 3600);
-                const minutes = Math.floor((diffSeconds % 3600) / 60);
+            const formatTime = (seconds) => {
+                const h = Math.floor(seconds / 3600);
+                const m = Math.floor((seconds % 3600) / 60);
+                return `${h}H ${m}M`;
+            };
 
-                // ✅ Append total working hours
-                formData.append("TotalHours", `${hours}H ${minutes}M`);
+            let overtime = "0H 0M";
+            let deficit = "0H 0M";
 
-                // ✅ Calculate attendance status
-                let attendanceStatus = 0;
-                if (hours >= MinHours) attendanceStatus = 1;
-                else if (hours >= HalfDayHrs) attendanceStatus = 0.5;
-                formData.append("AttendanceStatus", attendanceStatus);
+            if (differenceSeconds > 0) overtime = formatTime(differenceSeconds);
+            else if (differenceSeconds < 0)
+                deficit = formatTime(Math.abs(differenceSeconds));
 
-                // ✅ Calculate overtime / deficit
-                const totalWorkedSeconds = diffSeconds;
-                const minSeconds = MinHours * 3600;
-                const differenceSeconds = totalWorkedSeconds - minSeconds;
+            formData.append("OverTime", overtime);
+            formData.append("DeficitHours", deficit);
 
-                const formatTime = (seconds) => {
-                    const h = Math.floor(seconds / 3600);
-                    const m = Math.floor((seconds % 3600) / 60);
-                    return `${h}H ${m}M`;
-                };
-
-                let overtime = "0H 0M";
-                let deficit = "0H 0M";
-
-                if (differenceSeconds > 0) overtime = formatTime(differenceSeconds);
-                else if (differenceSeconds < 0)
-                    deficit = formatTime(Math.abs(differenceSeconds));
-
-                formData.append("OverTime", overtime);
-                formData.append("DeficitHours", deficit);
-
-
-                console.log({
-                    InTime,
-                    OutTime: now.toLocaleTimeString(),
-                    TotalHours: `${hours}H ${minutes}H`,
-                    OverTime: overtime,
-                    DeficitHours: deficit,
-                    AttendanceStatus: attendanceStatus,
-                });
-            }
-            // ✅ Set captured image preview
-            setPhoto(imageSrc);
-            // ✅ Submit data to backend
-            submitCheckInOut(formData, {
-                onSuccess: (response) => {
-                    toast.success(
-                        <div className="flex items-center space-x-3">
-                            <div>
-                                <span className="font-semibold">{action} Successful!</span>
-                            </div>
-                        </div>
-                    );
-                },
-                onError: (response) => {
-                    toast.error(
-                        <div>
-                            <p className="font-semibold">Failed to submit check-in/out.</p>
-                            <p className="text-sm text-gray-400">
-                                {response?.response?.data?.error || "Unknown error"}
-                            </p>
-                        </div>
-                    );
-                },
+            console.log({
+                InTime,
+                OutTime: outTimeFormatted,
+                TotalHours: `${hours}H ${minutes}M`,
+                OverTime: overtime,
+                DeficitHours: deficit,
+                AttendanceStatus: attendanceStatus,
             });
-        } catch (error) {
-            console.error("Error in capture:", error);
-            toast.error("Something went wrong. Try again.");
         }
-    };
 
-  if(isPendingAttendance){
-    return <div className="flex justify-center h-screen w-full items-center">
-        <LoaderPage/>
-    </div>
-  }
+        // Preview captured image
+        setPhoto(imageSrc);
+
+        // Submit to backend
+        submitCheckInOut(formData, {
+            onSuccess: () => {
+                toast.success(
+                    <div className="flex items-center space-x-3">
+                        <span className="font-semibold">{action} Successful!</span>
+                    </div>
+                );
+            },
+            onError: (response) => {
+                toast.error(
+                    <div>
+                        <p className="font-semibold">Failed to submit.</p>
+                        <p className="text-sm text-gray-400">
+                            {response?.response?.data?.error || "Unknown error"}
+                        </p>
+                    </div>
+                );
+            },
+        });
+    } catch (error) {
+        console.error("Error in capture:", error);
+        toast.error("Something went wrong. Try again.");
+    }
+};
+
+
+
+
+
+
+
+
+
+    if (isPendingAttendance) {
+        return <div className="flex justify-center h-screen w-full items-center">
+            <LoaderPage />
+        </div>
+    }
 
 
     return (
@@ -449,7 +655,7 @@ const CheckInOut = () => {
                                         : "bg-green-600 hover:bg-green-700"}`
                                 }
                             >
-                                 {isPending && modalType === "Check In" ? (
+                                {isPending && modalType === "Check In" ? (
                                     <p className="flex justify-center items-center gap-2">
                                         <LoaderPage /> Processing...
                                     </p>
@@ -466,7 +672,7 @@ const CheckInOut = () => {
                                         : "bg-orange-400 hover:bg-orange-500"}`
                                 }
                             >
-                                 {isPending && modalType === "Check Out" ? (
+                                {isPending && modalType === "Check Out" ? (
                                     <p className="flex justify-center items-center gap-2">
                                         <LoaderPage /> Processing...
                                     </p>
@@ -475,7 +681,7 @@ const CheckInOut = () => {
                         </div>
 
 
-                             {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
+                        {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
                     </div>
 
                 </div>
