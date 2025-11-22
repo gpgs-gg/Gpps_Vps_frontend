@@ -62,3 +62,36 @@ export const useSallaryTrackerDetail = () => {
     queryFn: fetchSallaryTrackerDetail,
   });
 };
+
+
+
+
+
+
+
+const createSallaryDetails = async (payload) => {
+  const response = await apiClient.post("/create-sallary-details", payload);
+  return response.data;
+};
+
+export const useCreateSallaryDetails = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createSallaryDetails,
+    onSuccess: () => {
+      // 🔄 Refetch ticket sheet after update
+      queryClient.invalidateQueries(["sallary-tracker-details"]);
+    },
+  });
+};
+
+
+
+
+
+
+
+
+
+// /create-sallary-details

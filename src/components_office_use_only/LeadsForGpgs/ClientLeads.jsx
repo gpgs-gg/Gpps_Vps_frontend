@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 
 // ✅ Validation schema
 const schema = yup.object().shape({
-  ClientName: yup.string().required("Client name is required").min(3),
+  // ClientName: yup.string().required("Client name is required").min(3),
   CallingNo: yup
     .string()
     .required("Calling No is Required")
@@ -56,7 +56,7 @@ function ClientLeads() {
   const { selectedClient, setSelectedClient } = useApp()
   const navigate = useNavigate()
   // const [selectedClient, setSelectedClient] = useState(null);
-
+  console.log("ajshdjsh", selectedClient)
   // ✅ Dropdown Options
   const selectOptionGender = [
     { value: "Male", label: "Male" },
@@ -71,6 +71,16 @@ function ClientLeads() {
   const selectOptioninterestedLocation =
     (Array.from(
       new Set(dynamicData?.data?.map((item) => item.Locations).filter(Boolean))
+    ).map((value) => ({ value, label: value }))) || [];
+
+  const selectOptionWhatsAppCommunication =
+    (Array.from(
+      new Set(dynamicData?.data?.map((item) => item.WhatsAppStatus).filter(Boolean))
+    ).map((value) => ({ value, label: value }))) || [];
+
+  const selectOptionPhoneCallCommunication =
+    (Array.from(
+      new Set(dynamicData?.data?.map((item) => item.CallStatus).filter(Boolean))
     ).map((value) => ({ value, label: value }))) || [];
 
   const selectOptionYesNo = [
@@ -105,6 +115,40 @@ function ClientLeads() {
     }),
   };
 
+
+  ///////////////// Akash Code //////////////////////
+
+
+  const copyToClipboard = async (text) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      return true;
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+      return false;
+    }
+  };
+
+  ///////////////// Akash Code //////////////////////
+
+
+
+
+
+
   // ✅ Submit Handler
   const onSubmit = async (data) => {
     const updatedData = {
@@ -112,25 +156,35 @@ function ClientLeads() {
       CallingNo: data.CallingNo,
       WhatsAppNo: data.WhatsAppNo,
       MaleFemale: data?.MaleFemale?.value || "",
-      interestedLocation: data?.interestedLocation?.value || "",
+      Location: data?.Location?.value || "",
       LeadSource: data?.LeadSource?.value || "",
       PhoneCallCommunication: data?.PhoneCallCommunication?.value || "",
       WhatsAppCommunication: data?.WhatsAppCommunication?.value || "",
-      visited: data?.visited?.value || "",
+      Visited: data?.visited?.value || "",
       Comments: data?.Comments || "",
+    };
+
+    const createdData = {
+      ClientName: data.ClientName,
+      CallingNo: data.CallingNo,
+      WhatsAppNo: data.WhatsAppNo,
+      MaleFemale: data?.MaleFemale?.value || "",
+      Location: data?.Location?.value || "",
+      LeadSource: data?.LeadSource?.value || "",
+      PhoneCallCommunication: data?.PhoneCallCommunication?.value || "",
+      WhatsAppCommunication: data?.WhatsAppCommunication?.value || "",
+      Visited: data?.visited?.value || "",
+      Comments: data?.Comments || "",
+      // LeadNo: selectedClient.LeadNo || selectedClient.LeadNo,
     };
 
     try {
       if (selectedClient) {
         // 🔹 Update existing client
         await updateClient({
-          srNo: selectedClient.SrNo || selectedClient.srNo,
-          data: updatedData,
+          data: { ...updatedData, LeadNo: selectedClient.LeadNo || selectedClient.LeadNo, }
         });
-
-        toast.success("Client updated successfully!");
-
-       
+        toast.success("Lead updated successfully!");
         reset({
           ClientName: "",
           CallingNo: "",
@@ -148,18 +202,22 @@ function ClientLeads() {
         reset()
         setSelectedClient("")
         navigate("/gpgs-actions/leads-list")
-       
+
       } else {
-        await createClient(updatedData);
-        toast.success("Leads added successfully!");
+        await createClient(createdData);
+        toast.success("Lead added successfully!");
         navigate("/gpgs-actions/leads-list")
         const phone = data.WhatsAppNo;
         const clientName = data.ClientName;
-        const message = encodeURIComponent(
-          `Hello ${clientName}, 👋\n*Welcome to Gopal's Paying Guest Services!*\n\n*Property Details:*\n• Fully furnished rooms\n• AC/Non-AC options available\n• Food services optional\n• Security & maintenance included\n\n📞 *Contact Our Sales Team:*\n• +919326262292\n• +917021368623\n\n🌐 *Official Website:*\nhttps://gpgs24.in\n\n🕒 *Service Hours:* 10 AM to 8 PM`
-        );
+        // const message = encodeURIComponent(
+        //   `Hello ${clientName}, 👋\n*Welcome to Gopal's Paying Guest Services!*\n\n*Property Details:*\n• Fully furnished rooms\n• AC/Non-AC options available\n• Food services optional\n• Security & maintenance included\n\n📞 *Contact Our Sales Team:*\n• +919326262292\n• +917021368623\n\n🌐 *Official Website:*\nhttps://gpgs24.in\n\n🕒 *Service Hours:* 10 AM to 8 PM`
+        // );
+        // const whatsappURL = `https://api.whatsapp.com/send?phone=91${phone}&text=${message}`;
 
-        const whatsappURL = `https://api.whatsapp.com/send?phone=91${phone}&text=${message}`;
+        const message = dynamicData?.data[0]?.AutoMessage || "";
+        const encodedMessage = encodeURIComponent(message)
+        const whatsappURL = `https://api.whatsapp.com/send?phone=91${phone}&text=${encodedMessage}`;
+        await copyToClipboard(message)
         reset();
         setTimeout(() => {
           const newWindow = window.open(whatsappURL, "_blank");
@@ -200,10 +258,10 @@ function ClientLeads() {
 
     setValue("MaleFemale", findOption(selectOptionGender, selectedClient.MaleFemale));
     setValue("LeadSource", findOption(selectOptionLeadSource, selectedClient.LeadSource || selectedClient.LeadSourcee));
-    setValue("interestedLocation", findOption(selectOptioninterestedLocation, selectedClient.InterestedLocation || selectedClient.interestedLocation));
+    setValue("Location", findOption(selectOptioninterestedLocation, selectedClient.Location || selectedClient.Location));
     setValue("visited", findOption(selectOptionYesNo, selectedClient.Visited || selectedClient.visited));
-    setValue("WhatsAppCommunication", findOption(selectOptionYesNo, selectedClient.WhatsAppCommunication));
-    setValue("PhoneCallCommunication", findOption(selectOptionYesNo, selectedClient.PhoneCallCommunication));
+    setValue("WhatsAppCommunication", findOption(selectOptionWhatsAppCommunication, selectedClient.WhatsAppCommunication));
+    setValue("PhoneCallCommunication", findOption(selectOptionPhoneCallCommunication, selectedClient.PhoneCallCommunication));
   }, [selectedClient, reset, setValue]);
 
 
@@ -211,16 +269,6 @@ function ClientLeads() {
     setSelectedClient("")
     navigate("/gpgs-actions/leads-list")
   }
-
-
-
-
-
-
-
-
-
-
 
   return (
     <div className="max-w-7xl mx-auto my-28">
@@ -241,9 +289,9 @@ function ClientLeads() {
                 className="w-full px-3 py-[8px]  border border-orange-400 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-500 shadow-sm hover:border-orange-400"
                 {...register("ClientName")}
               />
-              {errors.ClientName && (
+              {/* {errors.ClientName && (
                 <p className="text-red-500 text-sm mt-1">{errors.ClientName.message}</p>
-              )}
+              )} */}
             </div>
 
             {/* Gender */}
@@ -254,6 +302,7 @@ function ClientLeads() {
                 control={control}
                 render={({ field }) => (
                   <Select {...field} placeholder="Select Gender"
+                    isClearable
                     styles={employeeSelectStyles}
                     options={selectOptionGender} />
                 )}
@@ -262,11 +311,13 @@ function ClientLeads() {
 
             {/* Calling No */}
             <div>
-              <label className="text-sm text-gray-700">Calling No</label>
+              <label className="text-sm text-gray-700">
+                <span className="relative after:content-['*'] after:ml-1 after:text-red-500" >Calling No</span>
+              </label>
               <input
                 type="text"
                 placeholder="Enter Phone No"
-                className="w-full px-3 py-[8px] border border-orange-400 rounded-md focus:ring-2 focus:ring-orange-300"
+                className="w-full px-3 py-[8px] border outline-none border-orange-400 rounded-md focus:ring-2 focus:ring-orange-300"
                 {...register("CallingNo")}
               />
               {errors.CallingNo && (
@@ -276,18 +327,19 @@ function ClientLeads() {
 
             {/* WhatsApp No */}
             <div>
-              <label className="text-sm text-gray-700">WhatsApp No</label>
+              <label className="text-sm text-gray-700">
+                <span className="relative after:content-['*'] after:ml-1 after:text-red-500" > WhatsApp No</span>
+              </label>
               <input
                 type="text"
                 placeholder="Enter WhatsApp No"
-                className="w-full px-3 py-[8px] border border-orange-400 rounded-md focus:ring-2 focus:ring-orange-300"
+                className="w-full px-3 py-[8px] border outline-none border-orange-400 rounded-md focus:ring-2 focus:ring-orange-300"
                 {...register("WhatsAppNo")}
               />
               {errors.WhatsAppNo && (
                 <p className="text-red-500 text-sm mt-1">{errors.WhatsAppNo.message}</p>
               )}
             </div>
-
             {/* Lead Source */}
             <div>
               <label className="text-sm text-gray-700">Lead Source</label>
@@ -296,6 +348,7 @@ function ClientLeads() {
                 control={control}
                 render={({ field }) => (
                   <Select {...field} placeholder="Select Lead Source"
+                    isClearable
                     styles={employeeSelectStyles}
                     options={selectOptionLeadSource} />
                 )}
@@ -306,10 +359,11 @@ function ClientLeads() {
             <div>
               <label className="text-sm text-gray-700">Interested Location</label>
               <Controller
-                name="interestedLocation"
+                name="Location"
                 control={control}
                 render={({ field }) => (
                   <Select {...field} placeholder="Select Location"
+                    isClearable
                     styles={employeeSelectStyles}
                     options={selectOptioninterestedLocation} />
                 )}
@@ -324,8 +378,9 @@ function ClientLeads() {
                 control={control}
                 render={({ field }) => (
                   <Select {...field} placeholder="Select Option"
+                    isClearable
                     styles={employeeSelectStyles}
-                    options={selectOptionYesNo} />
+                    options={selectOptionWhatsAppCommunication} />
                 )}
               />
             </div>
@@ -338,8 +393,9 @@ function ClientLeads() {
                 control={control}
                 render={({ field }) => (
                   <Select {...field} placeholder="Select Option"
+                    isClearable
                     styles={employeeSelectStyles}
-                    options={selectOptionYesNo} />
+                    options={selectOptionPhoneCallCommunication} />
                 )}
               />
             </div>
@@ -352,6 +408,7 @@ function ClientLeads() {
                 control={control}
                 render={({ field }) => (
                   <Select {...field} placeholder="Visited?"
+                    isClearable
                     styles={employeeSelectStyles}
                     options={selectOptionYesNo} />
                 )}
@@ -377,9 +434,10 @@ function ClientLeads() {
                 }`}
             >
               {isSubmitting ? (
-                <div>
-                  {selectedClient ? "Updating..." : "Submitting..."}
+                <div className="flex justify-center items-center gap-2">
                   <LoaderPage />
+                  {selectedClient ? "Updating..." : "Submitting..."}
+
                 </div>
               ) : selectedClient ? (
                 "Update"

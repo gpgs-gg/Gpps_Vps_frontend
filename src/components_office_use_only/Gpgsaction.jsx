@@ -96,12 +96,12 @@ const Gpgsaction = () => {
                   >
                   <IoIosPeople className='text-xl text-indigo-600'/>  Attendance Details
                   </Link>
-                  {/* <Link
+                  <Link
                     to="/gpgs-actions/sallary-details"
                     className={`${subBtnClasses} bg-indigo-100 flex justify-center gap-1 items-center text-indigo-800 hover:bg-indigo-200`}
                   >
-                  <IoIosPeople className='text-xl text-indigo-600'/>  Sallary Details
-                  </Link> */}
+                  <IoIosPeople className='text-xl text-indigo-600'/>  Salary Details
+                  </Link>
                 </div>
               )}
             </div>

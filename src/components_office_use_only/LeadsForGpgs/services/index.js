@@ -7,17 +7,17 @@ const apiClient = axios.create({
 });
 
 
- const fetchClientDetails = async () => {
+ const fetchLeadsDetails = async () => {
   
  const response = await apiClient.get('/get-Leads') 
   return response.data;
 };
 
 // React Query hook to fetch property data
-export const useClientDetails = () => {
+export const useLeadsDetails = () => {
   return useQuery({
-    queryKey: ["ClientDetails"],
-    queryFn: fetchClientDetails,
+    queryKey: ["LeadsDetails"],
+    queryFn: fetchLeadsDetails,
     staleTime:Infinity
   });
 };

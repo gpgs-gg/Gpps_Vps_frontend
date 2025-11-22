@@ -4,6 +4,8 @@ import { useForm, Controller } from "react-hook-form";
 import { useAddBooking, useFetchSingleSheetData, usePropertySheetData } from "./services/index";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useClientDetails } from "../ClientCreation/services";
+import { FiCheck } from "react-icons/fi";
 // import useFetchSingleSheetData, { useAddBooking, usePropertySheetData } from "./services/index";
 // import { useAddBooking, useFetchSingleSheetData, usePropertySheetData } from "./Server/index";
 
@@ -12,15 +14,39 @@ const Accounts = () => {
   const [sheetId, setSheetId] = useState(null);
   const [result, setResult] = useState(null);
   const [rnrSheetData, setRnrSheetData] = useState({})
+  const [showNumbers, setShowNumbers] = useState(false)
   // Fetch all properties
   const { data: fetchSingleSheetData, error, isError } = useFetchSingleSheetData();
 
   // Fetch property sheet data for selected property + month
   const { data: propertySheetData, isLoading, isSuccess } = usePropertySheetData(sheetId, !!sheetId);
-
+  const { data: clientMasterData } = useClientDetails();
   // Watch form values
   const selectedMonth = watch("selectedMonth");
   const selectedProperty = watch("selectedProperty");
+
+      console.log("rnrSheetData", rnrSheetData[0])
+
+  // akash code //
+  const findClient = (name) => {
+    if (!showNumbers) return null;
+    if (!clientMasterData) return null;
+
+    const clean = (str) =>
+      str?.toLowerCase().trim().replace(/\s+/g, " ");
+
+    const target = clean(name);
+
+    const found = clientMasterData?.data?.find(
+      (c) => clean(c.Name) === target // <-- Correct Key here
+    );
+    return found || null;
+  };
+
+  // akash code //
+
+
+
 
   useEffect(() => {
     if (isSuccess && propertySheetData?.data) {
@@ -91,13 +117,43 @@ const Accounts = () => {
       const daDue = buildFormulaString(validItems.map(item => item.DADue));
       const preDue = buildFormulaString(validItems.map(calculatePreviousDue));
 
+      // akash code //
+      const addNumbersToNames = (namesString) => {
+        if (!namesString) return "None";
+
+        return namesString
+          .split("\n")
+          .map((name) => {
+            const trimmed = name.trim();
+            const client = findClient(trimmed);
+
+            if (client) {
+              return `${trimmed} ${client.CallingNo || ""} | ${client.WhatsAppNo || ""}`;
+            }
+            return trimmed;
+          })
+          .join("\n");
+      };
+      // akash code //
+
+
+
+
+
       // Final object
       const transformed = [
         {
           PropertyCode: selectedProperty.label,
-          ClientNameCurrentDue: ClientNameCurrentDue || "None",
-          ClientNameDepositDue: ClientNameDepositDue || "None",
-          ClientNamePreviousDue: ClientNamePreviousDue || "None",
+          // ClientNameCurrentDue: ClientNameCurrentDue || "None",
+          // ClientNameDepositDue: ClientNameDepositDue || "None",
+          // ClientNamePreviousDue: ClientNamePreviousDue || "None",
+
+          // akash code //
+          ClientNameCurrentDue: addNumbersToNames(ClientNameCurrentDue) || "None",
+          ClientNameDepositDue: addNumbersToNames(ClientNameDepositDue) || "None",
+          ClientNamePreviousDue: addNumbersToNames(ClientNamePreviousDue) || "None",
+          // akash code //
+
           CurrentDue: currentDue,
           DepositDue: daDue,
           PreviousDue: preDue,
@@ -107,8 +163,9 @@ const Accounts = () => {
       setRnrSheetData(transformed);
     }
   }, [isSuccess, propertySheetData]);
-
   const { mutate: submitBooking, isLoading: isBookingLoading } = useAddBooking();
+
+
 
   // When property is selected, build sheetId and fetch data automatically
   useEffect(() => {
@@ -268,7 +325,19 @@ const Accounts = () => {
               </p>
             )}
           </div>
+          <div className="flex justify-start items-center">
 
+            <div
+              onClick={() => setShowNumbers(!showNumbers)}
+              className={`h-5 w-5 flex  items-center justify-center rounded-md border-2 
+                                            transition-all cursor-pointer
+                                            ${showNumbers ? "bg-orange-500 border-orange-500" : "bg-white border-gray-400"}
+                                            `}
+            >
+              {showNumbers && <FiCheck className="text-white text-[20px]  font-bold" />}
+            </div>
+            <span className="ml-2">Show Numbers (Optional)</span>
+          </div>
           {/* Property */}
           <div className={`${!selectedMonth ? "cursor-not-allowed" : ""}`}>
             <label className="text-sm font-medium  text-gray-700 relative after:content-['*'] after:ml-1 after:text-red-500">
@@ -313,11 +382,30 @@ const Accounts = () => {
                     <div className="mb-2">
                       <span className="font-semibold text-orange-300">Client Names:</span>
                       <div className="mt-1 text-lg max-h-40 overflow-y-auto pr-2">
+                        {/* {rnrSheetData[0].ClientNameCurrentDue
+                          ?.split('\n') // First, try splitting by newline
+                          .map((name, index) => {
+
+                            <p key={index}>{name.trim()}</p>
+                          })} */}
+
+                        {/* akash */}
                         {rnrSheetData[0].ClientNameCurrentDue
                           ?.split('\n') // First, try splitting by newline
-                          .map((name, index) => (
-                            <p key={index}>{name.trim()}</p>
-                          ))}
+                          .map((name, index) => {
+                            const client = showNumbers ? findClient(name) : null;
+                            return (
+                              <p key={index} className="mb-1">
+                                <span className="font-semibold">{name.trim()}</span>
+
+                                {showNumbers && client && (
+                                  <span className="text-sm text-gray-600 ml-2">
+                                    {client.CallingNo || "No Call"} | {client.WhatsAppNo || "No WhatsApp"}
+                                  </span>
+                                )}
+                              </p>
+                            );
+                          })}
                       </div>
                     </div>
                     <div className="bg-gray-200 p-4 rounded-xl shadow">
@@ -333,9 +421,20 @@ const Accounts = () => {
                       <div className="mt-1 text-lg max-h-40 overflow-y-auto pr-2">
                         {rnrSheetData[0].ClientNamePreviousDue
                           ?.split('\n') // First, try splitting by newline
-                          .map((name, index) => (
-                            <p key={index}>{name.trim()}</p>
-                          ))}
+                          .map((name, index) => {
+                            const client = showNumbers ? findClient(name) : null;
+                            return (
+                              <p key={index} className="mb-1">
+                                <span className="font-semibold">{name.trim()}</span>
+
+                                {showNumbers && client && (
+                                  <span className="text-sm text-gray-600 ml-2">
+                                    ({client.CallingNo}) | {client.WhatsAppNo || "No WhatsApp"}
+                                  </span>
+                                )}
+                              </p>
+                            );
+                          })}
                       </div>
                       {/* <p className="mt-1 text-lg">{rnrSheetData[0].ClientNamePreviousDue}</p> */}
                     </div>
@@ -350,9 +449,20 @@ const Accounts = () => {
                       <div className="mt-1 text-lg max-h-40 overflow-y-auto pr-2">
                         {rnrSheetData[0].ClientNameDepositDue
                           ?.split('\n') // First, try splitting by newline
-                          .map((name, index) => (
-                            <p key={index}>{name.trim()}</p>
-                          ))}
+                          .map((name, index) => {
+                            const client = showNumbers ? findClient(name) : null;
+                            return (
+                              <p key={index} className="mb-1">
+                                <span className="font-semibold">{name.trim()}</span>
+
+                                {showNumbers && client && (
+                                  <span className="text-sm text-gray-600 ml-2">
+                                    ({client.CallingNo || "No Call"}) | {client.WhatsAppNo || "No WhatsApp"}
+                                  </span>
+                                )}
+                              </p>
+                            );
+                          })}
                       </div>
                     </div>
                     <div className="bg-gray-200 p-4 rounded-xl shadow">

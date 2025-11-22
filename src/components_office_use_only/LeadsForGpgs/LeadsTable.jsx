@@ -2,13 +2,13 @@
 import { useState } from "react";
 // import { useClientDetails } from "./service/api";
 import { FaRegEdit } from "react-icons/fa";
-import { useClientDetails } from "./services";
+import {useLeadsDetails } from "./services";
 import { useApp } from "../TicketSystem/AppProvider";
 import { Navigate, useNavigate } from "react-router-dom";
 import LoaderPage from "../NewBooking/LoaderPage";
 
 function LeadsTable() {
-  const { data  , isPending} = useClientDetails();
+  const { data  , isPending} = useLeadsDetails();
   const clientList = data?.data || [];
   const { selectedClient, setSelectedClient } = useApp()
   const navigate = useNavigate()
@@ -53,7 +53,7 @@ function LeadsTable() {
         <table className="min-w-full border-orange-400 rounded-lg">
           <thead className="bg-orange-300 text-center sticky text-lg top-0 z-10">
             <tr>
-              <th className="px-4 py-4 whitespace-nowrap">SR No</th>
+              <th className="px-4 py-4 whitespace-nowrap">Lead No</th>
               <th className="px-4 py-4 whitespace-nowrap">Date</th>
               <th className="px-4 py-4 whitespace-nowrap">Client Name</th>
               <th className="px-4 py-4 whitespace-nowrap">Gender</th>
@@ -74,14 +74,14 @@ function LeadsTable() {
               const isSelected =
                 selectedClient &&
                 selectedClient.CallingNo === client.CallingNo &&
-                selectedClient.SrNo === client.SrNo;
+                selectedClient.LeadNo === client.LeadNo;
 
               return (
                 <tr
                   key={index}
                   className={`text-center border hover:bg-gray-200`}
                 >
-                  <td className="py-5  whitespace-nowrap">{startIndex + index + 1}</td>
+                  <td className="py-5  whitespace-nowrap">{client.LeadNo}</td>
                   <td className="py-5  whitespace-nowrap">{client.Date}</td>
                   <td className="py-5 whitespace-nowrap">{client.ClientName}</td>
                   <td className="py-5  whitespace-nowrap">{client.MaleFemale}</td>
@@ -91,7 +91,7 @@ function LeadsTable() {
                   <td className="px-4 py-5  whitespace-nowrap">{client.WhatsAppCommunication}</td>
                   <td className="px-4 py-5  whitespace-nowrap">{client.PhoneCallCommunication}</td>
                   <td className="px-4 py-5  whitespace-nowrap">{client.Visited}</td>
-                  <td className="px-4 py-5  whitespace-nowrap">{client.InterestedLocation}</td>
+                  <td className="px-4 py-5  whitespace-nowrap">{client.Location}</td>
                   <td className="px-4 py-5  whitespace-nowrap">{client.Comments}</td>
 
                   <td className="px-4 py-2 sticky right-0 bg-white">
