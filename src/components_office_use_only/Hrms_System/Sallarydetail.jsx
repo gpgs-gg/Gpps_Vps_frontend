@@ -504,6 +504,7 @@ import React, { useState, useEffect } from "react";
 import { useAttendanceData, useCreateSallaryDetails, useSallaryTrackerDetail } from "./services";
 import { toast } from "react-toastify";
 import LoaderPage from "../NewBooking/LoaderPage";
+import { useApp } from "../TicketSystem/AppProvider";
 // import your API function here for saving data
 // e.g. import { saveSalaryData } from "./services";
 
@@ -529,6 +530,7 @@ const SalaryDetail = () => {
           PaidAmtDetails: 0
         };
       }
+
       let attendanceValue = 0;
       if (AttendanceStatus === "1") attendanceValue = 1;
       else if (AttendanceStatus === "0.5") attendanceValue = 0.5;
@@ -539,8 +541,6 @@ const SalaryDetail = () => {
       return acc;
     }, {})
   );
-
-
 
 
   const [employees, setEmployees] = useState([]);
@@ -562,7 +562,7 @@ const SalaryDetail = () => {
   const [error, setError] = useState("")
   const [deductError, setDeductError] = useState("")
   const [loadingRowId, setLoadingRowId] = useState(null);
-
+  const { decryptedUser } = useApp();
 
   const [cmt, setCmt] = useState("")
   const [deductCmt, setDeductCmt] = useState("")
@@ -630,20 +630,31 @@ const SalaryDetail = () => {
 
 
   const now = new Date();
+
+  // Format date like "22 Nov 2025"
   const formattedDate = now.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-  }); // e.g., "22 Nov 2025"
+  });
+
+  // Format time like "3:45 pm"
+  const formattedTime = now.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).toLowerCase(); // optional: ensure "pm" is lowercase
+
+  // Combine date + time
+  const dateTimeStamp = `${formattedDate} ${formattedTime}`;
 
   // Collect non-empty comments
   const commentsList = [
-    cmt && `(${formattedDate}) ${cmt}`,
-    deductCmt && `(${formattedDate}) ${deductCmt}`,
-    advCmt && `(${formattedDate}) ${advCmt}`,
-    advDeductCmt && `(${formattedDate}) ${advDeductCmt}`,
+    cmt && `[${dateTimeStamp} ${decryptedUser?.name}]${cmt}`,
+    deductCmt && `[${dateTimeStamp} ${decryptedUser?.name}]${deductCmt}`,
+    advCmt && `[${dateTimeStamp} ${decryptedUser?.name}]${advCmt}`,
+    advDeductCmt && `[${dateTimeStamp} ${decryptedUser?.name}]${advDeductCmt}`,
   ].filter(Boolean);
-
 
   const allComments = commentsList.join("\n");
 
@@ -716,7 +727,8 @@ const SalaryDetail = () => {
         AttendanceDays: calc.attendanceDays,
         PayableSalary: calc.payable,
         perDay: calc.perDay,
-        Comments: mergedComments
+        Comments: mergedComments,
+        UpdatedBy: `${dateTimeStamp} ${decryptedUser?.name}`
       };
 
 
@@ -814,6 +826,7 @@ const SalaryDetail = () => {
 
     return `${existing}${operator}${value}`;
   };
+
   const appendValueDeducToCalculation = (existing, value, type, action = "add") => {
     if (!value) return existing || "";
     let operator = "";
@@ -1166,7 +1179,7 @@ const SalaryDetail = () => {
                     {emp.Comments && (
                       <div className="absolute right-10 top-full mt-1 hidden group-hover:block 
                     bg-white border border-gray-300 shadow-lg 
-                    p-2 w-64 z-50 rounded text-start text-sm whitespace-pre-line">
+                    p-2 w-auto z-50 rounded text-start text-sm whitespace-pre">
                         {emp.Comments}
                       </div>
                     )}

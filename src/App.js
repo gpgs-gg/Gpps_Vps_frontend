@@ -27,6 +27,9 @@ import AttendanceDetail from './components_office_use_only/Hrms_System/Attendanc
 import Sallarydetail from './components_office_use_only/Hrms_System/Sallarydetail';
 import ClientLeads from './components_office_use_only/LeadsForGpgs/ClientLeads';
 import LeadsTable from './components_office_use_only/LeadsForGpgs/LeadsTable';
+import { usePermissionData } from './components_office_use_only/TicketSystem/Services';
+import { useApp } from './components_office_use_only/TicketSystem/AppProvider';
+import LoaderPage from './components_office_use_only/NewBooking/LoaderPage';
 // import Footer from './components/Footer';
 // import { useAuth } from './context/AuthContext';
 
@@ -34,7 +37,24 @@ function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navRef = useRef(null);
   const { logout } = useAuth();
+  const { decryptedUser } = useApp();
 
+
+  const { data: permission, isPending } = usePermissionData()
+
+  const functionPermission = permission?.data || []
+
+  const userEmail = decryptedUser?.loginId;
+
+  // Check Attendance Permission
+  const hasAttendancePermission = functionPermission.some(
+    (item) => item.Attendance === userEmail
+  );
+
+  // Check Salary Permission
+  const hasSalaryPermission = functionPermission.some(
+    (item) => item.Salary === userEmail
+  );
 
   // Smooth scroll
   useEffect(() => {
@@ -115,7 +135,7 @@ function App() {
   }, []);
 
   // for auto logout ...............
- const TEN_HOURS = 10 * 60 * 60 * 1000;
+  const TEN_HOURS = 10 * 60 * 60 * 1000;
   const ONE_HOUR = 60 * 60 * 1000;
 
   useEffect(() => {
@@ -171,7 +191,7 @@ function App() {
   // }, []);
 
 
-  
+
 
   return (
     <>
@@ -247,50 +267,116 @@ function App() {
         <Route path="/gallery" element={<Gallary />} />
         <Route path="gpgs-actions/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
-         <Route
+        <Route
           path="/gpgs-actions/check-in-out"
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
-             <CheckInOut/>
+              <CheckInOut />
+            </ProtectedRoute>
+          }
+        />
+{/* 
+        <Route
+          path="/gpgs-actions/attendance-details"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+              <AttendanceDetail />
+            </ProtectedRoute>
+          }
+        /> */}
+
+
+        {
+          isPending ? (
+            <Route
+              path="/gpgs-actions/attendance-details"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                  <div className="flex justify-center items-center h-screen w-full">
+                    <LoaderPage />
+                  </div>
+                </ProtectedRoute>
+              }
+            />
+          ) : hasAttendancePermission ? (
+            <Route
+              path="/gpgs-actions/attendance-details"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                  <AttendanceDetail />
+                </ProtectedRoute>
+              }
+            />
+          ) : (
+            <Route
+              path="/gpgs-actions/attendance-details"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                  <div className="flex justify-center items-center h-screen w-full">
+                    Permission Denied
+                  </div>
+                </ProtectedRoute>
+              }
+            />
+          )
+        }
+
+
+
+        {
+          isPending ? (
+            <Route
+              path="/gpgs-actions/sallary-details"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                  <div className="flex justify-center items-center h-screen w-full">
+                    <LoaderPage />
+                  </div>
+                </ProtectedRoute>
+              }
+            />
+          ) : hasSalaryPermission ? (
+            <Route
+              path="/gpgs-actions/sallary-details"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                  <Sallarydetail />
+                </ProtectedRoute>
+              }
+            />
+          ) : (
+            <Route
+              path="/gpgs-actions/sallary-details"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                  <div className="flex justify-center items-center h-screen w-full">
+                    Permission Denied
+                  </div>
+                </ProtectedRoute>
+              }
+            />
+          )
+        }
+
+
+        <Route
+          path="/gpgs-actions/client-leads"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+              <ClientLeads />
             </ProtectedRoute>
           }
         />
 
-         <Route
-          path="/gpgs-actions/attendance-details"
-          element={
-            <ProtectedRoute allowedRoles={['admin', 'manager']}>
-             <AttendanceDetail/>
-            </ProtectedRoute>
-          }
-        />
-         <Route
-          path="/gpgs-actions/sallary-details"
-          element={
-            <ProtectedRoute allowedRoles={['admin', 'manager']}>
-             <Sallarydetail/>
-            </ProtectedRoute>
-          }
-        />
-         
-         <Route
-          path="/gpgs-actions/client-leads"
-          element={
-            <ProtectedRoute allowedRoles={['admin', 'manager']}>
-             <ClientLeads/>
-            </ProtectedRoute>
-          }
-        />
-         
-         <Route
+        <Route
           path="/gpgs-actions/leads-list"
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
-             <LeadsTable/>
+              <LeadsTable />
             </ProtectedRoute>
           }
         />
-         
+
 
         {/* Admin routes */}
         {/* <Route path="/gpgs-actions/tickets" element={
@@ -298,10 +384,10 @@ function App() {
         } /> */}
       </Routes>
 
-          
 
-      
-   
+
+
+
 
     </>
   );

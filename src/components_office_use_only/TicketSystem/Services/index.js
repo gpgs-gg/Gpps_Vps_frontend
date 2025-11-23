@@ -99,3 +99,19 @@ export const useDynamicDetails = () => {
     queryFn: fetchDynamicDetails,
   });
 };
+
+
+
+
+const fetchPermissionData = async () => {
+  const response = await apiClient.get("/permissions");
+  return response.data;
+};
+
+export const usePermissionData = ( enabled = true ) => {
+  return useQuery({
+    queryKey: ["fetch-permission-data"],
+    queryFn: fetchPermissionData,
+    enabled ,// Only fetch when enabled is true
+  });
+};

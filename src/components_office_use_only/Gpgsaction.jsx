@@ -6,6 +6,7 @@ import CryptoJS from 'crypto-js';
 import { SECRET_KEY } from "../Config";
 import { PiCalendarCheckThin } from "react-icons/pi";
 import { IoIosPeople } from "react-icons/io";
+import { usePermissionData } from './TicketSystem/Services';
 
 
 const Gpgsaction = () => {
@@ -14,6 +15,23 @@ const Gpgsaction = () => {
   const [showAccountsOptions, setShowAccountsOptions] = useState(false);
   const [decryptedUser, setDecryptedUser] = useState(null);
   const navigate = useNavigate()
+  
+  const { data: permission } = usePermissionData()
+  console.log("permission", permission, decryptedUser)
+
+  const functionPermission = permission?.data || []
+
+  const userEmail = decryptedUser?.loginId;
+
+  // Check Attendance Permission
+  const hasAttendancePermission = functionPermission.some(
+    (item) => item.Attendance === userEmail
+  );
+
+  // Check Salary Permission
+  const hasSalaryPermission = functionPermission.some(
+    (item) => item.Salary === userEmail
+  );
 
   useEffect(() => {
     const encrypted = localStorage.getItem('user');
@@ -68,7 +86,7 @@ const Gpgsaction = () => {
               </button>
             </div>
           </Link> */}
-     <div>
+          <div>
             <div
               className={`${cardClasses} cursor-pointer`}
               //
@@ -85,23 +103,31 @@ const Gpgsaction = () => {
               {showHrmsOptions && (
                 <div className="w-full flex flex-col gap-3 mt-5">
                   <Link
-                   to="/gpgs-actions/Check-in-out"
+                    to="/gpgs-actions/Check-in-out"
                     className={`${subBtnClasses} bg-green-100 flex justify-center items-center gap-1 text-green-800 hover:bg-green-200`}
                   >
-                   <PiCalendarCheckThin className='text-xl text-green-600'/> Check In/Check Out
+                    <PiCalendarCheckThin className='text-xl text-green-600' /> Check In/Check Out
                   </Link>
-                  <Link
-                    to="/gpgs-actions/attendance-details"
-                    className={`${subBtnClasses} bg-indigo-100 flex justify-center gap-1 items-center text-indigo-800 hover:bg-indigo-200`}
-                  >
-                  <IoIosPeople className='text-xl text-indigo-600'/>  Attendance Details
-                  </Link>
-                  <Link
-                    to="/gpgs-actions/sallary-details"
-                    className={`${subBtnClasses} bg-indigo-100 flex justify-center gap-1 items-center text-indigo-800 hover:bg-indigo-200`}
-                  >
-                  <IoIosPeople className='text-xl text-indigo-600'/>  Salary Details
-                  </Link>
+
+                  {hasAttendancePermission && (
+                    <Link
+                      to="/gpgs-actions/attendance-details"
+                      className={`${subBtnClasses} bg-indigo-100 flex justify-center gap-1 items-center text-indigo-800 hover:bg-indigo-200`}
+                    >
+                      <IoIosPeople className="text-xl text-indigo-600" /> Attendance Details
+                    </Link>
+                  )}
+
+                  {hasSalaryPermission && (
+                    <Link
+                      to="/gpgs-actions/sallary-details"
+                      className={`${subBtnClasses} bg-indigo-100 flex justify-center gap-1 items-center text-indigo-800 hover:bg-indigo-200`}
+                    >
+                      <IoIosPeople className="text-xl text-indigo-600" /> Salary Details
+                    </Link>
+                  )}
+
+
                 </div>
               )}
             </div>
