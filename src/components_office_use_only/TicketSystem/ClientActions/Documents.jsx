@@ -13,7 +13,6 @@ const Documents = () => {
         kyc: [],
         agreement: [],
     });
-    console.log("uploadedDocs: ", uploadedDocs);
     const [existingDocs, setExistingDocs] = useState({
         kyc: [],
         agreement: [],

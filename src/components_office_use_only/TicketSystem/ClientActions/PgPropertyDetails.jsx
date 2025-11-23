@@ -81,7 +81,7 @@ const OverView = () => {
     }, [filteredPropertySheetData]);
 
 
-console.log(1111111111111, filteredClientData?.DigitalSelfDeclearationAccepted.toLowerCase());
+    console.log(1111111111111, filteredClientData?.DigitalSelfDeclearationAccepted.toLowerCase());
 
 
 
@@ -183,47 +183,56 @@ console.log(1111111111111, filteredClientData?.DigitalSelfDeclearationAccepted.t
                             </div>
 
                             {/* Emergency Contacts */}
-                            <div className="p-4 bg-white rounded-lg border border-orange-300 md:col-span-3 break-words">
+                            <div className="p-4 bg-white rounded-lg border border-orange-300 md:col-span-6 break-words">
                                 <p className="text-lg font-bold">
-                                    Emergency Contacts <span className="text-sm text-red-600">(Please use this responsibly)</span>
+                                    Emergency / Customer Care Contacts , the following issues are considered emergencies. 
                                 </p>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
 
                                     {/* Admin Team */}
                                     <div className="p-3 rounded border border-orange-300 space-y-2">
-                                        <p className="font-bold text-base">Chat / Call</p>
+                                        <p className="font-bold text-base">Call / Chat<span className="text-md text-red-600">   (In emergency we prefer calls)</span></p> 
 
                                         <a href="tel:8928191814" className="block text-blue-600 hover:underline">📞 8928191814</a>
                                         <a href="tel:9326325181" className="block text-blue-600 hover:underline">📞 9326325181</a>
+                                          <p>
+                                        
+                                          </p>
                                     </div>
                                     {/* Sales */}
-                                    {/* <div className="p-3 rounded border border-orange-300 space-y-2">
-                                        <p className="font-bold text-base">Sales Team</p>
-                                        <a href="tel:9326262292" className="block text-blue-600 hover:underline">📞 9326262292</a>
-                                        <a href="tel:7021368623" className="block text-blue-600 hover:underline">📞 7021368623</a>
+                                   
+                                   <div className='col-span-2'>
+                                   
+                                     <div className="p-3 rounded border border-orange-300  space-y-2">
+                                        1. Electrical Short Circuit. <br />
+                                        2. No Electricity (If the nearby houses or buildings are also affected, then the issue is external and beyond our control. The power will be restored after the power company fixes the issue) <br />
+                                        3. No Water Supply (Please ensure that all taps are closed and there are no flush leakages. If the issue persists, report it to us immediately) <br />
+                                        4. Medical Emergency Concerns
+
                                     </div>
+                                   </div>
+
                                     {/* Maintenance */}
                                     {/* <div className="p-3 rounded border border-orange-300 space-y-2">
                                         <p className="font-bold text-base">Maintenance Team</p>
                                         <a href="tel:9326325181" className="block text-blue-600 hover:underline">📞 9326325181</a>
                                     </div>  */}
-
                                 </div>
                             </div>
                             {/* Customer Care */}
-                            <div className="p-4 bg-white rounded-lg border border-orange-300 md:col-span-3">
+                            {/* <div className="p-4 bg-white rounded-lg border border-orange-300 md:col-span-3">
                                 <p className="text-lg font-bold">Customer Care</p>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
 
                                     {/* Chat/Call */}
-                                    <div className="p-3 rounded border border-orange-300 space-y-2">
+                            {/* <div className="p-3 rounded border border-orange-300 space-y-2">
                                         <p className="font-bold text-base">Chat / Call</p>
                                         <a href="tel:8928191814" className="block text-blue-600 hover:underline">📞 8928191814</a>
                                         <a href="tel:9326325181" className="block text-blue-600 hover:underline">📞 9326325181</a>
-                                    </div>
+                                    </div> */}
 
-                                    {/* Review Link */}
-                                    {/* <div className="p-3 md:col-span-2 rounded border border-orange-300">
+                            {/* Review Link */}
+                            {/* <div className="p-3 md:col-span-2 rounded border border-orange-300">
                                         <p className="font-bold text-base mb-1">Review Link</p>
                                         <a href="https://g.page/r/CX8tHckG2lUpEAE/review" target="_blank" rel="noopener noreferrer" className="text-blue-600 break-words hover:underline">
                                             https://g.page/r/CX8tHckG2lUpEAE/review
@@ -232,8 +241,8 @@ console.log(1111111111111, filteredClientData?.DigitalSelfDeclearationAccepted.t
                                             Gopal's Paying Guest Services would love your feedback. Post a review to our profile.
                                         </p>
                                     </div> */}
-                                </div>
-                            </div>
+                            {/* </div> */}
+                            {/* </div>  */}
 
                         </div>
 

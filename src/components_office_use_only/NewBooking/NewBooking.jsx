@@ -669,7 +669,7 @@ const NewBooking = () => {
       is: true,
       then: schema => schema.required('Room number is required'),
       otherwise: schema => schema,
-    }),
+    }),    AskForBAOrFA: yup.string().required('Ask For BA Or FA name is required'),
 
     TempBedRentAmt: yup.string().when('$showtemporary', {
       is: true,
