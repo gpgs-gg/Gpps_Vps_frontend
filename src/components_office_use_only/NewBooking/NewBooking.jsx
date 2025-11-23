@@ -604,6 +604,7 @@ const NewBooking = () => {
   const schema = yup.object().shape({
     // Date: yup.date().required('Date is required'),
     ClientFullName: yup.string().required('Client name is required'),
+    AskForBAOrFA: yup.string().required('Ask For BA Or FA name is required'),
     WhatsAppNo: yup
       .string()
       .matches(/^[0-9]{10}$/, 'Enter valid 10-digit WhatsApp number')

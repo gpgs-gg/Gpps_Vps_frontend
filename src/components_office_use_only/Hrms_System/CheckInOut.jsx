@@ -237,8 +237,6 @@ const CheckInOut = () => {
     //             );
     //         },
     //     });
-
-
     //     //     onSuccess: () => toast.success(<div className="flex items-center space-x-3">
     //     //         <img
     //     //             src="https://cdn.dribbble.com/userupload/15097592/file/original-11af0dab65a0913fe4ea1d71d9d48f4a.gif"
@@ -253,19 +251,8 @@ const CheckInOut = () => {
     //     //     },
     //     // });
     //     //     },
-
-
-
-
-
     //     // );
-
-
-
-
     // };
-
-
     // const capture = async (action) => {
     //     try {
     //         setModalType(action);
@@ -414,7 +401,6 @@ const CheckInOut = () => {
     //         toast.error("Something went wrong. Try again.");
     //     }
     // };
-
 
 
 const capture = async (action) => {
@@ -603,20 +589,11 @@ const capture = async (action) => {
     }
 };
 
-
-
-
-
-
-
-
-
     if (isPendingAttendance) {
         return <div className="flex justify-center h-screen w-full items-center">
             <LoaderPage />
         </div>
     }
-
 
     return (
         <div className="bg-gray-100 min-h-screen md:flex  py-10  gap-5">

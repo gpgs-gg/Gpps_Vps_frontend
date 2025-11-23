@@ -34,11 +34,6 @@ export const useCheckInOut = (modalType) => {
 };
 
 
-
-
-
-
-
 // GET request to fetch property data
 const fetchAttendanceData = async () => {
   const response = await apiClient.get("/Attendance-details");
@@ -52,3 +47,51 @@ export const useAttendanceData = () => {
     queryFn: fetchAttendanceData,
   });
 };
+
+
+// GET request to fetch property data
+const fetchSallaryTrackerDetail = async () => {
+  const response = await apiClient.get("/sallary-tracker-details");
+  return response.data;
+};
+
+// React Query hook to fetch property data
+export const useSallaryTrackerDetail = () => {
+  return useQuery({
+    queryKey: ["sallary-tracker-details"],
+    queryFn: fetchSallaryTrackerDetail,
+  });
+};
+
+
+
+
+
+
+
+const createSallaryDetails = async (payload) => {
+  const response = await apiClient.post("/create-sallary-details", payload);
+  return response.data;
+};
+
+export const useCreateSallaryDetails = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createSallaryDetails,
+    onSuccess: () => {
+      // 🔄 Refetch ticket sheet after update
+      queryClient.invalidateQueries(["sallary-tracker-details"]);
+    },
+  });
+};
+
+
+
+
+
+
+
+
+
+// /create-sallary-details

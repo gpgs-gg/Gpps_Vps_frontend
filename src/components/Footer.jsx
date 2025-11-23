@@ -53,7 +53,7 @@ const Footer = () => {
           <li><a className="hover:text-white transition">Gopal's Organic Mart</a></li>
              <li><a className="hover:text-white transition">Gopal's Property Maintenance Services</a></li>
                        <li><a className="hover:text-white transition">Gopal's Realty</a></li>
-          <li><a className="hover:text-white transition">Gopal's Innnovative Tech Solutions</a></li>
+          <li><a className="hover:text-white transition">Gopal's Innovative Tech Solutions</a></li>
         </ul>
       </div>
 

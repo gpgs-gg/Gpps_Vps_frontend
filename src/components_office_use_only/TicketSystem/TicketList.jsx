@@ -4,7 +4,7 @@ import { TicketFilters } from "./TicketFilters";
 import LoaderPage from "../NewBooking/LoaderPage";
 import { toast } from "react-toastify";
 
-const TicketRow = React.memo(({ ticket, headers,isPending ,  formatDate, onEdit, onImageClick, videoModalUrl, setVideoModalUrl, isSelected, onSelect }) => {
+const TicketRow = React.memo(({ ticket, headers,isPending ,formatDate, onEdit, onImageClick, videoModalUrl, setVideoModalUrl, isSelected, onSelect }) => {
         
   return (
     <tr key={ticket.TicketID} className="hover:bg-[#F8F9FB] border">

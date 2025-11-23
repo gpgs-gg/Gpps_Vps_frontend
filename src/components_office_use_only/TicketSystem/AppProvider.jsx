@@ -13,6 +13,8 @@ export const AppProvider = ({ children }) => {
     const [decryptedUser, setDecryptedUser] = useState(null);
     const [myPgTicketsTotal, setMyPgTicketsTotal] = useState(null)
     const [input, setInput] = useState('');
+      const [selectedClient, setSelectedClient] = useState(null);
+
 
 
     useEffect(() => {
@@ -37,7 +39,7 @@ export const AppProvider = ({ children }) => {
 
     const isTicketsPage = location.pathname === '/gpgs-actions/tickets';
 
-    const { data, isLoading, error } = useTicketSheetData(isTicketsPage);
+    const { data, isPending, error } = useTicketSheetData(isTicketsPage);
     const { mutate: updateTicketData, isLoading: isticketUpdate } = useUpdateTicketSheetData();
 
 
@@ -236,6 +238,9 @@ export const AppProvider = ({ children }) => {
         myPgTicketsTotal,
         setInput,
         input,
+        isPending,
+        setSelectedClient, 
+        selectedClient
 
     };
 
