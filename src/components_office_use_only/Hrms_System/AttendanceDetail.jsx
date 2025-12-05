@@ -291,13 +291,37 @@ import { useAttendanceData } from './services'
 import { Controller, useForm } from 'react-hook-form'
 import Select from "react-select";
 import LoaderPage from '../NewBooking/LoaderPage';
+import { SelectStyles } from '../../Config';
+import "react-datepicker/dist/react-datepicker.css";
+
+import DatePicker from "react-datepicker";
 
 const AttendanceDetail = () => {
-    const { data, isPending } = useAttendanceData()
-    const { control, watch } = useForm({})
 
+
+    const MONTH_SHORT_NAMES = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+
+
+    const getPreviousMonthFormatted = () => {
+        const date = new Date();
+        date.setMonth(date.getMonth()); // go to previous month
+        const month = MONTH_SHORT_NAMES[date.getMonth()];
+        const year = date.getFullYear();
+        return `${month}${year}`; // format like "Nov2025"
+    };
+
+    const { control, watch } = useForm({
+        defaultValues: {
+            selectedMonth: getPreviousMonthFormatted(), // previous month as default
+        },
+    });
+    const selectedMonth = watch("selectedMonth") || ""
+
+    const { data, isPending } = useAttendanceData(selectedMonth)
     const [selectedImage, setSelectedImage] = useState(null);
-
     const handleImageClick = (imgSrc) => setSelectedImage(imgSrc);
     const handleClose = () => setSelectedImage(null);
 
@@ -306,7 +330,7 @@ const AttendanceDetail = () => {
     // Watch Filters
     const selectedEmployee = watch("EmployeeID")?.value || "";
     const selectedDate = watch("Date") || "";
-
+    // const selectedMonth = watch("selectedMonth") || "";
     // Format date  (convert DB date → 24 Nov 2025 style)
     const formatDate = (date) => {
         const day = date.getDate();
@@ -401,13 +425,55 @@ const AttendanceDetail = () => {
         }),
     };
 
+
+    const today = new Date();
+
+    // Change length to however many months you want to show
+    const monthOptions = Array.from({ length: 12 }, (_, i) => {
+        const baseDate = new Date(today.getFullYear(), today.getMonth() + i, 1);
+        const year = baseDate.getFullYear();
+        const monthIndex = baseDate.getMonth();
+        const shortMonth = MONTH_SHORT_NAMES[monthIndex]; // Example: "Nov"
+        const fullMonth = baseDate.toLocaleString("default", { month: "long" }); // "November"
+
+        return {
+            value: `${shortMonth}${year}`,       // Example: "Nov2025"
+            label: `${fullMonth} ${year}`        // Example: "November 2025"
+        };
+    });
     return (
         <div className="mt-28 w-full px-4">
             {/* --- Filter Section --- */}
             <div className="flex flex-wrap items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-700">Attendance Records</h2>
 
-                <div className="flex gap-4 items-center">
+                <div className="md:flex  gap-4 items-center">
+                    <div>
+                        <label className="block text-lg font-medium text-black-700 mb-1">
+                            Select Month
+                        </label>
+                        <Controller
+                            name="selectedMonth"
+                            control={control}
+                            rules={{ required: "Please select a month" }}
+                            render={({ field }) => (
+                                <DatePicker
+                                    selected={field.value}      // now field.value is a Date
+                                    onChange={(date) => field.onChange(date)} // store Date object
+                                    dateFormat="MMM yyyy"
+                                    showMonthYearPicker
+                                    placeholderText="Select month"
+                                    className="w-full border-2 focus:ring-1 focus:ring-orange-300 px-3 py-2 border-orange-300 outline-none rounded-md"
+                                />
+                            )}
+                        />
+
+                        {/* {errors.selectedDate && (
+                            <p className="text-red-500 text-sm mt-1">
+                                {errors.selectedDate.message}
+                            </p>
+                        )} */}
+                    </div>
                     {/* Employee Filter */}
                     <div>
                         <label className="block text-lg font-medium text-black-700 mb-1">Employee</label>
@@ -557,7 +623,7 @@ const AttendanceDetail = () => {
             {/* --- Pagination Controls --- */}
             {filteredData.length > 0 && (
                 <div className="flex justify-center items-center gap-2 py-10">
-                       Page {currentPage} of {totalPages}
+                    Page {currentPage} of {totalPages}
                     <button
                         onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                         disabled={currentPage === 1}
@@ -575,7 +641,7 @@ const AttendanceDetail = () => {
                             {idx + 1}
                         </button>
                     ))} */}
-                 
+
                     <button
                         onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
                         disabled={currentPage === totalPages}

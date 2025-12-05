@@ -6,6 +6,9 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useClientDetails } from "../ClientCreation/services";
 import { FiCheck } from "react-icons/fi";
+import LoaderPage from "../NewBooking/LoaderPage";
+import { FaWhatsapp } from "react-icons/fa";
+
 // import useFetchSingleSheetData, { useAddBooking, usePropertySheetData } from "./services/index";
 // import { useAddBooking, useFetchSingleSheetData, usePropertySheetData } from "./Server/index";
 
@@ -25,7 +28,7 @@ const Accounts = () => {
   const selectedMonth = watch("selectedMonth");
   const selectedProperty = watch("selectedProperty");
 
-      console.log("rnrSheetData", rnrSheetData[0])
+  console.log("rnrSheetData", rnrSheetData[0])
 
   // akash code //
   const findClient = (name) => {
@@ -67,11 +70,9 @@ const Accounts = () => {
       const calculateCurrentDue = (item) => {
         const cur = Number(item.CurDueAmt);
         const pre = Number(item.PreDueAmt);
-
         if (isNaN(cur) && isNaN(pre)) return 0;
         if (isNaN(pre)) return cur;
         if (!isNaN(cur)) return pre < 0 ? cur + pre : cur;
-
         return 0;
       };
 
@@ -79,11 +80,9 @@ const Accounts = () => {
       const calculatePreviousDue = (item) => {
         const pre = Number(item.PreDueAmt);
         const cur = Number(item.CurDueAmt);
-
         if (isNaN(pre) && isNaN(cur)) return 0;
         if (isNaN(cur)) return pre;
         if (!isNaN(pre)) return cur < 0 ? pre + cur : pre;
-
         return 0;
       };
 
@@ -163,7 +162,7 @@ const Accounts = () => {
       setRnrSheetData(transformed);
     }
   }, [isSuccess, propertySheetData]);
-  const { mutate: submitBooking, isLoading: isBookingLoading } = useAddBooking();
+  const { mutate: submitBooking, isPending: isBookingLoading } = useAddBooking();
 
 
 
@@ -292,6 +291,61 @@ const Accounts = () => {
     }),
   };
 
+
+
+  const handleShareOnWhatsApp = (name, currentDue, preDue, depositDue) => {
+
+    // Extract phone number safely
+    const Phone = name.includes("|") ? name.split("|")[1].trim() : "";
+
+    // CLEAN VALUES (remove =, spaces, '-') 
+    const clean = (value) => {
+      if (!value) return null;
+      const v = value.replace("=", "").trim();
+      if (v === "" || v === "-" || v === "0") return null;
+      return v;
+    };
+
+    const cd = clean(currentDue);
+    const pd = clean(preDue);
+    const dd = clean(depositDue);
+
+    // DETAILS (ONLY SHOW IF VALUE EXISTS)
+    let details = "";
+    if (cd) details += `Rs. ${cd} , Current Month Rent\n`;
+    if (pd) details += `Rs. ${pd} , Previous Due\n`;
+    if (dd) details += `Rs. ${dd} , Deposit Due\n`;
+
+    // TOTAL
+    let total = 0;
+    if (cd) total += Number(cd);
+    if (pd) total += Number(pd);
+    if (dd) total += Number(dd);
+
+    const message =
+      `Hello ${name.replace(/[0-9|]/g, '').trim()},
+
+Kindly make the payment.
+
+Total Amount: Rs. ${total}.00
+Details are given below:
+
+${details}
+
+If you have any concerns please let us know immediately.
+
+Gopal's Paying Guest Services
+Customer Care / Emergency No. 1 : 8928191814
+Customer Care / Emergency No. 2 : 9326325181
+(Service Hours : 10 AM to 7 PM)
+`;
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappURL = `https://api.whatsapp.com/send?phone=91${Phone}&text=${encodedMessage}`;
+    // const whatsappURL = `https://web.whatsapp.com/send?phone=91${Phone}&text=${encodedMessage}`;
+    const newWindow = window.open(whatsappURL, "_blank");
+    if (!newWindow) window.location.href = whatsappURL;
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-6 bg-white rounded-2xl shadow-lg">
@@ -364,124 +418,17 @@ const Accounts = () => {
             )}
           </div>
 
-
-
-          {sheetId && propertySheetData && rnrSheetData.length > 0 && (
-            <div className="mt-2 mx-auto max-w-3xl bg-[#F8F9FB] text-black rounded-2xl shadow-lg p-6">
-              {/* Heading */}
-              <h2 className="text-2xl text-orange-300 font-bold text-center mb-6">
-                Loaded Data
-              </h2>
-              <div></div>
-              {/* Full Name Section */}
-              <div>
-                {/* Amounts in Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
-
-                  <div className="border-2 p-2 border-orange-200 ">
-                    <div className="mb-2">
-                      <span className="font-semibold text-orange-300">Client Names:</span>
-                      <div className="mt-1 text-lg max-h-40 overflow-y-auto pr-2">
-                        {/* {rnrSheetData[0].ClientNameCurrentDue
-                          ?.split('\n') // First, try splitting by newline
-                          .map((name, index) => {
-
-                            <p key={index}>{name.trim()}</p>
-                          })} */}
-
-                        {/* akash */}
-                        {rnrSheetData[0].ClientNameCurrentDue
-                          ?.split('\n') // First, try splitting by newline
-                          .map((name, index) => {
-                            const client = showNumbers ? findClient(name) : null;
-                            return (
-                              <p key={index} className="mb-1">
-                                <span className="font-semibold">{name.trim()}</span>
-
-                                {showNumbers && client && (
-                                  <span className="text-sm text-gray-600 ml-2">
-                                    {client.CallingNo || "No Call"} | {client.WhatsAppNo || "No WhatsApp"}
-                                  </span>
-                                )}
-                              </p>
-                            );
-                          })}
-                      </div>
-                    </div>
-                    <div className="bg-gray-200 p-4 rounded-xl shadow">
-                      <div className="mt-1 text-lg max-h-40 overflow-y-auto pr-2">
-                        <p className="text-sm text-orange-400">Current Due Amount</p>
-                        <p className="text-lg font-semibold">{rnrSheetData[0].CurrentDue || 0}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="border-2 p-2 border-orange-200">
-                    <div className="mb-2">
-                      <span className="font-semibold text-orange-500">Client Names:</span>
-                      <div className="mt-1 text-lg max-h-40 overflow-y-auto pr-2">
-                        {rnrSheetData[0].ClientNamePreviousDue
-                          ?.split('\n') // First, try splitting by newline
-                          .map((name, index) => {
-                            const client = showNumbers ? findClient(name) : null;
-                            return (
-                              <p key={index} className="mb-1">
-                                <span className="font-semibold">{name.trim()}</span>
-
-                                {showNumbers && client && (
-                                  <span className="text-sm text-gray-600 ml-2">
-                                    ({client.CallingNo}) | {client.WhatsAppNo || "No WhatsApp"}
-                                  </span>
-                                )}
-                              </p>
-                            );
-                          })}
-                      </div>
-                      {/* <p className="mt-1 text-lg">{rnrSheetData[0].ClientNamePreviousDue}</p> */}
-                    </div>
-                    <div className="bg-gray-200 p-4 rounded-xl shadow">
-                      <p className="text-sm text-orange-500">Previous Due Amount</p>
-                      <p className="text-lg font-semibold">{rnrSheetData[0].PreviousDue || 0}</p>
-                    </div>
-                  </div>
-                  <div className=" border-2 p-2 border-orange-200">
-                    <div className="mb-2">
-                      <span className="font-semibold text-orange-500">Client Names:</span>
-                      <div className="mt-1 text-lg max-h-40 overflow-y-auto pr-2">
-                        {rnrSheetData[0].ClientNameDepositDue
-                          ?.split('\n') // First, try splitting by newline
-                          .map((name, index) => {
-                            const client = showNumbers ? findClient(name) : null;
-                            return (
-                              <p key={index} className="mb-1">
-                                <span className="font-semibold">{name.trim()}</span>
-
-                                {showNumbers && client && (
-                                  <span className="text-sm text-gray-600 ml-2">
-                                    ({client.CallingNo || "No Call"}) | {client.WhatsAppNo || "No WhatsApp"}
-                                  </span>
-                                )}
-                              </p>
-                            );
-                          })}
-                      </div>
-                    </div>
-                    <div className="bg-gray-200 p-4 rounded-xl shadow">
-                      <p className="text-sm text-orange-500">Deposit Due Amount</p>
-                      <p className="text-lg font-semibold">{rnrSheetData[0].DepositDue || 0}</p>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
           {/* ✅ Submit Button */}
           <button
             type="submit"
             disabled={!isSuccess}
             className={`w-full px-4 py-2 ${!isSuccess ? "bg-orange-300" : "bg-orange-300"} text-black rounded-lg transition focus:outline-none focus:ring-2 focus:ring-orange-400`}
           >
-            {isLoading ? "Loading..." : "Update RNR Sheet"}
+            {isBookingLoading || isLoading ? <div className="flex justify-center items-center gap-2">
+              <LoaderPage />
+              {isLoading ? "Loading.." : "Update RNR Sheet"}
+
+            </div> : " Update RNR Sheet"}
             {/* Update RNR Sheet */}
           </button>
         </form>
@@ -499,6 +446,114 @@ const Accounts = () => {
 
 
       </div>
+      {sheetId && propertySheetData && rnrSheetData.length > 0 && (
+        <div className="mt-2 mx-auto max-w-5xl bg-[#F8F9FB] text-black rounded-2xl shadow-lg p-6">
+
+          {/* <h2 className="text-2xl text-orange-500 font-bold text-center mb-6">
+            Loaded Data
+          </h2> */}
+
+          <table className="w-full border-collapse">
+            <thead className="text-lg">
+              <tr className="bg-orange-300 text-left">
+                <th className="p-3 border">Client Name</th>
+                <th className="p-3 border">Contact/WhatsApp</th>
+                <th className="p-3 border whitespace-nowrap">Current Due</th>
+                <th className="p-3 border whitespace-nowrap">Previous Due</th>
+                <th className="p-3 border whitespace-nowrap">Deposit Due</th>
+                <th className="p-3 border whitespace-nowrap">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {/** STEP 1 — MERGE ALL NAMES */}
+              {Array.from(
+                new Set([
+                  ...rnrSheetData[0].ClientNameCurrentDue.split("\n").map(n => n.trim()),
+                  ...rnrSheetData[0].ClientNamePreviousDue.split("\n").map(n => n.trim()),
+                  ...rnrSheetData[0].ClientNameDepositDue.split("\n").map(n => n.trim())
+                ])
+              ).map((name, index) => {
+
+                const client = showNumbers ? findClient(name) : null;
+
+                /** GET MATCHED AMOUNTS */
+                const currentNames = rnrSheetData[0].ClientNameCurrentDue.split("\n").map(n => n.trim());
+                const previousNames = rnrSheetData[0].ClientNamePreviousDue.split("\n").map(n => n.trim());
+                const depositNames = rnrSheetData[0].ClientNameDepositDue.split("\n").map(n => n.trim());
+
+                const currentAmounts = rnrSheetData[0].CurrentDue?.toString().split("+").map(a => a.trim());
+                const previousAmounts = rnrSheetData[0].PreviousDue?.toString().split("+").map(a => a.trim());
+                const depositAmounts = rnrSheetData[0].DepositDue?.toString().split("+").map(a => a.trim());
+
+                const currentDue = currentNames.indexOf(name) >= 0 ? currentAmounts[currentNames.indexOf(name)] : "";
+                const previousDue = previousNames.indexOf(name) >= 0 ? previousAmounts[previousNames.indexOf(name)] : "";
+                const depositDue = depositNames.indexOf(name) >= 0 ? depositAmounts[depositNames.indexOf(name)] : "";
+
+                return (
+                  <tr key={index} className="border hover:bg-orange-50">
+
+                    {/* NAME + NUMBER */}
+                    <td className="border p-2 font-semibold">
+                      {name.replace(/[0-9|]/g, '').trim()}
+                    </td>
+                    <td className="border p-2 font-semibold">
+                      {name?.match(/\d+/g)?.join('\n') ? name?.match(/\d+/g)?.join('\n') : <p className="text-sm text-orange-500">please update Whatsapp and Calling No (ClientMasterTable)
+                        </p>}
+                    </td>
+
+                    {/* CURRENT DUE */}
+                    <td className="border p-2 text-center font-semibold text-orange-600">
+                      {currentDue ? currentDue.replace("=", "").trim() : "-"}
+                    </td>
+                    {/* PREVIOUS DUE */}
+                    <td className="border p-2 text-center font-semibold text-orange-600">
+                      {previousDue ? previousDue.replace("=", " ").trim() : "-"}
+                    </td>
+
+                    {/* DEPOSIT DUE */}
+                    <td className="border p-2 text-center font-semibold text-orange-600">
+                      {depositDue ? depositDue.replace("=", " ").trim() : "-"}
+                    </td>
+
+                    {/* SHARE BUTTON */}
+                    <td className="border p-2 text-center">
+                      <button
+                        //                         onClick={() => {
+                        //                           const text = `Name: ${name}
+                        // Number: ${client?.CallingNo || "NA"}
+                        // Current Due: ${currentDue || 0}
+                        // Previous Due: ${previousDue || 0}
+                        // Deposit Due: ${depositDue || 0}`;
+
+                        //                           navigator.share
+                        //                             ? navigator.share({ text })
+                        //                             : alert("Web Share not supported!");
+                        //                         }}
+                        onClick={() =>
+                          handleShareOnWhatsApp(
+                            name,
+                            currentDue ? currentDue.replace("=", "").trim() : "-",
+                            previousDue ? previousDue.replace("=", "").trim() : "-",
+                            depositDue ? depositDue.replace("=", "").trim() : "-"
+                          )
+                        }
+                        className=" border hover:border-green-700 text-green-500 px-3 py-1 rounded-lg shadow"
+                      >
+                        <div className="flex justify-center items-center gap-2">
+                          <FaWhatsapp className="text-green-500" /> Share
+                        </div>
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+
     </div>
   );
 };

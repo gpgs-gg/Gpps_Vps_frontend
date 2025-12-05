@@ -108,7 +108,7 @@
 //         <h1 className="text-2xl font-bold">
 //           Attendance & Salary Tracker - November 2025
 //         </h1>
-//         <p className="text-lg text-gray-700">Gopal's paying Guest Services Pvt. Ltd</p>
+//         <p className="text-lg text-gray-700">l's paying Guest Services Pvt.Gopa Ltd</p>
 //       </div>
 
 //       {/* Table */}
@@ -505,14 +505,45 @@ import { useAttendanceData, useCreateSallaryDetails, useSallaryTrackerDetail } f
 import { toast } from "react-toastify";
 import LoaderPage from "../NewBooking/LoaderPage";
 import { useApp } from "../TicketSystem/AppProvider";
+import { Controller, useForm } from "react-hook-form";
+import DatePicker from "react-datepicker";
 // import your API function here for saving data
 // e.g. import { saveSalaryData } from "./services";
 
 const SalaryDetail = () => {
-  const { data, isPending } = useAttendanceData();
-  const { data: sallayTrackerdetails } = useSallaryTrackerDetail();
+
+
+   const MONTH_SHORT_NAMES = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+
+
+
+ const getPreviousMonthFormatted = () => {
+        const date = new Date();
+        date.setMonth(date.getMonth()); // go to previous month
+        const month = MONTH_SHORT_NAMES[date.getMonth()];
+        const year = date.getFullYear();
+        return `${month}${year}`; // format like "Nov2025"
+    };
+
+
+    const { control, watch } = useForm({
+        defaultValues: {
+            selectedMonth: getPreviousMonthFormatted(), // previous month as default
+        },
+    });
+    const selectedMonth = watch("selectedMonth") || ""
+
+
+
+  const { data, isPending } = useAttendanceData(selectedMonth);
+  const { data: sallayTrackerdetails } = useSallaryTrackerDetail(selectedMonth);
 
   const attendanceList = data?.data || [];
+
+
 
   const employeesNew = Object.values(
     attendanceList.reduce((acc, record) => {
@@ -544,6 +575,8 @@ const SalaryDetail = () => {
 
 
   const [employees, setEmployees] = useState([]);
+
+
   const [enteredAdjustedAmount, setEnteredAdjustedAmount] = useState(0);
   const [enteredPaidAmount, setEnteredPaidAmount] = useState(0);
   const [paidAmtPopUp, setPaidAmtPopUp] = useState(false);
@@ -609,6 +642,9 @@ const SalaryDetail = () => {
       });
       setEmployees(merged);
     }
+
+
+
   }, [data, sallayTrackerdetails]);
 
   const getAttendanceSum = (arr) =>
@@ -719,12 +755,13 @@ const SalaryDetail = () => {
 
       const payload = {
         ...emp,
+        EmployeeName: emp.name,
         AdjAmtDetails: finalAdjustedAmt,
         PaidAmtDetails: finalPaidAmount,
         PaidAmount: PaidAmount,
         AdjustedAmt: AdjustedAmt,
         CurrentDue: calc.CurrentDue,
-        AttendanceDays: calc.attendanceDays,
+        TotalPresentDays: calc.attendanceDays,
         PayableSalary: calc.payable,
         perDay: calc.perDay,
         Comments: mergedComments,
@@ -743,14 +780,13 @@ const SalaryDetail = () => {
         console.warn(`Attendance array for ${emp.name} does not have 31 elements`);
       }
 
-      console.log("💡 Final AdjustedAmt =", finalAdjustedAmt);
-      console.log("📤 Payload sent =", payload);
+
 
       // 6️⃣ Reset only this employee's entered values
       setEnteredAdjustedAmount(prev => ({ ...prev, [empId]: 0 }));
       setEnteredPaidAmount(prev => ({ ...prev, [empId]: 0 }));
 
-      createSallaryDetails(payload, {
+      createSallaryDetails({payload ,  selectedMonth}, {
         onSuccess: () => {
           toast.success(
             <div className="flex items-center space-x-3">
@@ -789,10 +825,10 @@ const SalaryDetail = () => {
 
 
       // Optional: reset other fields if global
-      setSplAmt("");
-      setDecducAmt("");
-      setAdvAmt("");
-      setAdvDecducAmt("");
+      // setSplAmt("");
+      // setDecducAmt("");
+      // setAdvAmt("");
+      // setAdvDecducAmt("");
 
       // alert(`✅ Saved successfully for ${emp.name}`);
     } catch (err) {
@@ -934,6 +970,7 @@ const SalaryDetail = () => {
   // useEffect(() => {
   //   setEnteredAdjustedAmount(secularEmpId , appendValueDeducToCalculation(appendValueSplToCalculation(adjAmtDetails, splAmt), splDecducAmt))
   // }, [appendValueDeducToCalculation(secularEmpId , appendValueSplToCalculation(adjAmtDetails, splAmt), splDecducAmt)])
+
   useEffect(() => {
     const finalValue = appendValueDeducToCalculation(
       appendValueSplToCalculation(adjAmtDetails, splAmt),
@@ -1004,16 +1041,59 @@ const SalaryDetail = () => {
     </div>
   }
 
+
+  const date = new Date();
+
+  const month = date.toLocaleString("en-US", { month: "long" }); // e.g., "November"
+  const year = date.getFullYear(); // e.g., 2025
+
+
+
+
+
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       {/* Header */}
-      <div className="bg-gray-50 text-gray-800 text-center p-4 rounded-md mt-20 mb-6">
-        <h1 className="text-2xl font-bold">
-          Attendance & Salary Tracker - November 2025
-        </h1>
-        <p className="text-lg text-gray-700">
-          Gopal's Paying Guest Services Pvt. Ltd
-        </p>
+      <div className="bg-gray-50 text-gray-800 text-center  rounded-md mt-20 pb-2">
+        <div className="text-2xl flex  flex-col justify-center items-center  font-bold">
+          <div className="flex  justify-center items-center  font-bold">
+     Attendance & Salary Tracker - <div>
+                        <Controller
+                            name="selectedMonth"
+                            control={control}
+                            rules={{ required: "Please select a month" }}
+                            render={({ field }) => (
+                                <DatePicker
+                                    selected={field.value ? new Date(field.value) : null}
+                                    onChange={(date) => {
+                                        if (!date) return field.onChange("");
+
+                                        const month = MONTH_SHORT_NAMES[date.getMonth()];
+                                        const year = date.getFullYear();
+                                        const formatted = `${month}${year}`;
+
+                                        field.onChange(formatted);
+                                    }}
+                                    dateFormat="MMM yyyy"
+                                    showMonthYearPicker
+                                    placeholderText="Select month"
+                                    className="w-[150px]  focus:ring-1 border-none bg-gray-50 px-3 py-2 border-orange-300 outline-orange-200 rounded-md"
+                                />
+                            )}
+                        />
+
+                        {/* {errors.selectedDate && (
+                            <p className="text-red-500 text-sm mt-1">
+                                {errors.selectedDate.message}
+                            </p>
+                        )} */}
+                    </div>
+              
+          </div>
+     
+        </div>
+      
 
         {/* Save All Button */}
         {/* <button
@@ -1025,28 +1105,30 @@ const SalaryDetail = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto bg-white text-2xl rounded-lg shadow border border-gray-200">
+      {/* <div className=" text-2xl"> */}
+       
+       <div className="overflow-auto max-w-full rounded-lg max-h-[600px]">
         <table className="min-w-auto border-red-500">
-          <thead className="bg-orange-200 font-bold border-b border-gray-300 text-lg text-gray-700 text-center">
+          <thead className="bg-orange-300 shadow-sm text-lg font-bold text-gray-700 sticky top-[-1px] z-50">
             <tr>
-              <th className="border border-gray-300 px-2 py-2">EmpID</th>
-              <th className="border border-gray-300 px-2 py-2  text-left">Employee's Name</th>
+              <th className="border font-bold whitespace-nowrap px-2 py-2 sticky left-0 z-50 bg-orange-300">EmpID</th>
+              <th className="border border-gray-300 whitespace-nowrap font-bold  px-2 py-2 sticky left-20 z-50 bg-orange-300 text-left">Employee's Name</th>
               {[...Array(31)].map((_, i) => (
                 <th key={i} className="border border-gray-300 px-1 py-1 w-6">
                   {i + 1}
                 </th>
               ))}
-              <th className="border border-gray-300 px-2 py-2 w-[100px]">Total Days</th>
-              <th className="border border-gray-300 px-2 py-2">Fix Salary</th>
-              <th className="border border-gray-300 px-2 py-2">Per Day</th>
-              <th className="border border-gray-300 px-2 py-2">Adjusted Amt</th>
-              <th className="border border-gray-300 px-2 py-2">Paid Leaves</th>
-              <th className="border border-gray-300 px-2 py-2">Payable Salary</th>
-              <th className="border border-gray-300 px-2 py-2">Paid Amt</th>
-              <th className="border border-gray-300 px-2 py-2">Current Due</th>
-              <th className="border border-gray-300 px-2 py-2">Previous Due</th>
-              <th className="border border-gray-300 w-48 px-2 py-2">Comments</th>
-              <th className="border border-gray-300 px-2 py-2">Actions</th>
+              <th className="border whitespace-nowrap font-bold  border-gray-300 px-2 py-2 w-[100px]">Total Days</th>
+              <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Fix Salary</th>
+              <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Per Day</th>
+              <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Adjusted Amt</th>
+              <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Paid Leaves</th>
+              <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Payable Salary</th>
+              <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Paid Amt</th>
+              <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Current Due</th>
+              <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Previous Due</th>
+              <th className="border whitespace-nowrap font-bold border-gray-300 w-48 px-2 py-2">Comments</th>
+              <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Actions</th>
             </tr>
           </thead>
 
@@ -1089,8 +1171,8 @@ const SalaryDetail = () => {
                   className={`text-lg text-gray-800 text-center ${i % 2 === 0 ? "bg-gray-50" : "bg-white"
                     } hover:bg-yellow-50`}
                 >
-                  <td className="border border-gray-300 px-2 py-1">{emp.id}</td>
-                  <td className="border border-gray-300 px-2 py-1 text-left font-medium">
+                  <td className="border font-bold border-gray-300 px-2 py-1 sticky left-0 bg-orange-300 z-30">{emp.id}</td>
+                  <td className="border whitespace-nowrap border-gray-300 px-2 py-1 sticky left-20 font-bold bg-orange-300 z-30 text-left ">
                     {emp.name}
                   </td>
 
@@ -1112,21 +1194,17 @@ const SalaryDetail = () => {
                   {/* Summary + Editable Fields */}
                   <td className="border border-gray-300 px-2 py-1 font-semibold">
                     {attendanceDays.toFixed(1)}
-
                   </td>
-
                   <td className="border border-gray-300 px-2 py-1">
                     <input
                       type="number"
                       className="w-24 text-center border-none bg-transparent outline-none focus:ring-0"
                       value={emp.FixSalary}
-                      readOnly
+                      // readOnly
                       onChange={(e) => handleFieldChange(emp.id, "FixSalary", e.target.value)}
                     />
                   </td>
-
                   <td className="border border-gray-300 px-2 py-1">₹{perDay.toFixed(2)}</td>
-
                   <td onClick={() => handlePopUp(emp.AdjAmtDetails, emp.id, "AdjustedAmt")} className="border cursor-pointer border-gray-300 px-2 py-1">
                     {AdjustedAmt}
                     {/* <input
@@ -1136,7 +1214,6 @@ const SalaryDetail = () => {
                       onChange={(e) => handleFieldChange(emp.id, "AdjustedAmt", e.target.value)}
                     /> */}
                   </td>
-
                   <td className="border border-gray-300 px-2 py-1">
                     <input
                       type="number"
@@ -1192,6 +1269,7 @@ const SalaryDetail = () => {
                         perDay,
                         payable,
                         CurrentDue,
+
                       })}
                       className="px-3 py-1 bg-orange-400 text-white rounded text-xs hover:bg-orange-500 flex items-center justify-center"
                     >
@@ -1203,9 +1281,10 @@ const SalaryDetail = () => {
             })}
           </tbody>
         </table>
-      </div>
+        </div>
+      {/* </div> */}
 
-      <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+      {/* <div className="flex flex-col items-center justify-center h-screen bg-gray-100"> */}
         {/* ......................... */}
         {adjAmtPopUp && (
           <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
@@ -1395,7 +1474,7 @@ const SalaryDetail = () => {
 
 
 
-      </div>
+      {/* </div> */}
     </div>
   );
 };

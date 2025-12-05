@@ -35,42 +35,38 @@ export const useCheckInOut = (modalType) => {
 
 
 // GET request to fetch property data
-const fetchAttendanceData = async () => {
-  const response = await apiClient.get("/Attendance-details");
+const fetchAttendanceData = async (selectedMonth) => {
+  const response = await apiClient.get(`/Attendance-details/${selectedMonth}`);
   return response.data;
 };
 
 // React Query hook to fetch property data
-export const useAttendanceData = () => {
+export const useAttendanceData = (selectedMonth) => {
+    
   return useQuery({
-    queryKey: ["Check-in-out-req"],
-    queryFn: fetchAttendanceData,
+    queryKey: ["Check-in-out-req", selectedMonth],
+    queryFn: ()=>fetchAttendanceData(selectedMonth),
   });
 };
 
 
 // GET request to fetch property data
-const fetchSallaryTrackerDetail = async () => {
-  const response = await apiClient.get("/sallary-tracker-details");
+const fetchSallaryTrackerDetail = async (selectedMonth) => {
+  const response = await apiClient.get(`/sallary-tracker-details/${selectedMonth}`);
   return response.data;
 };
 
 // React Query hook to fetch property data
-export const useSallaryTrackerDetail = () => {
+export const useSallaryTrackerDetail = (selectedMonth) => {
   return useQuery({
-    queryKey: ["sallary-tracker-details"],
-    queryFn: fetchSallaryTrackerDetail,
+    queryKey: ["sallary-tracker-details" , selectedMonth],
+    queryFn: ()=>fetchSallaryTrackerDetail(selectedMonth),
   });
 };
 
 
-
-
-
-
-
-const createSallaryDetails = async (payload) => {
-  const response = await apiClient.post("/create-sallary-details", payload);
+const createSallaryDetails = async ({payload ,  selectedMonth}) => {
+  const response = await apiClient.post(`/create-sallary-details/${selectedMonth}`, payload);
   return response.data;
 };
 

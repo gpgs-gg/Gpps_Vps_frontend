@@ -484,7 +484,7 @@ const Services = () => {
                   <div className="flex items-start space-x-3">
                     <img src={securedPng} alt="" className='h-5 w-5' />
                     <div>
-                      <p className="text-gray-600  text-sm">1-2 months rent (varies by property)</p>
+                      <p className="text-gray-600  text-sm">1.5-2 months rent (varies by property)</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">

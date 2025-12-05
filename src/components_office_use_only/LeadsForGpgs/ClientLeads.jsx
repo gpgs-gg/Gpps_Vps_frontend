@@ -214,7 +214,7 @@ function ClientLeads() {
         // );
         // const whatsappURL = `https://api.whatsapp.com/send?phone=91${phone}&text=${message}`;
 
-        const message = dynamicData?.data[0]?.AutoMessage || "";
+        const message = dynamicData?.data[0]?.NewLeadMessage || "";
         const encodedMessage = encodeURIComponent(message)
         const whatsappURL = `https://api.whatsapp.com/send?phone=91${phone}&text=${encodedMessage}`;
         await copyToClipboard(message)

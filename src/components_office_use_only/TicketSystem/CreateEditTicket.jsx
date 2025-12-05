@@ -1917,10 +1917,6 @@ export const CreateEditTicket = ({ isEdit = false }) => {
   const [previews, setPreviews] = useState([]);
   const [decryptedUser, setDecryptedUser] = useState(null);
   const [activePreview, setActivePreview] = useState(null);
-   
-
-    console.log(1, previews)
-
 
   const isImage = (name) => /\.(jpg|jpeg|png|gif|webp)$/i.test(name);
   const isVideo = (name) => /\.(mp4|webm|avi|mov|mkv)$/i.test(name);
@@ -2087,21 +2083,6 @@ const DepartmentOptions = DynamicValuesDetails?.data
   }, [decryptedUser, setValue]);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // const generateUniqueFileName = (originalName) => {
   //   const timestamp = Date.now();
   //   const random = Math.floor(Math.random() * 100000);
@@ -2110,11 +2091,7 @@ const DepartmentOptions = DynamicValuesDetails?.data
   //   return `${baseName}_${timestamp}_${random}.${extension}`;
   // };
 
-
-
   // const CLOUD_NAME = "dppyl6k4j"; // ✅ Your Cloudinary name
-
-
 // const CLOUD_NAME = "dppyl6k4j";
 // const GOOGLE_DRIVE_FOLDER_ID = "0ADzSPK9dbjmuUk9PVA";
 
@@ -2301,8 +2278,6 @@ const [uploadingFiles, setUploadingFiles] = useState(new Set());
 //     console.error('Failed to save to database:', error);
 //   }
 // };
-
-
 
 
   const handleFileChange = (e) => {
