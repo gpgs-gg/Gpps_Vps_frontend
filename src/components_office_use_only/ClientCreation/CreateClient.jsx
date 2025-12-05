@@ -634,10 +634,6 @@ const CreateClient = () => {
 
     const onSubmit = (data) => {
         // console.log("Submitted Data:", data);
-
-
-
-
         const updatedData = {
             ...data,
             Role: "client",

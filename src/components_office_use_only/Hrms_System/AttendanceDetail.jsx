@@ -458,8 +458,16 @@ const AttendanceDetail = () => {
                             rules={{ required: "Please select a month" }}
                             render={({ field }) => (
                                 <DatePicker
-                                    selected={field.value}      // now field.value is a Date
-                                    onChange={(date) => field.onChange(date)} // store Date object
+                                    selected={field.value ? new Date(field.value) : null}
+                                    onChange={(date) => {
+                                        if (!date) return field.onChange("");
+
+                                        const month = MONTH_SHORT_NAMES[date.getMonth()];
+                                        const year = date.getFullYear();
+                                        const formatted = `${month}${year}`;
+
+                                        field.onChange(formatted);
+                                    }}
                                     dateFormat="MMM yyyy"
                                     showMonthYearPicker
                                     placeholderText="Select month"
