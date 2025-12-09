@@ -283,9 +283,6 @@
 
 // export default AttendanceDetail
 
-
-
-
 import React, { useState, useMemo, useEffect } from 'react'
 import { useAttendanceData } from './services'
 import { Controller, useForm } from 'react-hook-form'
@@ -295,15 +292,15 @@ import { SelectStyles } from '../../Config';
 import "react-datepicker/dist/react-datepicker.css";
 
 import DatePicker from "react-datepicker";
+import { FaRegEdit } from 'react-icons/fa';
+import AttendanceApprovalForm from './AttendanceApprovalForm';
+import { useAuth } from '../../context/AuthContext';
 
 const AttendanceDetail = () => {
-
-
     const MONTH_SHORT_NAMES = [
         "Jan", "Feb", "Mar", "Apr", "May", "Jun",
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     ];
-
 
     const getPreviousMonthFormatted = () => {
         const date = new Date();
@@ -319,6 +316,7 @@ const AttendanceDetail = () => {
         },
     });
     const selectedMonth = watch("selectedMonth") || ""
+    const { user } = useAuth();
 
     const { data, isPending } = useAttendanceData(selectedMonth)
     const [selectedImage, setSelectedImage] = useState(null);
@@ -326,6 +324,16 @@ const AttendanceDetail = () => {
     const handleClose = () => setSelectedImage(null);
 
     const attendanceList = data?.data || [];
+    const currentDate = new Date().toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    });
+    const filteredDataForTotalHours =
+        attendanceList?.find(ele => ele.EmployeeID === user?.id && ele.Date === currentDate) || [];
+
+ let { InTime, MinHours, HalfDayHrs } = filteredDataForTotalHours || {};
+
 
     // Watch Filters
     const selectedEmployee = watch("EmployeeID")?.value || "";
@@ -374,6 +382,8 @@ const AttendanceDetail = () => {
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
+    const [isOpen, setIsOpen] = useState(false)
+    const [editableData, setEditableData] = useState("")
     const itemsPerPage = 32;
 
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -425,7 +435,6 @@ const AttendanceDetail = () => {
         }),
     };
 
-
     const today = new Date();
 
     // Change length to however many months you want to show
@@ -441,6 +450,14 @@ const AttendanceDetail = () => {
             label: `${fullMonth} ${year}`        // Example: "November 2025"
         };
     });
+
+
+    const handleEditAttendance = (entry) => {
+        setIsOpen(!isOpen)
+        setEditableData(entry)
+    }
+
+
     return (
         <div className="mt-28 w-full px-4">
             {/* --- Filter Section --- */}
@@ -482,26 +499,7 @@ const AttendanceDetail = () => {
                             </p>
                         )} */}
                     </div>
-                    {/* Employee Filter */}
-                    <div>
-                        <label className="block text-lg font-medium text-black-700 mb-1">Employee</label>
-                        <Controller
-                            name="EmployeeID"
-                            control={control}
-                            render={({ field }) => (
-                                <Select
-                                    {...field}
-                                    styles={SelectStylesfilter}
-                                    isClearable
-                                    placeholder="Select Employee name"
-                                    options={EmployeeForOptions}
-                                    menuPosition="absolute"
-                                />
-                            )}
-                        />
-                    </div>
-
-                    {/* Date Filter */}
+                         {/* Date Filter */}
                     <div>
                         <label className="block text-lg font-medium text-black mb-2">Date</label>
                         <Controller
@@ -529,10 +527,26 @@ const AttendanceDetail = () => {
                             )}
                         />
                     </div>
+                    {/* Employee Filter */}
+                    <div>
+                        <label className="block text-lg font-medium text-black-700 mb-1">Employee</label>
+                        <Controller
+                            name="EmployeeID"
+                            control={control}
+                            render={({ field }) => (
+                                <Select
+                                    {...field}
+                                    styles={SelectStylesfilter}
+                                    isClearable
+                                    placeholder="Select Employee name"
+                                    options={EmployeeForOptions}
+                                    menuPosition="absolute"
+                                />
+                            )}
+                        />
+                    </div>
                 </div>
             </div>
-
-
 
             {/* --- Table Section --- */}
             {isPending ? (
@@ -542,14 +556,14 @@ const AttendanceDetail = () => {
             ) : currentData.length === 0 ? (
                 <div className="text-center py-10 text-gray-500">No attendance records found.</div>
             ) : (
-                <div className="overflow-auto bg-white shadow-lg rounded-lg border h-[600px] border-gray-200">
+                <div className="overflow-auto bg-white  shadow-lg rounded-lg border h-[600px] border-gray-200">
                     <table className="min-w-full text-md">
                         <thead className="bg-orange-300 sticky top-0 text-black">
                             <tr>
                                 {[
                                     'Date', 'Employee ID', 'Employee Name', 'In Time', 'In Selfie',
                                     'Out Time', 'Out Selfie', 'Total Hours', 'OverTime',
-                                    'DeficitHours', 'Status'
+                                    'DeficitHours', 'Status', `Action`
                                 ].map(header => (
                                     <th key={header} className="px-4 py-3 text-left font-semibold border-b border-gray-200">
                                         {header}
@@ -560,13 +574,13 @@ const AttendanceDetail = () => {
 
                         <tbody>
                             {currentData.map((entry, i) => (
-                                <tr key={i} className={`transition hover:bg-gray-200 ${i % 2 === 0 ? 'border' : 'bg-white border'}`}>
+                                <tr key={i} className={`transition ${entry.ApprovedBy ? "bg-green-50":""}  hover:bg-gray-200 ${i % 2 === 0 ? 'border' : 'bg-white border'}`}>
                                     <td className="px-4 py-3">{entry.Date}</td>
                                     <td className="px-4 py-3">{entry.EmployeeID}</td>
                                     <td className="px-4 py-3 font-medium">{entry.EmployeeName}</td>
                                     <td className="px-4 py-3">{entry.InTime}</td>
 
-                                    <td className="px-4 py-3">
+                                    <td className="px-4 py-3 ">
                                         {entry.InSelfie && (
                                             <img
                                                 src={entry.InSelfie}
@@ -600,29 +614,41 @@ const AttendanceDetail = () => {
                                                 : ''
                                         }`}>
                                         {entry.AttendanceStatus == 1
-                                            ? 'Present'
+                                            ? `Present ${entry.ApprovedBy ? "(Approved)" : ""}`
                                             : entry.AttendanceStatus == 0.5
-                                                ? 'Half Day'
+                                                ? `Half Day  ${entry.ApprovedBy ? "(Approved)" : ""}`
                                                 : entry.AttendanceStatus == 0
-                                                    ? 'Absent'
+                                                    ? `Absent ${entry.ApprovedBy ? "(Approved)" : ""}`
                                                     : ''}
                                     </td>
+                                    <td>
+                                        <button className="px-4  py-3"
+                                            onClick={() => handleEditAttendance(entry)}
+                                        > <FaRegEdit className='text-orange-500' /></button>
+
+                                    </td>
+
                                 </tr>
                             ))}
 
                             {/* Image Preview */}
                             {selectedImage && (
-                                <div
-                                    onClick={handleClose}
-                                    className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 cursor-pointer"
-                                >
-                                    <img
-                                        src={selectedImage}
-                                        alt="Preview"
-                                        className="max-w-[90%] max-h-[90%] rounded-lg shadow-lg border-4 border-white"
-                                    />
-                                </div>
+                                <tr>
+                                    <td colSpan={999}>
+                                        <div
+                                            onClick={handleClose}
+                                            className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 cursor-pointer"
+                                        >
+                                            <img
+                                                src={selectedImage}
+                                                alt="Preview"
+                                                className="max-w-[90%] max-h-[90%] rounded-lg shadow-lg border-4 border-white"
+                                            />
+                                        </div>
+                                    </td>
+                                </tr>
                             )}
+
                         </tbody>
                     </table>
                 </div>
@@ -659,6 +685,16 @@ const AttendanceDetail = () => {
                     </button>
                 </div>
             )}
+            <AttendanceApprovalForm
+                isOpen={isOpen}
+                setIsOpen={setIsOpen}
+                editableData={editableData}
+                setEditableData={setEditableData}
+                selectedMonth={selectedMonth}
+                MinHours = {MinHours}
+                HalfDayHrs = {HalfDayHrs}
+            />
+
         </div>
     )
 }

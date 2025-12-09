@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
 import { useApp } from "./AppProvider";
+import LoaderPage from "../NewBooking/LoaderPage";
 
 export const Dashboard = () => {
-    const { tickets } = useApp();
+    const { tickets, isPending } = useApp();
     const statusChartRef = useRef(null);
     const priorityChartRef = useRef(null);
 
@@ -100,15 +101,70 @@ export const Dashboard = () => {
     }, [tickets]);
 
 
+    // if (isPending) {
+    //     return 
+        
+    //     <div className="space-y-6 animate-pulse">
+    //         {/* Overview */}
+    //         <div>
+    //             <div className="h-8 w-64 bg-gray-300 rounded mb-2"></div>
+    //             <div className="h-4 w-48 bg-gray-200 rounded"></div>
+    //         </div>
 
+    //         {/* Stats Cards */}
+    //         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+    //             {Array.from({ length: 8 }).map((_, i) => (
+    //                 <div key={i} className="bg-white p-4 rounded-lg shadow">
+    //                     <div className="flex items-center">
+    //                         <div className="p-2 rounded-full bg-gray-300 w-10 h-10"></div>
+    //                         <div className="ml-3 flex-1 space-y-2">
+    //                             <div className="h-3 w-16 bg-gray-300 rounded"></div>
+    //                             <div className="h-5 w-10 bg-gray-300 rounded"></div>
+    //                         </div>
+    //                     </div>
+    //                 </div>
+    //             ))}
+    //         </div>
 
+    //         {/* Charts */}
+    //         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    //             <div className="bg-white p-6 rounded-lg shadow">
+    //                 <div className="h-6 w-40 bg-gray-300 rounded mb-4"></div>
+    //                 <div className="h-64 bg-gray-200 rounded"></div>
+    //             </div>
+    //             <div className="bg-white p-6 rounded-lg shadow">
+    //                 <div className="h-6 w-40 bg-gray-300 rounded mb-4"></div>
+    //                 <div className="h-64 bg-gray-200 rounded"></div>
+    //             </div>
+    //         </div>
+
+    //         {/* Recent Tickets */}
+    //         <div className="bg-white p-6 rounded-lg shadow space-y-3">
+    //             <div className="h-6 w-32 bg-gray-300 rounded mb-4"></div>
+    //             {Array.from({ length: 8 }).map((_, i) => (
+    //                 <div key={i} className="flex items-center space-x-4">
+    //                     <div className="w-3 h-3 rounded-full bg-gray-300"></div>
+    //                     <div className="flex-1 space-y-2">
+    //                         <div className="h-4 w-full bg-gray-300 rounded"></div>
+    //                         <div className="h-3 w-3/4 bg-gray-200 rounded"></div>
+    //                     </div>
+    //                     <div className="h-4 w-12 bg-gray-300 rounded"></div>
+    //                 </div>
+    //             ))}
+    //         </div>
+    //     </div>
+    // }
 
 
     return (
         <div className="space-y-6">
             {/* Overview */}
             <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Dashboard Overview</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center">
+                    Dashboard Overview
+
+                </h2>
+
                 <p className="text-gray-600">Comprehensive view of ticket management system</p>
             </div>
 
