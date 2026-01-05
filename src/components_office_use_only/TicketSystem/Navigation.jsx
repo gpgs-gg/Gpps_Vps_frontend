@@ -17,6 +17,7 @@ const rawMenuItems = [
   { id: 'payments', label: 'Payments', icon: 'fa-solid fa-credit-card' },
   { id: 'documents', label: 'Documents', icon: 'fa-solid fa-file' },
   { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-tachometer-alt' },
+  { id: 'EBInfo', label: 'Electricity Bill Info', icon: 'fas fa-tachometer-alt' },
   // { id: 'mypgtickets', label: 'Property Tickets', icon: 'fa-solid fa-ticket' },
 
   {
@@ -31,7 +32,7 @@ const rawMenuItems = [
 const menuItems = rawMenuItems.filter(item => {
   if (decryptedUser?.role === 'client') {
     // For clients, exclude 'dashboard'
-    return ['pgpropertydetails', 'personalinfo', 'payments', "documents" ,"mypgtickets" ,'tickets', 'create'].includes(item.id);
+    return ['pgpropertydetails', 'personalinfo', 'payments', "documents" ,"mypgtickets" ,'tickets', 'create', 'EBInfo'].includes(item.id);
   } else {
     // For other roles, exclude 'overview', 'personalinfo', 'payments'
     return !['pgpropertydetails', 'personalinfo', 'payments',"mypgtickets", "documents" ,].includes(item.id);

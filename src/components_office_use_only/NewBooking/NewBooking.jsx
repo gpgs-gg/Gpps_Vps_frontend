@@ -11,6 +11,9 @@ import { SECRET_KEY } from '../../Config';
 import CryptoJS from 'crypto-js';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+
 
 
 // Memoized Select Component to prevent unnecessary re-renders
@@ -45,7 +48,8 @@ const PropertyFormSection = memo(({
   register,
   setValue,
   propertyList,
-  employeeSelectStyles
+  employeeSelectStyles,
+  MONTH_SHORT_NAMES
 }) => {
   const inputClass = 'w-full px-3 py-2 mt-1 border-2 border-orange-200 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400';
 
@@ -85,93 +89,62 @@ const PropertyFormSection = memo(({
       let totalRent = 0;
 
       // Custom function to calculate days with 31-day months changed to 30
-      const getCustomDiffDays = (startDate, endDate) => {
+      // const getCustomDiffDays = (startDate, endDate) => {
 
-        // const perDayRent = watchMonthlyRent / 30;
+      //   // const perDayRent = watchMonthlyRent / 30;
 
-        // let rentAmount = 0;
-        // let rentCalculationStartDate = doj;
-        // // get month end full date here 
-        // let rentCalculationLastDate = new Date(doj.getFullYear(), doj.getMonth() + 1, 0);
-        // let rentCalulatedUpToDate = doj;
+      //   // let rentAmount = 0;
+      //   // let rentCalculationStartDate = doj;
+      //   // // get month end full date here 
+      //   // let rentCalculationLastDate = new Date(doj.getFullYear(), doj.getMonth() + 1, 0);
+      //   // let rentCalulatedUpToDate = doj;
 
-        // // do {
+      //   // // do {
 
 
-        //   // this is full date camparision
-        //   if (rentCalculationLastDate <= clientStayLastDate) {
+      //   let current = new Date(startDate);
+      //   let totalDays = 0;
 
-        //     // this gets no of days rent to be calculated here 
-        //     const rentForNoOfDays = (rentCalculationLastDate.getDate() - rentCalculationStartDate.getDate()) + 1;
 
-        //     rentAmount = perDayRent * rentForNoOfDays;
+      //   while (current <= endDate) {
+      //     const year = current.getFullYear();
+      //     const month = current.getMonth();
+      //     const daysInMonth = new Date(year, month + 1, 0).getDate();
+      //     const isFullMonth = current.getDate() === 1 && (new Date(year, month, daysInMonth).getTime() <= endDate.getTime());
+      //     if (isFullMonth) {
+      //       totalDays += Math.min(30, daysInMonth);
+      //       current.setMonth(current.getMonth() + 1);
+      //       current.setDate(1);
+      //     } else {
+      //       totalDays += 1;
+      //       current.setDate(current.getDate() + 1);
+      //     }
+      //   }
+      //   // console.log(11111111111, totalDays)
+      //   return totalDays;
+      // };
 
-        //     // this is full date .
-        //     rentCalulatedUpToDate.setDate(rentCalculationLastDate.getDate());
 
-        //     // this is the 1st date for the rent calcultion for the next month ..
-        //     rentCalculationStartDate.setDate(rentCalculationLastDate.getDate() + 1);
-        //     rentCalculationLastDate = new Date(rentCalculationStartDate.getFullYear(), rentCalculationStartDate.getMonth() + 1, 0);
-        //     // rentCalulatedUpToDate = rentCalculationLastDate + 1;
-
-        //   }
-        // // } while (rentCalulatedUpToDate <= clientStayLastDate)
-
-        let current = new Date(startDate);
-        let totalDays = 0;
-     
-
-        while (current <= endDate) {
-          const year = current.getFullYear();
-          const month = current.getMonth();
-          const daysInMonth = new Date(year, month + 1, 0).getDate();
-          const isFullMonth = current.getDate() === 1 && (new Date(year, month, daysInMonth).getTime() <= endDate.getTime());
-          if (isFullMonth) {
-            totalDays += Math.min(30, daysInMonth);
-            current.setMonth(current.getMonth() + 1);
-            current.setDate(1);
-          } else {
-            totalDays += 1;
-            current.setDate(current.getDate() + 1);
-          }
-        }
-            // console.log(11111111111, totalDays)
-        return totalDays;
-      };
-
-          
- // old code 
-      // if (end && !isNaN(end.getTime())) {
-      //   // ✅ Case: start to actual end date (inclusive)
-      //   const diffDays = getCustomDiffDays(start, end);
-      //   totalRent = Math.round(dailyRent * diffDays);
-      // } else {
-      //   // ✅ Case: No end date — assume 30-day month
-      //   const startDay = start.getDate();
-      //   console.log(11111111111, startDay)
-      //   const remainingDays = 30 - startDay + 1; // include start day
-      //   totalRent = Math.round(dailyRent * remainingDays);
-      // }
 
 
       // new code 
       if (end && !isNaN(end.getTime())) {
-  // ✅ Case: start to actual end date (inclusive)
-  // Always assume each month = 30 days
-  const startDay = start.getDate();
-  const endDay = end.getDate();
-  const monthDiff = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+        // ✅ Case: start to actual end date (inclusive)
+        // Always assume each month = 30 days
+        const startDay = start.getDate();
+        const endDay = end.getDate();
+        const monthDiff = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
 
-  // Days difference assuming 30 days per month
-  const diffDays = monthDiff * 30 + (endDay - startDay + 1);
-  totalRent = Math.round(dailyRent * diffDays);
+        // Days difference assuming 30 days per month
+        const diffDays = monthDiff * 30 + (endDay - startDay + 1);
+        totalRent = Math.round(dailyRent * diffDays);
 
-} else {
-  // ✅ Case: No end date — assume 30-day month
-  const startDay = start.getDate();
-  const remainingDays = 30 - startDay + 1; // include start day
-  totalRent = Math.round(dailyRent * remainingDays);
-}
+      } else {
+        // ✅ Case: No end date — assume 30-day month
+        const startDay = start.getDate();
+        const remainingDays = 30 - startDay + 1; // include start day
+        totalRent = Math.round(dailyRent * remainingDays);
+      }
 
 
       setValue(`${titlePrefix}BedRentAmt`, totalRent);
@@ -182,128 +155,173 @@ const PropertyFormSection = memo(({
 
 
 
-  // Select styles defined outside render to prevent recreation
-  // const selectStyles = {
-  //   control: (base, state) => ({
-  //     ...base,
-  //     width: "100%",
-  //     paddingTop: "0.25rem",
-  //     paddingBottom: "0.10rem",
-  //     paddingLeft: "0.75rem",
-  //     paddingRight: "0.50rem",
-  //     marginTop: "0.30rem",
-  //     borderWidth: "2px",
-  //     borderStyle: "solid",
-  //     borderColor: state.isFocused ? "#fb923c" : "#f97316",
-  //     borderRadius: "0.375rem",
-  //     boxShadow: state.isFocused
-  //       ? "0 0 0 2px rgba(251,146,60,0.5)"
-  //       : "0 1px 2px rgba(0,0,0,0.05)",
-  //     backgroundColor: "white",
-  //     minHeight: "40px",
-  //     "&:hover": { borderColor: "#fb923c" },
-  //   }),
-  //   valueContainer: (base) => ({
-  //     ...base,
-  //     padding: 0,
-  //   }),
-  //   placeholder: (base) => ({
-  //     ...base,
-  //     color: "#000",
-  //     marginLeft: 0,
-  //   }),
-  //   input: (base) => ({
-  //     ...base,
-  //     margin: 0,
-  //     padding: 0,
-  //   }),
-  //   option: (base, state) => ({
-  //     ...base,
-  //     backgroundColor: state.isSelected
-  //       ? "#fb923c"
-  //       : state.isFocused
-  //         ? "rgba(251,146,60,0.1)"
-  //         : "white",
-  //     color: state.isSelected ? "white" : "#000",
-  //     cursor: "pointer",
-  //     "&:active": {
-  //       backgroundColor: "#fb923c",
-  //       color: "white",
-  //     },
-  //   }),
-  // };
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
       {/* Property Code */}
-      {activeTab == "permanent" && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">Property Code</label>
-          <Controller
-            name={`${titlePrefix}PropCode`}
-            control={control}
-            defaultValue={null}
-            render={({ field }) => {
-              const options = propertyList?.data?.map((item) => ({
-                value: `${item["PG Main  Sheet ID"]},${item["Bed Count"]},${item["Property Code"]}`,
-                label: item["Property Code"],
-              })) || [];
+      {activeTab !== "temporary" && (
+        <div className='lg:grid grid-cols-3'>
+          <div className=''>
+            <label className="block mt-[7px] text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">Select Month</label>
+            <Controller
+              name="selectedPermMonth"
+              control={control}
+              rules={{ required: "Please select a month" }}
+              render={({ field }) => {
+                // FIX: Convert "Dec2024" back to a Date object safely
+                let selectedDate = null;
 
-              return (
-                <MemoizedSelect
-                  field={field}
-                  options={options}
-                  placeholder="Search & Select Property Code"
-                  styles={employeeSelectStyles}
-                  onChange={(selectedOption) => {
-                    field.onChange(selectedOption);
-                    handlePropertyCodeChange(
-                      { target: { value: selectedOption?.value || "" } },
-                      titlePrefix
-                    );
-                  }}
-                />
-              );
-            }}
-          />
-          {renderError(`${titlePrefix}PropCode`)}
+                if (field.value) {
+                  const monthStr = field.value.slice(0, 3); // "Dec"
+                  const yearStr = field.value.slice(3);     // "2024"
+
+                  const monthIndex = MONTH_SHORT_NAMES.indexOf(monthStr);
+
+                  if (monthIndex !== -1) {
+                    selectedDate = new Date(Number(yearStr), monthIndex, 1);
+                  }
+                }
+
+                return (
+                  <DatePicker
+                    selected={selectedDate}
+                    onChange={(date) => {
+                      if (!date) return field.onChange("");
+
+                      const month = MONTH_SHORT_NAMES[date.getMonth()];
+                      const year = date.getFullYear();
+                      const formatted = `${month}${year}`;
+
+                      field.onChange(formatted);
+                    }}
+                    dateFormat="MMM yyyy"
+                    showMonthYearPicker
+                    placeholderText="Select month"
+                    className=" border-2 focus:ring-1 w-32 focus:ring-orange-300 px-3 py-2 border-orange-300 outline-none rounded-md"
+                  />
+                );
+              }}
+            />
+          </div>
+
+          <div className='col-span-2'>
+            <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">Property Code</label>
+            <Controller
+              name={`${titlePrefix}PropCode`}
+              control={control}
+              defaultValue={null}
+              render={({ field }) => {
+                const options = propertyList?.data?.map((item) => ({
+                  value: `${item["PG Main  Sheet ID"]},${item["Bed Count"]},${item["Property Code"]}`,
+                  label: item["Property Code"],
+                })) || [];
+
+                return (
+                  <MemoizedSelect
+                    field={field}
+                    options={options}
+                    placeholder="Search & Select"
+                    styles={employeeSelectStyles}
+                    onChange={(selectedOption) => {
+                      field.onChange(selectedOption);
+                      handlePropertyCodeChange(
+                        { target: { value: selectedOption?.value || "" } },
+                        titlePrefix
+                      );
+                    }}
+                  />
+                );
+              }}
+            />
+            {renderError(`${titlePrefix}PropCode`)}
+          </div>
+
+
         </div>
       )}
 
-
+      
       {activeTab == "temporary" && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500"> Property Code</label>
-          <Controller
-            name={`TempPropCode`}
-            control={control}
-            defaultValue={null}
-            render={({ field }) => {
-              const options = propertyList?.data?.map((item) => ({
-                value: `${item["PG Main  Sheet ID"]},${item["Bed Count"]},${item["Property Code"]}`,
-                label: item["Property Code"],
-              })) || [];
+        <div className='lg:grid grid-cols-3'>
+          <div>
+            <label className="block mt-[7px] text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">Select Month</label>
+            <Controller
+              name="selectedTempMonth"
+              control={control}
+              rules={{ required: "Please select a month" }}
+              render={({ field }) => {
+                // FIX: Convert "Dec2024" back to a Date object safely
+                let selectedDate = null;
 
-              return (
-                <MemoizedSelect
-                  field={field}
-                  options={options}
-                  placeholder="Search & Select Property Code"
-                  styles={employeeSelectStyles}
-                  onChange={(selectedOption) => {
-                    field.onChange(selectedOption);
-                    handleTempPropertyCodeChange(
-                      { target: { value: selectedOption?.value || "" } },
-                      titlePrefix
-                    );
-                  }}
-                />
-              );
-            }}
-          />
-          {renderError(`${titlePrefix}PropCode`)}
+                if (field.value) {
+                  const monthStr = field.value.slice(0, 3); // "Dec"
+                  const yearStr = field.value.slice(3);     // "2024"
+
+                  const monthIndex = MONTH_SHORT_NAMES.indexOf(monthStr);
+
+                  if (monthIndex !== -1) {
+                    selectedDate = new Date(Number(yearStr), monthIndex, 1);
+                  }
+                }
+
+                return (
+                  <DatePicker
+                    selected={selectedDate}
+                    onChange={(date) => {
+                      if (!date) return field.onChange("");
+
+                      const month = MONTH_SHORT_NAMES[date.getMonth()];
+                      const year = date.getFullYear();
+                      const formatted = `${month}${year}`;
+
+                      field.onChange(formatted);
+                    }}
+                    dateFormat="MMM yyyy"
+                    showMonthYearPicker
+                    placeholderText="Select month"
+                    className="border-2 focus:ring-1 w-32 focus:ring-orange-300 px-3 py-2 border-orange-300 outline-none rounded-md"
+                  />
+                );
+              }}
+            />
+          </div>
+
+
+          <div className='col-span-2'>
+            <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500"> Temp Property Code</label>
+            <Controller
+              name={`TempPropCode`}
+              control={control}
+              defaultValue={null}
+              render={({ field }) => {
+                const options = propertyList?.data?.map((item) => ({
+                  value: `${item["PG Main  Sheet ID"]},${item["Bed Count"]},${item["Property Code"]}`,
+                  label: item["Property Code"],
+                })) || [];
+
+                return (
+                  <MemoizedSelect
+                    field={field}
+                    options={options}
+                    placeholder="Search & Select "
+                    styles={employeeSelectStyles}
+                    onChange={(selectedOption) => {
+                      field.onChange(selectedOption);
+                      handleTempPropertyCodeChange(
+                        { target: { value: selectedOption?.value || "" } },
+                        titlePrefix
+                      );
+                    }}
+                  />
+                );
+              }}
+            />
+            {renderError(`${titlePrefix}PropCode`)}
+
+          </div>
+          
         </div>
       )}
+
 
       {/* Bed No */}
       {activeTab == "permanent" && (
@@ -326,8 +344,6 @@ const PropertyFormSection = memo(({
                 ? { value: tempSelectedBedNumber, label: String(tempSelectedBedNumber) }
                 : null
             }
-
-
             render={({ field }) => {
               const options = isPropertySheetData
                 ? []
@@ -554,6 +570,11 @@ const PropertyFormSection = memo(({
         </div>
       )}
 
+
+
+
+
+
       {/* Comments */}
       <div>
         <label>Comments</label>
@@ -604,6 +625,11 @@ const NewBooking = () => {
   const schema = yup.object().shape({
     // Date: yup.date().required('Date is required'),
     ClientFullName: yup.string().required('Client name is required'),
+    EmailId: yup
+      .string()
+      .email('Please enter a valid email address')
+      .required('Email Id is required'),
+
     AskForBAOrFA: yup.string().required('Ask For BA Or FA name is required'),
     WhatsAppNo: yup
       .string()
@@ -670,7 +696,7 @@ const NewBooking = () => {
       is: true,
       then: schema => schema.required('Room number is required'),
       otherwise: schema => schema,
-    }),    AskForBAOrFA: yup.string().required('Ask For BA Or FA name is required'),
+    }), AskForBAOrFA: yup.string().required('Ask For BA Or FA name is required'),
 
     TempBedRentAmt: yup.string().when('$showtemporary', {
       is: true,
@@ -679,14 +705,23 @@ const NewBooking = () => {
     }),
   });
 
-  const { mutate: submitBooking,isPending ,  isSuccess } = useAddBooking();
-  const { data: propertyList, isLoading: isPropertyLoading } = usePropertyData();
-  const { data: EmployeeDetails } = useEmployeeDetails();
-  const { data: singleSheetData, isLoading: isPropertySheetData } = usePropertySheetData(selectedSheetId);
-  const { data: singleTempSheetData, isLoading: isTempPropertySheetData } = useTempPropertySheetData(selectedTempSheetId);
- 
 
-    // console.log(22222,isPending  , isSuccess ,isTempPropertySheetData )
+
+
+
+  const MONTH_SHORT_NAMES = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+
+  const getPreviousMonthFormatted = () => {
+    const date = new Date();
+    date.setMonth(date.getMonth()); // go to previous month
+    const month = MONTH_SHORT_NAMES[date.getMonth()];
+    const year = date.getFullYear();
+    return `${month}${year}`; // format like "Nov2025"
+  };
+
 
   const {
     register,
@@ -700,8 +735,20 @@ const NewBooking = () => {
   } = useForm({
     resolver: yupResolver(schema),
     context: { showPermanent, showtemporary },
+    defaultValues: {
+      selectedPermMonth: getPreviousMonthFormatted(),  // previous month as default
+      selectedTempMonth: getPreviousMonthFormatted(),  // previous month as default
+    },
   });
 
+  const selectedPerm = watch("selectedPermMonth") || ""
+  const selectedTemp = watch("selectedTempMonth") || ""
+
+  const { mutate: submitBooking, isPending, isSuccess } = useAddBooking();
+  const { data: propertyList, isLoading: isPropertyLoading } = usePropertyData();
+  const { data: EmployeeDetails } = useEmployeeDetails();
+  const { data: singleSheetData, isLoading: isPropertySheetData } = usePropertySheetData(selectedSheetId , selectedPerm);
+  const { data: singleTempSheetData, isLoading: isTempPropertySheetData } = useTempPropertySheetData(selectedTempSheetId ,selectedTemp);
 
   const formData = watch();
 
@@ -751,10 +798,11 @@ const NewBooking = () => {
   ];
 
   const handlePropertyCodeChange = useCallback((e, titlePrefix) => {
-    const value = e.target.value;
+
+    const value = `${e.target.value}`;
+ 
+
     setSelctedSheetId(value);
-
-
     setValue(`${titlePrefix}PropCode`, value);
     setValue(`${titlePrefix}AcRoom`, "");
     setValue(`${titlePrefix}BedNo`, "");
@@ -766,10 +814,11 @@ const NewBooking = () => {
     setValue(`${titlePrefix}ProcessingFeesAmount`, "");
     setValue(`${titlePrefix}UpcomingRentHikeDt`, "");
     setValue(`${titlePrefix}RoomNo`, "");
-  }, [setValue]);
+
+  }, [setValue, selectedPerm]);
 
   const handleTempPropertyCodeChange = useCallback((e, titlePrefix) => {
-    const value = e.target.value;
+    const value = `${e.target.value}`;
     setSelctedTempSheetId(value);
 
 
@@ -784,83 +833,89 @@ const NewBooking = () => {
     setValue(`${titlePrefix}ProcessingFeesAmount`, "");
     setValue(`${titlePrefix}UpcomingRentHikeDt`, "");
     setValue(`${titlePrefix}RoomNo`, "");
-  }, [setValue]);
+  }, [setValue, selectedTemp]);
 
 
 
+// Handle bed number change — only updates state
+const handleBedNoChange = useCallback((e) => {
+  const selectedBedNo = e.target.value;
+  setSelectedBedNumber(selectedBedNo);
+  // settempSelectedBedNumber(selectedBedNo);
+}, []);
 
+// useEffect to update form values whenever selectedBedNumber changes
+useEffect(() => {
+  if (!selectedBedNumber) return;
+  const matchedRow = singleSheetData?.data?.find(
+    (row) => row["BedNo"]?.trim() === selectedBedNumber
+  );
 
-
-
-
-  const handleBedNoChange = useCallback((e, titlePrefix) => {
-    const selectedBedNo = e.target.value;
-    setSelectedBedNumber(selectedBedNo);
-    settempSelectedBedNumber(selectedBedNo)
-
-    const matchedRow = singleSheetData?.data?.find(
-      (row) => row["BedNo"]?.trim() === selectedBedNo
-    );
-
-    if (matchedRow) {
-      const acNonAc = matchedRow["ACRoom"]?.trim() || "";
-      const rentAmt = matchedRow["MFR"] || "";
-
-      setValue(`${titlePrefix}ACRoom`, acNonAc);
-      setValue(`${titlePrefix}BedNo`, selectedBedNo);
-      setValue(`${titlePrefix}BedMonthlyFixRent`, rentAmt);
-      setValue(`${titlePrefix}BedDepositAmt`, matchedRow["DA"]?.trim() || "");
-      setValue(`${titlePrefix}UpcomingRentHikeDt`, matchedRow["URHD"]?.trim() || "");
-      setValue(`${titlePrefix}UpcomingRentHikeAmt`, matchedRow["URHA"]?.trim() || "");
-      setValue(`${titlePrefix}RoomNo`, matchedRow["RoomNo"]?.trim() || "");
-    } else {
-      setValue(`${titlePrefix}AcRoom`, "");
-      setValue(`${titlePrefix}BedRentAmt`, "");
-      setValue(`${titlePrefix}roomNo`, "");
-      setValue(`${titlePrefix}roomAcNonAc`, "");
-      setValue(`${titlePrefix}BedMonthlyFixRent`, "");
-      setValue(`${titlePrefix}BedDepositAmt`, "");
-      setValue(`${titlePrefix}UpcomingRentHikeAmt`, "");
-      setValue(`${titlePrefix}revisionAmount`, "");
-      setValue(`${titlePrefix}RoomNo`, "");
-      setValue(`${titlePrefix}BedNo`, selectedBedNo);
-    }
-  }, [singleSheetData, setValue]);
-
+  if (matchedRow) {
+    const acNonAc = matchedRow["ACRoom"]?.trim() || "";
+    const rentAmt = matchedRow["MFR"] || "";
+   
+    setValue(`PermACRoom`, acNonAc);
+    setValue(`PermBedNo`, selectedBedNumber);
+    setValue(`PermBedMonthlyFixRent`, rentAmt);
+    setValue(`PermBedDepositAmt`, matchedRow["DA"]?.trim() || "");
+    setValue(`PermUpcomingRentHikeDt`, matchedRow["URHD"]?.trim() || "");
+    setValue(`PermUpcomingRentHikeAmt`, matchedRow["URHA"]?.trim() || "");
+    setValue(`PermRoomNo`, matchedRow["RoomNo"]?.trim() || "");
+  } else {
+    // reset values if no match
+    setValue(`PermAcRoom`, "");
+    setValue(`PermBedRentAmt`, "");
+    setValue(`PermroomNo`, "");
+    setValue(`PermroomAcNonAc`, "");
+    setValue(`PermBedMonthlyFixRent`, "");
+    setValue(`PermBedDepositAmt`, "");
+    setValue(`PermUpcomingRentHikeAmt`, "");
+    setValue(`PermrevisionAmount`, "");
+    setValue(`PermRoomNo`, "");
+    setValue(`PermBedNo`, selectedBedNumber);
+  }
+}, [selectedBedNumber, singleSheetData, setValue]);
 
 
   const handleTempBedNoChange = useCallback((e, titlePrefix) => {
-    const selectedBedNo = e.target.value;
-    setSelectedBedNumber(selectedBedNo);
-    settempSelectedBedNumber(selectedBedNo)
-    const matchedRow = singleTempSheetData?.data?.find(
-      (row) => row["BedNo"]?.trim() === selectedBedNo
+    const selectedTempBedNo = e.target.value;
+    // setSelectedBedNumber(selectedBedNo);
+    settempSelectedBedNumber(selectedTempBedNo) 
+  },[])
+
+  useEffect(()=>{
+      if (!tempSelectedBedNumber) return;
+  const matchedRow = singleTempSheetData?.data?.find(
+      (row) => row["BedNo"]?.trim() === tempSelectedBedNumber
     );
 
     if (matchedRow) {
       const acNonAc = matchedRow["ACRoom"]?.trim() || "";
       const rentAmt = matchedRow["MFR"] || "";
 
-      setValue(`${titlePrefix}ACRoom`, acNonAc);
-      setValue(`${titlePrefix}BedNo`, selectedBedNo);
-      setValue(`${titlePrefix}BedMonthlyFixRent`, rentAmt);
-      setValue(`${titlePrefix}BedDepositAmt`, matchedRow["DA"]?.trim() || "");
-      setValue(`${titlePrefix}UpcomingRentHikeDt`, matchedRow["URHD"]?.trim() || "");
-      setValue(`${titlePrefix}UpcomingRentHikeAmt`, matchedRow["URHA"]?.trim() || "");
-      setValue(`${titlePrefix}RoomNo`, matchedRow["RoomNo"]?.trim() || "");
+      setValue(`TempACRoom`, acNonAc);
+      setValue(`TempBedNo`, tempSelectedBedNumber);
+      setValue(`TempBedMonthlyFixRent`, rentAmt);
+      setValue(`TempBedDepositAmt`, matchedRow["DA"]?.trim() || "");
+      setValue(`TempUpcomingRentHikeDt`, matchedRow["URHD"]?.trim() || "");
+      setValue(`TempUpcomingRentHikeAmt`, matchedRow["URHA"]?.trim() || "");
+      setValue(`TempRoomNo`, matchedRow["RoomNo"]?.trim() || "");
     } else {
-      setValue(`${titlePrefix}AcRoom`, "");
-      setValue(`${titlePrefix}BedRentAmt`, "");
-      setValue(`${titlePrefix}roomNo`, "");
-      setValue(`${titlePrefix}roomAcNonAc`, "");
-      setValue(`${titlePrefix}BedMonthlyFixRent`, "");
-      setValue(`${titlePrefix}BedDepositAmt`, "");
-      setValue(`${titlePrefix}UpcomingRentHikeAmt`, "");
-      setValue(`${titlePrefix}revisionAmount`, "");
-      setValue(`${titlePrefix}RoomNo`, "");
-      setValue(`${titlePrefix}BedNo`, selectedBedNo);
+      setValue(`TempAcRoom`, "");
+      setValue(`TempBedRentAmt`, "");
+      setValue(`TemproomNo`, "");
+      setValue(`TemproomAcNonAc`, "");
+      setValue(`TempBedMonthlyFixRent`, "");
+      setValue(`TempBedDepositAmt`, "");
+      setValue(`TempUpcomingRentHikeAmt`, "");
+      setValue(`TemprevisionAmount`, "");
+      setValue(`TempRoomNo`, "");
+      setValue(`TempBedNo`, tempSelectedBedNumber);
     }
-  }, [singleTempSheetData, setValue]);
+  },[tempSelectedBedNumber, singleTempSheetData, setValue])
+  
+
 
   const handlePermanentCheckbox = useCallback((checked) => {
     if (!checked) {
@@ -874,6 +929,7 @@ const NewBooking = () => {
       setActiveTab('permanent');
     }
   }, [resetTabFields, activeTab, showtemporary]);
+
 
   const handletemporaryCheckbox = useCallback((checked) => {
     if (!checked) {
@@ -897,15 +953,11 @@ const NewBooking = () => {
       return;
     }
 
-
-
     const TotalAmt =
       (applyPermBedRent ? Number(data.PermBedRentAmt || 0) : 0) +
       Number(data.PermBedDepositAmt || 0) +
       Number(data.ProcessingFeesAmt || 0) +
       Number(data.TempBedRentAmt || 0);
-
-
 
     const filteredData = {
       Date: new Date().toLocaleDateString("en-GB", {
@@ -923,10 +975,10 @@ const NewBooking = () => {
       EmgyCont2FullName: data.EmgyCont2FullName,
       EmgyCont2No: data.EmgyCont2No,
       AskForBAOrFA: data.AskForBAOrFA,
-
+      EmailId: data.EmailId,
       ProcessingFeesAmt: data.ProcessingFeesAmt,
-      UpcomingRentHikeDt: data.URHD,
-      UpcomingRentHikeAmt: data.URHA,
+      UpcomingRentHikeDt: data.PermUpcomingRentHikeDt,
+      UpcomingRentHikeAmt: data.PermUpcomingRentHikeAmt,
       TotalAmt: TotalAmt,
       BookingAmt:
         data.AskForBAOrFA === "Full_Amount "
@@ -937,6 +989,8 @@ const NewBooking = () => {
           ? 0
           : TotalAmt - Number(data.PermBedMonthlyFixRent),
     };
+
+
     // Include ONLY active tab fields
     const dateFields = ["PermBedDOJ", "PermBedLDt", "TempBedDOJ", "TempBedLDt"];
     if (showPermanent) {
@@ -1034,7 +1088,8 @@ const NewBooking = () => {
           ProcessingFeesAmt: "",
           TempUpcomingRentHikeDt: "",
           TempUpcomingRentHikeAmt: "",
-          TempComments: ""
+          TempComments: "",
+          EmailId: "",
         });
         setValue(`SalesMemeber`, "Search & Select Employee");
         setValue(`AskForBAOrFA`, "SelectAskFor");
@@ -1048,7 +1103,7 @@ const NewBooking = () => {
       },
       onError: () => {
         // alert("❌ Failed to submit. Try again.");
-          toast.error("❌ Failed to submit. Wait & Try again you have reached the limits.")
+        toast.error("❌ Failed to submit. Wait & Try again you have reached the limits.")
       },
     });
   }, [submitBooking, formPreviewData, reset]);
@@ -1091,10 +1146,6 @@ const NewBooking = () => {
     })
   };
 
-
-
-
-
   return (
     <div className="max-w-8xl mx-auto bg-[#F8F9FB] min-h-screen">
       <div className="bg-[#F8F9FB] shadow-lg rounded-xl  p-6">
@@ -1111,6 +1162,7 @@ const NewBooking = () => {
                 { name: 'EmgyCont1No', label: 'Emergency Contact1 No' },
                 { name: 'EmgyCont2FullName', label: 'Emergency Contact2 Full Name' },
                 { name: 'EmgyCont2No', label: 'Emergency Contact2 No' },
+                { name: 'EmailId', label: 'Email Id' },
               ].map((field) => (
                 <div key={field.name}>
                   <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500"
@@ -1150,11 +1202,7 @@ const NewBooking = () => {
                 />
                 {renderError('AskForBAOrFA')}
               </div>
-
-
             </div>
-
-
 
           </section>
 
@@ -1238,6 +1286,7 @@ const NewBooking = () => {
                   setValue={setValue}
                   propertyList={propertyList}
                   employeeSelectStyles={employeeSelectStyles}
+                  MONTH_SHORT_NAMES={MONTH_SHORT_NAMES}
                 />
               )}
               {activeTab === 'temporary' && showtemporary && (
@@ -1256,6 +1305,8 @@ const NewBooking = () => {
                   setValue={setValue}
                   propertyList={propertyList}
                   employeeSelectStyles={employeeSelectStyles}
+                  MONTH_SHORT_NAMES={MONTH_SHORT_NAMES}
+
 
                 />
               )}
@@ -1281,8 +1332,8 @@ const NewBooking = () => {
         handleFinalSubmit={handleFinalSubmit}
         setApplyPermBedRent={setApplyPermBedRent}
         applyPermBedRent={applyPermBedRent}
-           isBookingLoading = {isSuccess}
-           isPending = {isPending}
+        isBookingLoading={isSuccess}
+        isPending={isPending}
         formPreviewData={formPreviewData}
       />
     </div>

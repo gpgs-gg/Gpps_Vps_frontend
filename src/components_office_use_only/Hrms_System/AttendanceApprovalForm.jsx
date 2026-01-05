@@ -355,7 +355,7 @@ function AttendanceApprovalForm({ isOpen, setIsOpen, editableData, setEditableDa
                         <div>
                             <label className="text-sm font-medium text-gray-700 relative after:content-['*'] after:ml-1 after:text-red-500">In Time</label>
                             <input
-                                disabled={editableData?.InTime ? true : false}
+                                // disabled={editableData?.InTime ? true : false}
                                 className="w-full px-3 py-[8px] border border-orange-400 rounded-md focus:ring-2 focus:ring-orange-300 focus:outline-none"
                                 {...register("InTime")}
                             />
@@ -370,7 +370,7 @@ function AttendanceApprovalForm({ isOpen, setIsOpen, editableData, setEditableDa
                             <div>
                                 <label className="text-sm font-medium text-gray-700 relative after:content-['*'] after:ml-1 after:text-red-500">Out Time</label>
                                 <input
-                                    disabled={editableData?.OutTime ? true : false}
+                                    // disabled={editableData?.OutTime ? true : false}
                                     className="w-full px-3 py-[8px] border border-orange-400 rounded-md focus:ring-2 focus:ring-orange-300 focus:outline-none "
                                     {...register("OutTime")}
                                 />
@@ -379,6 +379,7 @@ function AttendanceApprovalForm({ isOpen, setIsOpen, editableData, setEditableDa
                                 )}
                             </div>
                         }
+                        
                         {editableData?.OutTime && (
                             <div>
                                 <div className="">

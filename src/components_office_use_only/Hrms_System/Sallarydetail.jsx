@@ -513,28 +513,28 @@ import DatePicker from "react-datepicker";
 const SalaryDetail = () => {
 
 
-   const MONTH_SHORT_NAMES = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    ];
+  const MONTH_SHORT_NAMES = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
 
 
 
- const getPreviousMonthFormatted = () => {
-        const date = new Date();
-        date.setMonth(date.getMonth()); // go to previous month
-        const month = MONTH_SHORT_NAMES[date.getMonth()];
-        const year = date.getFullYear();
-        return `${month}${year}`; // format like "Nov2025"
-    };
+  const getPreviousMonthFormatted = () => {
+    const date = new Date();
+    date.setMonth(date.getMonth()); // go to previous month
+    const month = MONTH_SHORT_NAMES[date.getMonth()];
+    const year = date.getFullYear();
+    return `${month}${year}`; // format like "Nov2025"
+  };
 
 
-    const { control, watch } = useForm({
-        defaultValues: {
-            selectedMonth: getPreviousMonthFormatted(), // previous month as default
-        },
-    });
-    const selectedMonth = watch("selectedMonth") || ""
+  const { control, watch } = useForm({
+    defaultValues: {
+      selectedMonth: getPreviousMonthFormatted(), // previous month as default
+    },
+  });
+  const selectedMonth = watch("selectedMonth") || ""
 
 
 
@@ -647,8 +647,127 @@ const SalaryDetail = () => {
 
   }, [data, sallayTrackerdetails]);
 
-  const getAttendanceSum = (arr) =>
-    arr?.reduce((sum, val) => sum + (typeof val === "number" ? val : 0), 0);
+//  old code ......................................
+  // const getAttendanceSum = (arr) => 
+  //     Math.min(
+  //         arr?.reduce((sum, val) => sum + (typeof val === "number" ? val : 0), 0),
+  //         30 // maximum allowed
+  //     );
+//  old code ......................................
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  // const selectedMonth = "Jan2026";
+  const monthStr = selectedMonth.slice(0, 3);  // "Jan"
+  const selectedYear = parseInt(selectedMonth.slice(3)); // 2026
+  const selectetNewMonth = monthNames.indexOf(monthStr) + 1; // 1 for Jan
+  const monthIndex = monthNames.indexOf(monthStr); // 0-based index (0 = Jan)
+
+const lastDateOfSelectedMonth = new Date(selectedYear, monthIndex + 1, 0)
+
+
+
+
+
+
+//      const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+// const selectedMonth = "Jan2026"; // example
+// const monthStr = selectedMonth.slice(0, 3); // "Jan"
+// const year = parseInt(selectedMonth.slice(3)); // 2026
+// const monthIndex = monthNames.indexOf(monthStr); // 0-based index (0 = Jan)
+
+// const lastDateOfSelectedMonth = new Date(year, monthIndex + 1, 0).getDate();
+
+// console.log("Last date of", selectedMonth, "is", lastDateOfSelectedMonth); // 31
+
+  // const getAttendanceSum = (arr) => {
+
+  //   const daysInMonth = new Date(selectedYear, selectetNewMonth, 0).getDate();
+  //   const monthDaysArr = arr.slice(0, daysInMonth);
+
+  //   let sum = 0;
+
+  //   if (daysInMonth === 31) {
+  //     sum = monthDaysArr.slice(0, 30).reduce((total, val) => total + (typeof val === "number" ? val : 0), 0);
+  //     const lastDay = monthDaysArr[30];
+  //     if (lastDay === 0.5) {
+  //       sum -= 0.5;
+  //     }
+  //     if (lastDay === 0) {
+  //       sum -= 1;
+  //     }
+  //   } else  {
+  //     sum = monthDaysArr.reduce((total, val) => total + (typeof val === "number" ? val : 0), 0);
+  //   } 
+
+
+
+
+
+  //   return Math.max(0, Math.min(sum, 30));
+  // };
+
+
+
+  const getAttendanceSum = (arr) => {
+    const daysInMonth = new Date(selectedYear, selectetNewMonth, 0).getDate();
+    const monthDaysArr = arr.slice(0, daysInMonth);
+    let sum = 0;
+    if (daysInMonth === 31 && lastDateOfSelectedMonth < new Date() ) {
+      sum = monthDaysArr.slice(0, 30).reduce((total, val) => total + (typeof val === "number" ? val : 0), 0);
+      const lastDay = monthDaysArr[30];
+      if (lastDay === 0.5) {
+        sum -= 0.5;
+      }
+      if (lastDay === 0) {
+        sum -= 1;
+      }
+    }
+    else if (daysInMonth === 29 && lastDateOfSelectedMonth < new Date()) {
+      sum = monthDaysArr.reduce((total, val) => total + (typeof val === "number" ? val : 0), 0);
+      sum += 1;
+    } else if (daysInMonth === 28 && lastDateOfSelectedMonth < new Date()) {
+      sum = monthDaysArr.reduce((total, val) => total + (typeof val === "number" ? val : 0), 0);
+      sum += 2;
+    }
+    else{
+      sum = monthDaysArr.reduce((total, val) => total + (typeof val === "number" ? val : 0), 0);
+    }
+    return Math.max(0, Math.min(sum, 30));
+  };
+
+
+
+
+  //   const getAttendanceSum = (arr) => {
+  //   let present = 0;
+  //   let leave = 0;
+  //   let HalfDay = 0;
+  //   const arrayForHalfDay = []
+  //   const MaxTotalDays = 30;
+
+  //   for (let i = 0; i < arr.length; i++) {
+  //   if (arr[i] === 1) {
+  //     if (present < MaxTotalDays) present++;
+  // } else if (arr[i] === 0.5) {
+  //     if (present + 0.5 <= MaxTotalDays) present += 0.5;
+  // } else if (arr[i] === 0) {
+  //       leave++; // full leave count
+  //     }
+  //     else if (arr[i] === 0.5){
+  //       arrayForHalfDay.push(arr[i])
+  //     }
+  //   }
+
+  // let halfDaysPresent = arrayForHalfDay.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+
+  //   let totaldays = MaxTotalDays + halfDaysPresent - leave;
+
+  //   if (totaldays < 0) {
+  //     totaldays = 0; // minus me nahi jayega
+  //   }
+
+  //   return totaldays;
+  // };
 
   const handleFieldChange = (id, field, value) => {
     if (field == "AdjustedAmt") {
@@ -767,8 +886,8 @@ const SalaryDetail = () => {
         Comments: mergedComments,
         UpdatedBy: `${dateTimeStamp} ${decryptedUser?.name}`
       };
-
-
+     
+     
       // 5️⃣ Convert attendance array to object with 1-based keys
       if (Array.isArray(emp.attendance) && emp.attendance.length >= 31) {
         emp.attendance.forEach((val, idx) => {
@@ -786,7 +905,7 @@ const SalaryDetail = () => {
       setEnteredAdjustedAmount(prev => ({ ...prev, [empId]: 0 }));
       setEnteredPaidAmount(prev => ({ ...prev, [empId]: 0 }));
 
-      createSallaryDetails({payload ,  selectedMonth}, {
+      createSallaryDetails({ payload, selectedMonth }, {
         onSuccess: () => {
           toast.success(
             <div className="flex items-center space-x-3">
@@ -1058,42 +1177,58 @@ const SalaryDetail = () => {
       <div className="bg-gray-50 text-gray-800 text-center  rounded-md mt-20 pb-2">
         <div className="text-2xl flex  flex-col justify-center items-center  font-bold">
           <div className="flex  justify-center items-center  font-bold">
-     Attendance & Salary Tracker - <div>
-                        <Controller
-                            name="selectedMonth"
-                            control={control}
-                            rules={{ required: "Please select a month" }}
-                            render={({ field }) => (
-                                <DatePicker
-                                    selected={field.value ? new Date(field.value) : null}
-                                    onChange={(date) => {
-                                        if (!date) return field.onChange("");
+            Attendance & Salary Tracker - <div>
+              <Controller
+                name="selectedMonth"
+                control={control}
+                rules={{ required: "Please select a month" }}
+                render={({ field }) => {
+                  // FIX: Convert "Dec2024" back to a Date object safely
+                  let selectedDate = null;
 
-                                        const month = MONTH_SHORT_NAMES[date.getMonth()];
-                                        const year = date.getFullYear();
-                                        const formatted = `${month}${year}`;
+                  if (field.value) {
+                    const monthStr = field.value.slice(0, 3); // "Dec"
+                    const yearStr = field.value.slice(3);     // "2024"
 
-                                        field.onChange(formatted);
-                                    }}
-                                    dateFormat="MMM yyyy"
-                                    showMonthYearPicker
-                                    placeholderText="Select month"
-                                    className="w-[150px]  focus:ring-1 border-none bg-gray-50 px-3 py-2 border-orange-300 outline-orange-200 rounded-md"
-                                />
-                            )}
-                        />
+                    const monthIndex = MONTH_SHORT_NAMES.indexOf(monthStr);
 
-                        {/* {errors.selectedDate && (
+                    if (monthIndex !== -1) {
+                      selectedDate = new Date(Number(yearStr), monthIndex, 1);
+                    }
+                  }
+
+                  return (
+                    <DatePicker
+                      selected={selectedDate}
+                      onChange={(date) => {
+                        if (!date) return field.onChange("");
+                        const month = MONTH_SHORT_NAMES[date.getMonth()];
+                        const year = date.getFullYear();
+                        const formatted = `${month}${year}`;
+                        field.onChange(formatted);
+                      }}
+                      dateFormat="MMM yyyy"
+                      showMonthYearPicker
+                      popperPlacement="bottom-start"
+                      withPortal
+                      popperClassName="custom-datepicker-popper z-[9999]"
+                      placeholderText="Select month"
+                      className="w-[150px]  focus:ring-1 border-none bg-gray-50 px-3 py-2 border-orange-300 outline-orange-200 rounded-md" />
+                  );
+                }}
+              />
+
+              {/* {errors.selectedDate && (
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.selectedDate.message}
                             </p>
                         )} */}
-                    </div>
-              
+            </div>
+
           </div>
-     
+
         </div>
-      
+
 
         {/* Save All Button */}
         {/* <button
@@ -1106,8 +1241,8 @@ const SalaryDetail = () => {
 
       {/* Table */}
       {/* <div className=" text-2xl"> */}
-       
-       <div className="overflow-auto max-w-full rounded-lg max-h-[600px]">
+
+      <div className="overflow-auto max-w-full rounded-lg max-h-[600px]">
         <table className="min-w-auto border-red-500">
           <thead className="bg-orange-300 shadow-sm text-lg font-bold text-gray-700 sticky top-[-1px] z-50">
             <tr>
@@ -1281,196 +1416,196 @@ const SalaryDetail = () => {
             })}
           </tbody>
         </table>
-        </div>
+      </div>
       {/* </div> */}
 
       {/* <div className="flex flex-col items-center justify-center h-screen bg-gray-100"> */}
-        {/* ......................... */}
-        {adjAmtPopUp && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-            <div className="bg-white rounded-xl shadow-xl p-6 w-96 relative animate-fadeIn">
-              <h2 className="text-xl font-semibold mb-4 text-gray-700">Adj Amt Details</h2>
-              {/* Adj Amount */}
-              <div className="flex gap-5 justify-center items-center ">
-                <label className="text-lg text-gray-600">Label: </label>
-                <input
-                  type="text"
-                  value={appendValueDeducToCalculation(appendValueSplToCalculation(adjAmtDetails, splAmt), splDecducAmt)}
-                  readOnly
-                  className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg bg-gray-100 cursor-not-allowed"
-                />
-              </div>
-              <div className="flex gap-5 justify-center items-center ">
-                <label className="text-lg text-gray-600 ">Spl.Perk₹:</label>
-                <input type="text" value={splAmt} onChange={(e) => handleSplAmount(e, "spl")}
-                  className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg "
-                />
-              </div>
-              <div className="flex gap-5 justify-center items-center ">
-                <label className="text-lg text-gray-600 ">Comments:</label>
-                <input
-                  type="text"
-                  value={cmt}
-                  onChange={handleSplComment}
-                  className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg"
-                />
-              </div>
-              <p className="text-red-500 text-sm text-center">{error}</p>
-              {/* ///////////////////// */}
-              <hr className="border border-gray-300 my-5" />
-              {/* Adj Amount */}
-              <div className="flex gap-5 justify-center items-center ">
-                <label className="text-lg text-gray-600">Label:</label>
-                <input
-                  type="text"
-                  value={appendValueDeducToCalculation(appendValueSplToCalculation(adjAmtDetails, splAmt), splDecducAmt)}
-                  readOnly
-                  className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg bg-gray-100 cursor-not-allowed"
-                />
-              </div>
-              <div className="flex gap-5 justify-center items-center ">
-                <label className="text-lg text-gray-600 ">Dedcucted.Amt₹:</label>
-                <input
-                  type="text"
-                  value={splDecducAmt}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    // Allow digits and minus sign anywhere
-                    if (/^[\d-]*$/.test(value)) {
-                      handleSplDeductAmount(e, "deduct");
-                    }
-                  }}
-                  className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg"
-                />
-              </div>
-              <div className="flex gap-5 justify-center items-center ">
-                <label className="text-lg text-gray-600 ">Comments:</label>
-                <input
-                  type="text"
-                  value={deductCmt}
-                  onChange={handleDeductAdvSplComment}
-                  className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg "
-                />
-              </div>
-              <p className="text-red-500 text-sm mb-5 text-center">{deductError}</p>
-              {/* <p className="text-gray-500 mb-6 text-sm">
+      {/* ......................... */}
+      {adjAmtPopUp && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-96 relative animate-fadeIn">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">Adj Amt Details</h2>
+            {/* Adj Amount */}
+            <div className="flex gap-5 justify-center items-center ">
+              <label className="text-lg text-gray-600">Label: </label>
+              <input
+                type="text"
+                value={appendValueDeducToCalculation(appendValueSplToCalculation(adjAmtDetails, splAmt), splDecducAmt)}
+                readOnly
+                className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg bg-gray-100 cursor-not-allowed"
+              />
+            </div>
+            <div className="flex gap-5 justify-center items-center ">
+              <label className="text-lg text-gray-600 ">Spl.Perk₹:</label>
+              <input type="text" value={splAmt} onChange={(e) => handleSplAmount(e, "spl")}
+                className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg "
+              />
+            </div>
+            <div className="flex gap-5 justify-center items-center ">
+              <label className="text-lg text-gray-600 ">Comments:</label>
+              <input
+                type="text"
+                value={cmt}
+                onChange={handleSplComment}
+                className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg"
+              />
+            </div>
+            <p className="text-red-500 text-sm text-center">{error}</p>
+            {/* ///////////////////// */}
+            <hr className="border border-gray-300 my-5" />
+            {/* Adj Amount */}
+            <div className="flex gap-5 justify-center items-center ">
+              <label className="text-lg text-gray-600">Label:</label>
+              <input
+                type="text"
+                value={appendValueDeducToCalculation(appendValueSplToCalculation(adjAmtDetails, splAmt), splDecducAmt)}
+                readOnly
+                className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg bg-gray-100 cursor-not-allowed"
+              />
+            </div>
+            <div className="flex gap-5 justify-center items-center ">
+              <label className="text-lg text-gray-600 ">Dedcucted.Amt₹:</label>
+              <input
+                type="text"
+                value={splDecducAmt}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Allow digits and minus sign anywhere
+                  if (/^[\d-]*$/.test(value)) {
+                    handleSplDeductAmount(e, "deduct");
+                  }
+                }}
+                className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg"
+              />
+            </div>
+            <div className="flex gap-5 justify-center items-center ">
+              <label className="text-lg text-gray-600 ">Comments:</label>
+              <input
+                type="text"
+                value={deductCmt}
+                onChange={handleDeductAdvSplComment}
+                className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg "
+              />
+            </div>
+            <p className="text-red-500 text-sm mb-5 text-center">{deductError}</p>
+            {/* <p className="text-gray-500 mb-6 text-sm">
                 These are preview values and cannot be edited.
               </p> */}
-              <div className="flex justify-center items-center gap-5">
-                <button
-                  onClick={handleSaveAdj}
-                  className="w-full py-2 bg-orange-300 text-white rounded-lg hover:bg-orange-500 transition"
-                >
-                  save
-                </button>
-                <button
-                  onClick={() => setAdjAmtPopUp(false)}
-                  className="w-full py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition"
-                >
-                  cancel
-                </button>
-              </div>
+            <div className="flex justify-center items-center gap-5">
+              <button
+                onClick={handleSaveAdj}
+                className="w-full py-2 bg-orange-300 text-white rounded-lg hover:bg-orange-500 transition"
+              >
+                save
+              </button>
+              <button
+                onClick={() => setAdjAmtPopUp(false)}
+                className="w-full py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition"
+              >
+                cancel
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Popup Modal */}
-        {paidAmtPopUp && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-            <div className="bg-white rounded-xl shadow-xl p-6 w-96 relative animate-fadeIn">
-              <h2 className="text-xl font-semibold mb-4 text-gray-700">Paid Amt Details</h2>
-              {/* Adj Amount */}
-              <div className="flex gap-5 justify-center items-center ">
-                <label className="text-lg text-gray-600">Label: </label>
-                <input
-                  type="text"
-                  value={appendValueAdvDeducToCalculation(appendValueAdvToCalculation(paidAmtDetails, advAmt), advDecducAmt)}
-                  readOnly
-                  className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg bg-gray-100 cursor-not-allowed"
-                />
-              </div>
+      {/* Popup Modal */}
+      {paidAmtPopUp && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-96 relative animate-fadeIn">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">Paid Amt Details</h2>
+            {/* Adj Amount */}
+            <div className="flex gap-5 justify-center items-center ">
+              <label className="text-lg text-gray-600">Label: </label>
+              <input
+                type="text"
+                value={appendValueAdvDeducToCalculation(appendValueAdvToCalculation(paidAmtDetails, advAmt), advDecducAmt)}
+                readOnly
+                className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg bg-gray-100 cursor-not-allowed"
+              />
+            </div>
 
-              <div className="flex gap-5 justify-center items-center ">
-                <label className="text-lg text-gray-600 ">Adv.Amt₹:</label>
-                <input
-                  type="text"
-                  value={advAmt}
-                  onChange={(e) => handleAdvAmount(e, "Adv")}
-                  className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg "
-                />
-              </div>
+            <div className="flex gap-5 justify-center items-center ">
+              <label className="text-lg text-gray-600 ">Adv.Amt₹:</label>
+              <input
+                type="text"
+                value={advAmt}
+                onChange={(e) => handleAdvAmount(e, "Adv")}
+                className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg "
+              />
+            </div>
 
-              <div className="flex gap-5 justify-center items-center ">
-                <label className="text-lg text-gray-600 ">Comments:</label>
-                <input
-                  type="text"
-                  value={advCmt}
-                  onChange={handleAdvComment}
-                  className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg  "
-                />
-              </div>
-              <p className="text-red-500 text-sm mb-5 text-center">{error}</p>
+            <div className="flex gap-5 justify-center items-center ">
+              <label className="text-lg text-gray-600 ">Comments:</label>
+              <input
+                type="text"
+                value={advCmt}
+                onChange={handleAdvComment}
+                className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg  "
+              />
+            </div>
+            <p className="text-red-500 text-sm mb-5 text-center">{error}</p>
 
-              {/* ///////////////////// */}
-              <hr className="border border-gray-300 my-5" />
-              {/* Adj Amount */}
-              <div className="flex gap-5 justify-center items-center ">
-                <label className="text-lg text-gray-600">Label:</label>
-                <input
-                  type="text"
-                  value={appendValueAdvDeducToCalculation(appendValueAdvToCalculation(paidAmtDetails, advAmt), advDecducAmt)}
-                  readOnly
-                  className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg bg-gray-100 cursor-not-allowed"
-                />
-              </div>
+            {/* ///////////////////// */}
+            <hr className="border border-gray-300 my-5" />
+            {/* Adj Amount */}
+            <div className="flex gap-5 justify-center items-center ">
+              <label className="text-lg text-gray-600">Label:</label>
+              <input
+                type="text"
+                value={appendValueAdvDeducToCalculation(appendValueAdvToCalculation(paidAmtDetails, advAmt), advDecducAmt)}
+                readOnly
+                className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg bg-gray-100 cursor-not-allowed"
+              />
+            </div>
 
-              <div className="flex gap-5 justify-center items-center ">
-                <label className="text-lg text-gray-600 ">Dedcucted.Amt₹:</label>
-                <input
-                  type="text"
-                  value={advDecducAmt}
-                  onChange={(e) => {
-                    const value = e.target.value;
+            <div className="flex gap-5 justify-center items-center ">
+              <label className="text-lg text-gray-600 ">Dedcucted.Amt₹:</label>
+              <input
+                type="text"
+                value={advDecducAmt}
+                onChange={(e) => {
+                  const value = e.target.value;
 
-                    // Allow digits and minus sign anywhere
-                    if (/^[\d-]*$/.test(value)) {
-                      handleAdvDeductAmount(e, "deducted");
-                    }
-                  }}
-                  // onChange={(e) => handleAdvDeductAmount(e, "deducted")}
-                  className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg "
-                />
-              </div>
+                  // Allow digits and minus sign anywhere
+                  if (/^[\d-]*$/.test(value)) {
+                    handleAdvDeductAmount(e, "deducted");
+                  }
+                }}
+                // onChange={(e) => handleAdvDeductAmount(e, "deducted")}
+                className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg "
+              />
+            </div>
 
-              <div className="flex gap-5 justify-center items-center ">
-                <label className="text-lg text-gray-600 ">Comments:</label>
-                <input
-                  type="text"
-                  value={advDeductCmt}
-                  onChange={handleAdvDeductComment}
-                  className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg "
-                />
-              </div>
-              <p className="text-red-500 text-sm mb-5 text-center">{deductError}</p>
+            <div className="flex gap-5 justify-center items-center ">
+              <label className="text-lg text-gray-600 ">Comments:</label>
+              <input
+                type="text"
+                value={advDeductCmt}
+                onChange={handleAdvDeductComment}
+                className="w-full mt-1 outline-none mb-4 p-2 border border-orange-300 rounded-lg "
+              />
+            </div>
+            <p className="text-red-500 text-sm mb-5 text-center">{deductError}</p>
 
 
-              <div className="flex justify-center items-center gap-5">
-                <button
-                  onClick={handleSavePaid}
-                  className="w-full py-2 bg-orange-300 text-white rounded-lg hover:bg-orange-500 transition"
-                >
-                  save
-                </button>
-                <button
-                  onClick={() => setPaidAmtPopUp(false)}
-                  className="w-full py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition"
-                >
-                  cancel
-                </button>
-              </div>
+            <div className="flex justify-center items-center gap-5">
+              <button
+                onClick={handleSavePaid}
+                className="w-full py-2 bg-orange-300 text-white rounded-lg hover:bg-orange-500 transition"
+              >
+                save
+              </button>
+              <button
+                onClick={() => setPaidAmtPopUp(false)}
+                className="w-full py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition"
+              >
+                cancel
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
 
 

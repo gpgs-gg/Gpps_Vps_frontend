@@ -19,12 +19,6 @@ export const usePropertyData = () => {
   });
 };
 
-
-
-
-
-
-
 const fetchPropertySheetData = async (sheetId) => {
   if (!sheetId || sheetId.length === 0) {
     return [];
@@ -41,10 +35,6 @@ export const usePropertySheetData = (sheetId, enabled = true) => {
     initialData: [], // optional, safe default value
   });
 };
-
-
-
-
 
 const UploadClientDocs = async (formData) => {
   // No need to set headers manually for FormData
@@ -67,8 +57,6 @@ export const useUploadClientDocs = () => {
     },
   });
 };
-
-
 
 
 const fetchClientDetailsData = async () => {

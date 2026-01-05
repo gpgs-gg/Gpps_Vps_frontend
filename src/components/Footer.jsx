@@ -49,10 +49,11 @@ const Footer = () => {
 
         {/* Column 3: Social / Contact */}
         <ul className="space-y-2 text-lg">
-          <li><a className="text-2xl font-semibold text-white mb-2">Gopal's Group  Upcoming Ventures</a></li>
-          <li><a className="hover:text-white transition">Gopal's Organic Mart</a></li>
-             <li><a className="hover:text-white transition">Gopal's Property Maintenance Services</a></li>
-                       <li><a className="hover:text-white transition">Gopal's Realty</a></li>
+          <li><a className="text-2xl font-semibold  text-white  mb-2">Upcoming Ventures of Gopal's Group</a></li>
+          <li><a className="hover:text-white transition">Gopal's Homestay Services</a></li>
+          <li><a className="hover:text-white transition">Gopal's Property Maintenance Services</a></li>
+             <li><a className="hover:text-white transition">Gopal's Realty Consultancy Services</a></li>
+                       <li><a className="hover:text-white transition">Gopal's Organic Mart</a></li>
           <li><a className="hover:text-white transition">Gopal's Innovative Tech Solutions</a></li>
         </ul>
       </div>
@@ -61,7 +62,6 @@ const Footer = () => {
       <div className="border-t border-neutral-700 mt-10 pt-4 text-center text-lg text-white">
         &copy; {currentYear} Gopal's Paying Guest Services
         <span className='text-[12px] p-5'> Developed by : Gopal's Innovative Tech Solutions</span>
-
       </div>
     </footer>
   );

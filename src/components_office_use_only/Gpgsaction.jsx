@@ -15,9 +15,7 @@ const Gpgsaction = () => {
   const [showAccountsOptions, setShowAccountsOptions] = useState(false);
   const [decryptedUser, setDecryptedUser] = useState(null);
   const navigate = useNavigate()
-  
   const { data: permission } = usePermissionData()
-  console.log("permission", permission, decryptedUser)
 
   const functionPermission = permission?.data || []
 
@@ -217,10 +215,40 @@ const Gpgsaction = () => {
                   >
                     RNR Update
                   </Link>
+                  <Link
+                    to="/gpgs-actions/eb-calculation"
+                    className={`${subBtnClasses} bg-blue-100 text-blue-800 hover:bg-blue-200`}
+                  >
+                    EB Calculation
+                  </Link>
                 </div>
               )}
             </div>
           </div>
+
+            <Link to="/gpgs-actions/housekeeping-todo">
+            <div className={cardClasses}>
+              <div className={`${iconClasses} bg-red-100 text-rose-500`}>
+                <i className="fa-solid fa-ticket text-xl"></i>
+              </div>
+              <h3 className={titleClasses}>HouseKeeping</h3>
+              <button className={`${btnClasses} bg-rose-500 hover:bg-rose-600`}>
+               To-Do HouseKeeping 
+              </button>
+            </div>
+          </Link>
+            <Link to="/gpgs-actions/maintenance-todo">
+            <div className={cardClasses}>
+              <div className={`${iconClasses} bg-blue-100 text-blue-500`}>
+                <i className="fa-solid fa-ticket text-xl"></i>
+              </div>
+              <h3 className={titleClasses}>Maintenance
+</h3>
+              <button className={`${btnClasses} bg-blue-500 hover:bg-blue-600`}>
+               To-Do Maintenance 
+              </button>
+            </div>
+          </Link>
           {/* <Link to="/gpgs-actions/accounts">
           <div className={cardClasses}>
             <div className={`${iconClasses} bg-green-100 text-green-600`}>

@@ -30,6 +30,10 @@ import LeadsTable from './components_office_use_only/LeadsForGpgs/LeadsTable';
 import { usePermissionData } from './components_office_use_only/TicketSystem/Services';
 import { useApp } from './components_office_use_only/TicketSystem/AppProvider';
 import LoaderPage from './components_office_use_only/NewBooking/LoaderPage';
+import BedAvailabeDetails from './components/BedAvailabeDetails';
+import EBCalculation from './components_office_use_only/EBCalculation/EBCalculation';
+import HouseKeeping from './components_office_use_only/DailyToDoHouseKeeping/HouseKeeping';
+import Maintenance from './components_office_use_only/DailyToDoMaintenance/Maintanance';
 // import Footer from './components/Footer';
 // import { useAuth } from './context/AuthContext';
 
@@ -265,6 +269,7 @@ function App() {
 
         <Route path="*" element={<PageNotFound />} />
         <Route path="/gallery" element={<Gallary />} />
+        <Route path="/availabe-beds" element={<BedAvailabeDetails />} />
         <Route path="gpgs-actions/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
         <Route
@@ -272,6 +277,32 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
               <CheckInOut />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/gpgs-actions/housekeeping-todo"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+              <HouseKeeping />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/gpgs-actions/maintenance-todo"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+              <Maintenance />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/gpgs-actions/eb-calculation"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+              <EBCalculation />
             </ProtectedRoute>
           }
         />

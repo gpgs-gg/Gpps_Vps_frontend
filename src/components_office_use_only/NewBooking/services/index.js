@@ -20,7 +20,7 @@ const apiClient = axios.create({
 
 
 
-const addBooking= async (data) => {
+const addBooking = async (data) => {
   const response = await apiClient.post("/add-row", data);
   return response.data;
 };
@@ -63,33 +63,36 @@ export const usePropertyData = () => {
 
 
 
-const fetchPropertySheetData = async (sheetId) => {
-  if(sheetId){
-    const response = await apiClient.get(`/property-sheet-data-for-new-booking?sheetId=${sheetId}`);
+const fetchPropertySheetData = async (sheetId, selectedPerm) => {
+  if (sheetId) {
+    const response = await apiClient.get(`/property-sheet-data-for-new-booking?sheetId=${sheetId}&month=${selectedPerm}`
+    );
     return response.data;
   }
 };
 
-export const usePropertySheetData = (sheetId, enabled) => {
+export const usePropertySheetData = (sheetId, selectedPerm, enabled) => {
+  console.log("ssdfselectedPerm", selectedPerm)
   return useQuery({
-    queryKey: ["property-sheet", sheetId],
-    queryFn: () => fetchPropertySheetData(sheetId),
-    enabled: !!sheetId && enabled, // Only fetch when sheetId is available
+    queryKey: ["property-sheet", sheetId, selectedPerm],
+    queryFn: () => fetchPropertySheetData(sheetId, selectedPerm),
+    enabled: Boolean(sheetId && (enabled || selectedPerm)), // always boolean // fetch only when sheetId exists
+
   });
 };
 
-const fetchTempPropertySheetData = async (sheetId) => {
-  if(sheetId){
-    const response = await apiClient.get(`/property-sheet-data-for-new-booking?sheetId=${sheetId}`);
+const fetchTempPropertySheetData = async (sheetId , selectedTemp) => {
+  if (sheetId) {
+    const response = await apiClient.get(`/property-sheet-data-for-new-booking?sheetId=${sheetId}&month=${selectedTemp}`);
     return response.data;
   }
 };
 
-export const useTempPropertySheetData = (sheetId, enabled) => {
+export const useTempPropertySheetData = (sheetId,selectedTemp , enabled) => {
   return useQuery({
-    queryKey: ["property-sheet", sheetId],
-    queryFn: () => fetchTempPropertySheetData(sheetId),
-    enabled: !!sheetId && enabled, // Only fetch when sheetId is available
+    queryKey: ["property-sheet", sheetId, selectedTemp], // include selectedTemp
+    queryFn: () => fetchTempPropertySheetData(sheetId , selectedTemp),
+   enabled: Boolean(sheetId && (enabled || selectedTemp)),// fetch only when sheetId exists
   });
 };
 

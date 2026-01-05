@@ -2,13 +2,13 @@
 import { useState } from "react";
 // import { useClientDetails } from "./service/api";
 import { FaRegEdit } from "react-icons/fa";
-import {useLeadsDetails } from "./services";
+import { useLeadsDetails } from "./services";
 import { useApp } from "../TicketSystem/AppProvider";
 import { Navigate, useNavigate } from "react-router-dom";
 import LoaderPage from "../NewBooking/LoaderPage";
 
 function LeadsTable() {
-  const { data  , isPending} = useLeadsDetails();
+  const { data, isPending } = useLeadsDetails();
   const clientList = data?.data || [];
   const { selectedClient, setSelectedClient } = useApp()
   const navigate = useNavigate()
@@ -28,10 +28,10 @@ function LeadsTable() {
     setSelectedClient(cleint)
     navigate("/gpgs-actions/client-leads")
   }
-  
-  if(isPending){
+
+  if (isPending) {
     return <div className="h-screen w-full flex justify-center items-center">
-      <LoaderPage/>
+      <LoaderPage />
     </div>
   }
 
@@ -39,17 +39,17 @@ function LeadsTable() {
   return (
     <div className="max-w-full mx-auto mt-28 p-2">
       {/* 🌟 DESKTOP TABLE VIEW */}
-    <div className="flex justify-end items-center">
-                 <button
-            // type="submit",
-            onClick={()=>navigate("/gpgs-actions/client-leads")}
-            className={`px-4 py-2 rounded-md text-[16px] hover:text-orange-600 text-black  `}
-          >
-            + Create  Leads
-          </button>
-             </div>
+      <div className="flex justify-end items-center">
+        <button
+          // type="submit",
+          onClick={() => navigate("/gpgs-actions/client-leads")}
+          className={`px-4 py-2 rounded-md text-[16px] hover:text-orange-600 text-black  `}
+        >
+          + Create  Leads
+        </button>
+      </div>
       <div className="overflow-y-auto max-h-[600px] hidden md:block">
-            
+
         <table className="min-w-full border-orange-400 rounded-lg">
           <thead className="bg-orange-300 text-center sticky text-lg top-0 z-10">
             <tr>
@@ -147,7 +147,7 @@ function LeadsTable() {
             disabled={currentPage === 1}
             className="px-4 py-2 bg-orange-400 text-white rounded disabled:opacity-50"
           >
-          <i className="fa-solid fa-arrow-left"></i> Previous
+            <i className="fa-solid fa-arrow-left"></i> Previous
           </button>
 
 
@@ -158,9 +158,9 @@ function LeadsTable() {
           <button
             onClick={handleNext}
             disabled={currentPage === totalPages}
-           className="px-4 py-2 bg-orange-400 text-white rounded disabled:opacity-50"
+            className="px-4 py-2 bg-orange-400 text-white rounded disabled:opacity-50"
           >
-           Next  <i className="fa-solid fa-arrow-right"></i>
+            Next  <i className="fa-solid fa-arrow-right"></i>
           </button>
         </div>
       )}

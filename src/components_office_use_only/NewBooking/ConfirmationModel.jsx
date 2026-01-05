@@ -15,10 +15,6 @@ const ConfirmationModel = ({
   isBookingLoading,
   isPending
 }) => {
-  
-
-
-  console.log(111111111, isBookingLoading)
 
 
   const invoiceRef = useRef();
@@ -113,8 +109,20 @@ const ConfirmationModel = ({
       PermBedDepositAmt,
       ProcessingFeesAmt,
       AskForBAOrFA,
-      CallingNo
+      CallingNo,
+      UpcomingRentHikeDt,
+      UpcomingRentHikeAmt
     } = formPreviewData;
+
+
+    // console.log(2323,UpcomingRentHikeDt , UpcomingRentHikeAmt)
+
+ const parsePermBedDOJ = (dateStr) => {
+    if (!dateStr) return null;
+    const [day, month, year] = dateStr.split(" ");
+    return new Date(`${year}-${month}-${day}`);
+  };
+
 
     const formatDate = (dateStr) =>
       dateStr
@@ -187,7 +195,21 @@ Total Amount to be paid: ₹${totalAmount}
 
     msg += `📌 Payment is not refundable if you cancel the booking for any reason. Please read the agreement file sent to your WhatsApp and contact us if you have any concerns.\n\n`;
 
-    msg += `Gopal's Paying Guest Services\n(Customer Care No: 8928191814 | Service Hours: 10AM to 7PM)\nNote: This is a system-generated message and does not require a signature.`;
+    if (
+      UpcomingRentHikeDt && new Date(UpcomingRentHikeDt) > parsePermBedDOJ(PermBedDOJ) &&
+      new Date(UpcomingRentHikeDt) > new Date() && new Date(PermBedDOJ) > new Date()
+    ) {
+      msg +=
+        "📌 Upcoming Rent Hike Details — " +
+        "Date: " +
+        formatDate(UpcomingRentHikeDt) +
+        " | Amount: " +
+        (UpcomingRentHikeAmt ? `₹${UpcomingRentHikeAmt}\n\n` : "NA");
+    }
+
+    msg += `Gopal's Paying Guest Services\n(Customer Care No: 8928191814 | Service Hours: 10AM to 7PM)\nNote: This is a system-generated message and does not require a signature.\n\n`;
+
+
 
     const encodedMsg = encodeURIComponent(msg);
     const number = WhatsAppNo?.replace(/\D/g, "") || "";
@@ -203,7 +225,11 @@ Total Amount to be paid: ₹${totalAmount}
 
   };
 
-  // Assuming PermBedDOJ is in YYYY-MM-DD format
+  const parsePermBedDOJ = (dateStr) => {
+    if (!dateStr) return null;
+    const [day, month, year] = dateStr.split(" ");
+    return new Date(`${year}-${month}-${day}`);
+  };
 
   useEffect(() => {
     if (isBookingLoading) {
@@ -466,15 +492,49 @@ Total Amount to be paid: ₹${totalAmount}
               us know.
             </p>
           </section>
-
           <footer className=" text-sm text-center  border-t">
             <p className='text-orange-500 text-bold '>Gopal's Paying Guest Services</p>
-            <p>( Customer Care No : 8928191814 | Service Hours : 10AM to 7PM )</p>
+            <p>( Customer Care No : 89281918wer14 | Service Hours : 10AM to 7PM )</p>
+
+            {new Date(formPreviewData?.UpcomingRentHikeDt) > parsePermBedDOJ(formPreviewData?.PermBedDOJ) &&
+              new Date(formPreviewData?.UpcomingRentHikeDt) > new Date() && (
+                <p className="text-[12px] text-red-600">
+                  <strong>📌</strong> Upcoming Rent Hike Details —
+                  <span className="ml-1">
+                    Date: {formPreviewData?.UpcomingRentHikeDt || "NA"}
+                  </span>
+                  {" | "}
+                  <span>
+                    Amount:{" "}
+                    {formPreviewData?.UpcomingRentHikeAmt
+                      ? `₹${formPreviewData.UpcomingRentHikeAmt}`
+                      : "NA"}
+                  </span>
+                </p>
+              )}
+
+
             <p className='text-[12px]'>Note: This is a system-generated document and does not require a signature.
             </p>
+
+            {/* {new Date(formPreviewData?.UpcomingRentHikeDt) > new Date() && (
+              <p className="text-[12px] text-red-600">
+                <strong>Note:</strong> Upcoming Rent Hike Details —
+                <span className="ml-1">
+                  Date:{" "}
+                  {formPreviewData?.UpcomingRentHikeDt || "NA"}
+                </span>
+                {" | "}
+                <span>
+                  Amount:{" "}
+                  {formPreviewData?.UpcomingRentHikeAmt
+                    ? `₹${formPreviewData.UpcomingRentHikeAmt}`
+                    : "NA"}
+                </span>
+              </p>
+            )} */}
+
           </footer>
-
-
         </div>
 
         {/* Actions */}
@@ -498,9 +558,9 @@ Total Amount to be paid: ₹${totalAmount}
               handleFinalSubmit();
             }} className="flex items-center gap-2 px-4 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded"
           >
-             {isPending ? <p className='flex justify-center items-center gap-2'>
-               <LoaderPage/> <Send size={18} /> Save & Share on WhatsApp
-            </p> : "Save & Share on WhatsApp" }
+            {isPending ? <p className='flex justify-center items-center gap-2'>
+              <LoaderPage /> <Send size={18} /> Save & Share on WhatsApp
+            </p> : "Save & Share on WhatsApp"}
           </button>
 
         </div>

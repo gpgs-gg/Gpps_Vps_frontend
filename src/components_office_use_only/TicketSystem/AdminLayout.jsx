@@ -13,6 +13,7 @@ import PersonalInfo from './ClientActions/PersonalInfo';
 import Payments from './ClientActions/Payments';
 import { MyPGTickets } from './ClientActions/MyPGTickets';
 import Documents from './ClientActions/Documents';
+import EBSheetDetails from '../EBCalculation/EBSheetDetails';
 
 const AdminLayout = () => {
   const { currentView } = useApp();
@@ -44,8 +45,8 @@ const AdminLayout = () => {
         return <Reports />;
       case 'users':
         return <UserManagement />;
-      case 'settings':
-        return <Settings />;
+      case 'EBInfo':
+        return <EBSheetDetails />;
       default:
         return <Dashboard />;
     }

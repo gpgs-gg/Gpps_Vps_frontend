@@ -332,7 +332,7 @@ const AttendanceDetail = () => {
     const filteredDataForTotalHours =
         attendanceList?.find(ele => ele.EmployeeID === user?.id && ele.Date === currentDate) || [];
 
- let { InTime, MinHours, HalfDayHrs } = filteredDataForTotalHours || {};
+    let { InTime, MinHours, HalfDayHrs } = filteredDataForTotalHours || {};
 
 
     // Watch Filters
@@ -473,25 +473,42 @@ const AttendanceDetail = () => {
                             name="selectedMonth"
                             control={control}
                             rules={{ required: "Please select a month" }}
-                            render={({ field }) => (
-                                <DatePicker
-                                    selected={field.value ? new Date(field.value) : null}
-                                    onChange={(date) => {
-                                        if (!date) return field.onChange("");
+                            render={({ field }) => {
+                                // FIX: Convert "Dec2024" back to a Date object safely
+                                let selectedDate = null;
 
-                                        const month = MONTH_SHORT_NAMES[date.getMonth()];
-                                        const year = date.getFullYear();
-                                        const formatted = `${month}${year}`;
+                                if (field.value) {
+                                    const monthStr = field.value.slice(0, 3); // "Dec"
+                                    const yearStr = field.value.slice(3);     // "2024"
 
-                                        field.onChange(formatted);
-                                    }}
-                                    dateFormat="MMM yyyy"
-                                    showMonthYearPicker
-                                    placeholderText="Select month"
-                                    className="w-full border-2 focus:ring-1 focus:ring-orange-300 px-3 py-2 border-orange-300 outline-none rounded-md"
-                                />
-                            )}
+                                    const monthIndex = MONTH_SHORT_NAMES.indexOf(monthStr);
+
+                                    if (monthIndex !== -1) {
+                                        selectedDate = new Date(Number(yearStr), monthIndex, 1);
+                                    }
+                                }
+
+                                return (
+                                    <DatePicker
+                                        selected={selectedDate}
+                                        onChange={(date) => {
+                                            if (!date) return field.onChange("");
+
+                                            const month = MONTH_SHORT_NAMES[date.getMonth()];
+                                            const year = date.getFullYear();
+                                            const formatted = `${month}${year}`;
+
+                                            field.onChange(formatted);
+                                        }}
+                                        dateFormat="MMM yyyy"
+                                        showMonthYearPicker
+                                        placeholderText="Select month"
+                                        className="w-full border-2 focus:ring-1 focus:ring-orange-300 px-3 py-2 border-orange-300 outline-none rounded-md"
+                                    />
+                                );
+                            }}
                         />
+
 
                         {/* {errors.selectedDate && (
                             <p className="text-red-500 text-sm mt-1">
@@ -499,7 +516,7 @@ const AttendanceDetail = () => {
                             </p>
                         )} */}
                     </div>
-                         {/* Date Filter */}
+                    {/* Date Filter */}
                     <div>
                         <label className="block text-lg font-medium text-black mb-2">Date</label>
                         <Controller
@@ -574,7 +591,7 @@ const AttendanceDetail = () => {
 
                         <tbody>
                             {currentData.map((entry, i) => (
-                                <tr key={i} className={`transition ${entry.ApprovedBy ? "bg-green-50":""}  hover:bg-gray-200 ${i % 2 === 0 ? 'border' : 'bg-white border'}`}>
+                                <tr key={i} className={`transition ${entry.ApprovedBy ? "bg-green-50" : ""}  hover:bg-gray-200 ${i % 2 === 0 ? 'border' : 'bg-white border'}`}>
                                     <td className="px-4 py-3">{entry.Date}</td>
                                     <td className="px-4 py-3">{entry.EmployeeID}</td>
                                     <td className="px-4 py-3 font-medium">{entry.EmployeeName}</td>
@@ -691,8 +708,8 @@ const AttendanceDetail = () => {
                 editableData={editableData}
                 setEditableData={setEditableData}
                 selectedMonth={selectedMonth}
-                MinHours = {MinHours}
-                HalfDayHrs = {HalfDayHrs}
+                MinHours={MinHours}
+                HalfDayHrs={HalfDayHrs}
             />
 
         </div>

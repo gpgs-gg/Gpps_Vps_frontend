@@ -45,6 +45,7 @@ import GreenTickPng from "../logo/GreenTick.png"
 import Housekeeping from "../logo/Housekeeping.png"
 import ToolsPng from "../logo/Tools.png"
 import WifiPng from "../logo/WiFi.png"
+import BedAvailabeDetails from './BedAvailabeDetails';
 
 
 
@@ -203,6 +204,13 @@ const Services = () => {
   ]
 
   const [swiperInstance, setSwiperInstance] = useState(null);
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handlePopupOpen = () => {
+    setIsOpen(true);
+  }
+
 
 
   return (
@@ -366,9 +374,11 @@ const Services = () => {
                   price: "₹8,000 - ₹10,000/month",
                 },
               ].map((room, index) => (
+                //  <Link to="/contact" key={index}>
                 <div
                   key={index}
-                  className="card-hover bg-white rounded-xl shadow-lg overflow-hidden border flex flex-col justify-between"
+                  // onClick={handlePopupOpen}
+                  className="card-hover  cursor-pointer bg-white rounded-xl shadow-lg overflow-hidden border flex flex-col justify-between"
                 >
                   <div className="p-6 text-center ombre-container  text-white">
                     <h3 className="text-xl font-bold mb-2" style={{ textShadow: '2px 2px 6px rgba(0, 0, 0, 0.4)' }}>{room.title}</h3>
@@ -381,6 +391,7 @@ const Services = () => {
                     </ul>
                   </div>
                 </div>
+                //  </Link>
               ))}
             </div>
           </div>
@@ -506,6 +517,11 @@ const Services = () => {
 
 
           </div>
+
+          <BedAvailabeDetails setIsOpen={setIsOpen}
+            isOpen={isOpen}
+          />
+
         </section>
       </section>
 

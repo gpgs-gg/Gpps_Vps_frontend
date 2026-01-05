@@ -27,6 +27,7 @@ const schema = yup.object().shape({
 });
 
 function ClientLeads() {
+  
   const {
     control,
     handleSubmit,
@@ -56,7 +57,6 @@ function ClientLeads() {
   const { selectedClient, setSelectedClient } = useApp()
   const navigate = useNavigate()
   // const [selectedClient, setSelectedClient] = useState(null);
-  console.log("ajshdjsh", selectedClient)
   // ✅ Dropdown Options
   const selectOptionGender = [
     { value: "Male", label: "Male" },
