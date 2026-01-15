@@ -8,6 +8,8 @@ const apiClient = axios.create({
 /* ================= FETCH ================= */
 
 export const fetchHouseKeepingData = async (sheetName) => {
+  if (!sheetName) throw new Error("sheetName is required");
+
   const res = await apiClient.get(`/housekeeping/${sheetName}`);
   return res.data;
 };
@@ -20,32 +22,33 @@ export const useHouseKeepingData = (sheetName) => {
   });
 };
 
-/* ================= UPDATE (CELL BASED) ================= */
+/* ================= UPDATE (ROW BASED – FINAL) ================= */
 
-const updateHouseKeepingCell = async ({
-  name,
-  sheetName,
-  rowIndex,
-  columnName,
-  value,
-}) => {
-  const res = await apiClient.post(`/housekeeping/${sheetName}/update`, {
-    name,
-    rowIndex,
-    columnName,
-    value,
-  });
+const updateHouseKeepingRow = async (payload) => {
+  const { sheetName } = payload;
+
+  if (!sheetName) {
+    throw new Error("sheetName is missing in update payload");
+  }
+
+  const res = await apiClient.post(
+    `/housekeeping/${sheetName}/update`,
+    payload
+  );
+
   return res.data;
-};  
+};
 
-export const useUpdateHouseKeepingCell = () => {
+export const useUpdateHouseKeepingRow = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: updateHouseKeepingCell,
+    mutationFn: updateHouseKeepingRow,
     onSuccess: (_, variables) => {
-      // 🔄 refetch same sheet after update
-      queryClient.invalidateQueries(["housekeeping", variables.sheetName]);
+      // 🔄 Refetch same sheet after successful update
+      queryClient.invalidateQueries({
+        queryKey: ["housekeeping", variables.sheetName],
+      });
     },
   });
 };

@@ -80,7 +80,7 @@ const Header = () => {
   );
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-md">
+    <header className="fixed top-0 left-0 w-full z-[200] bg-white shadow-md">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-2 lg:px-2">
         <div className="flex justify-between items-center h-20 md:h-24">
           

@@ -8,6 +8,8 @@ const apiClient = axios.create({
 /* ================= FETCH ================= */
 
 export const fetchMaintenanceData = async (sheetName) => {
+  if (!sheetName) throw new Error("sheetName is required");
+
   const res = await apiClient.get(`/maintenance/${sheetName}`);
   return res.data;
 };
@@ -20,32 +22,30 @@ export const useMaintenanceData = (sheetName) => {
   });
 };
 
-/* ================= UPDATE (CELL BASED) ================= */
+/* ================= UPDATE (ROW BASED – FINAL) ================= */
 
-const updateMaintenanceCell = async ({
-  name,
-  sheetName,
-  rowIndex,
-  columnName,
-  value,
-}) => {
-  const res = await apiClient.post(`/maintenance/${sheetName}/update`, {
-    name,
-    rowIndex,
-    columnName,
-    value,
-  });
+const updateMaintenanceRow = async (payload) => {
+  const { sheetName } = payload;
+
+  if (!sheetName) {
+    throw new Error("sheetName is missing in update payload");
+  }
+
+  const res = await apiClient.post(`/maintenance/${sheetName}/update`, payload);
+
   return res.data;
 };
 
-export const useUpdateMaintenanceCell = () => {
+export const useUpdateMaintenanceRow = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: updateMaintenanceCell,
+    mutationFn: updateMaintenanceRow,
     onSuccess: (_, variables) => {
-      // 🔄 refetch same sheet after update
-      queryClient.invalidateQueries(["maintenance", variables.sheetName]);
+      // 🔄 Refetch same sheet after successful update
+      queryClient.invalidateQueries({
+        queryKey: ["maintenance", variables.sheetName],
+      });
     },
   });
 };

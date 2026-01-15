@@ -25,8 +25,8 @@ import CreateClient from './components_office_use_only/ClientCreation/CreateClie
 import CheckInOut from './components_office_use_only/Hrms_System/CheckInOut';
 import AttendanceDetail from './components_office_use_only/Hrms_System/AttendanceDetail';
 import Sallarydetail from './components_office_use_only/Hrms_System/Sallarydetail';
-import ClientLeads from './components_office_use_only/LeadsForGpgs/ClientLeads';
-import LeadsTable from './components_office_use_only/LeadsForGpgs/LeadsTable';
+// import ClientLeads from './components_office_use_only/LeadsForGpgs/ClientLeads';
+// import LeadsTable from './components_office_use_only/LeadsForGpgs/LeadsTable';
 import { usePermissionData } from './components_office_use_only/TicketSystem/Services';
 import { useApp } from './components_office_use_only/TicketSystem/AppProvider';
 import LoaderPage from './components_office_use_only/NewBooking/LoaderPage';
@@ -34,6 +34,9 @@ import BedAvailabeDetails from './components/BedAvailabeDetails';
 import EBCalculation from './components_office_use_only/EBCalculation/EBCalculation';
 import HouseKeeping from './components_office_use_only/DailyToDoHouseKeeping/HouseKeeping';
 import Maintenance from './components_office_use_only/DailyToDoMaintenance/Maintanance';
+import EBSheetDetails from './components_office_use_only/EBCalculation/EBSheetDetails';
+import EBInfo from './components_office_use_only/EBInfo/EBInfo';
+import LeadsNavigation from './components_office_use_only/LeadsForGpgs/LeadsNavigation';
 // import Footer from './components/Footer';
 // import { useAuth } from './context/AuthContext';
 
@@ -176,7 +179,7 @@ function App() {
         window.location.reload();
         clearInterval(interval);
       }
-    }, 5000);
+    }, 1000);
 
     return () => {
       clearInterval(interval);
@@ -306,6 +309,23 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/gpgs-actions/eb-calculated-list"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+              <EBSheetDetails/>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/gpgs-actions/eb-info"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+              <EBInfo/>
+            </ProtectedRoute>
+          }
+        />
 {/* 
         <Route
           path="/gpgs-actions/attendance-details"
@@ -391,22 +411,22 @@ function App() {
 
 
         <Route
-          path="/gpgs-actions/client-leads"
+          path="/gpgs-actions/leads-list"
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
-              <ClientLeads />
+              <LeadsNavigation />
             </ProtectedRoute>
           }
         />
 
-        <Route
+        {/* <Route
           path="/gpgs-actions/leads-list"
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
               <LeadsTable />
             </ProtectedRoute>
           }
-        />
+        /> */}
 
 
         {/* Admin routes */}

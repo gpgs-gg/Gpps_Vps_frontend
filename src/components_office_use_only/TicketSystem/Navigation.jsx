@@ -27,7 +27,7 @@ const rawMenuItems = [
   },
   { id: 'create', label: 'Create Ticket', icon: 'fas fa-plus-circle' },
 ];
-
+  
 // Filter logic based on role
 const menuItems = rawMenuItems.filter(item => {
   if (decryptedUser?.role === 'client') {
@@ -35,7 +35,7 @@ const menuItems = rawMenuItems.filter(item => {
     return ['pgpropertydetails', 'personalinfo', 'payments', "documents" ,"mypgtickets" ,'tickets', 'create', 'EBInfo'].includes(item.id);
   } else {
     // For other roles, exclude 'overview', 'personalinfo', 'payments'
-    return !['pgpropertydetails', 'personalinfo', 'payments',"mypgtickets", "documents" ,].includes(item.id);
+    return !['pgpropertydetails', 'personalinfo', 'payments',"mypgtickets", "documents",  "EBInfo",].includes(item.id);
   }
 });
 

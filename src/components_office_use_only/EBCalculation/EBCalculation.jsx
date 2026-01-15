@@ -4,7 +4,7 @@ import Select from "react-select";
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup';
 import { usePropertMasteryData } from '../TicketSystem/Services';
-import { useCreateEbCalculationForMainSheetData, useCreateEbCalculationSheetData, useCreateTicketSheetData, useMainSheetDataForEb } from '.';
+import { useAcConsumtionSheetData, useCreateEbCalculationForMainSheetData, useCreateEbCalculationSheetData, useCreateTicketSheetData, useMainSheetDataForEb } from '.';
 import LoaderPage from '../NewBooking/LoaderPage';
 import { toast } from 'react-toastify';
 import DatePicker from "react-datepicker";
@@ -26,12 +26,11 @@ const EBCalculation = () => {
     const [adjustedFreeEB, setAdjustedFreeEB] = useState({});
     const [adjustedEB, setAdjustedEB] = useState({});
     const [electricityAmt, setElectricityAmt] = useState();
+    console.log("Electricity Amount:", electricityAmt);
     const [ebToBeRecovered, setEbToBeRecovered] = useState(0);
     const [totalUnits, setTotalUnits] = useState(0)
     const [comments1, setComments1] = useState("")
     const [comments2, setComments2] = useState("")
-
-
     const {
         control,
         handleSubmit,
@@ -59,13 +58,15 @@ const EBCalculation = () => {
 
 
 
-
     const { data: property } = usePropertMasteryData();
 
     const findProperty = property?.data?.find(
         (prop) =>
             prop["Property Code"] === propertyCode?.label
     );
+
+
+
 
     const EBMainSheetID = `${findProperty ? findProperty["PG EB  Sheet ID"] : ""},${edCalSheetName}`
     const MainSheetID = `${findProperty ? findProperty["PG Main  Sheet ID"] : ""},${edCalSheetName}`
@@ -75,7 +76,8 @@ const EBCalculation = () => {
             prop["PropCode"] === propertyCode?.label
     );
 
-    console.log("MainPropertySheetData", MainPropertySheetData)
+    console.log("MainPropertySheetData:", MainPropertySheetData);
+
     // function convertToISO(dateStr) {
     //     if (!dateStr) return "";
 
@@ -239,19 +241,27 @@ const EBCalculation = () => {
 
             // limit max days to 31
             totalDays = Math.min(totalDays, 31);
-
+            console.log("Total Days Calculated:", totalDays);
             // validation only for minimum days = 28
             if (totalDays < 28) {
                 toast.error(`Invalid date range. Days count = ${totalDays}. Must be greater then 27 , Valid Ranges [28, 29, 30 , 31] .`);
                 setHeaderDays([]);  // clear days if invalid
                 return;
             }
-
+            if (totalDays > 31) {
+                toast.error(`Invalid date range. Days count = ${totalDays}. Must be greater then 27 , Valid Ranges [28, 29, 30 , 31] .`);
+                setHeaderDays([]);  // clear days if invalid
+                return;
+            }
             // generate days array
             const days = [];
             let current = new Date(start);
 
-            while (current <= end && days.length <= 31) { // stop at 31 days max
+            // while (current <= end && days.length <= 31) { // stop at 31 days max
+            //     days.push({ date: new Date(current) });
+            //     current.setDate(current.getDate() + 1);
+            // }
+            while (current <= end && days.length < totalDays) {
                 days.push({ date: new Date(current) });
                 current.setDate(current.getDate() + 1);
             }
@@ -337,11 +347,12 @@ const EBCalculation = () => {
 
             const adjusted = adjustedFreeEB[`${ele.ClientID}_${ele.RentDOJ}`] || 0;
 
-            return sum + totalDays * MainPropertySheetData?.FreeEBPerDay + adjusted;
+            // return sum + totalDays * MainPropertySheetData?.FreeEBPerDay + adjusted;
+            return sum + totalDays * ele?.FreeEBPerDay + adjusted;
 
         }, 0);
 
-
+    console.log("Total Free EB Calculated:", totalFreeEB);
     // here calculate per head free eb ..........
     const getPerHeadFreeEB = (client) => {
         const billStart = startDate ? normalizeDate(startDate) : null;
@@ -424,7 +435,7 @@ const EBCalculation = () => {
         const adjusted = adjustedFreeEB[`${client.ClientID}_${client.RentDOJ}`] || 0;
 
 
-        return totalDays * MainPropertySheetData?.FreeEBPerDay + adjusted;
+        return totalDays * client?.FreeEBPerDay + adjusted;
     };
 
 
@@ -480,13 +491,20 @@ const EBCalculation = () => {
     };
 
 
+    const { mutate: createEBCalculationData, isPending: isCreateEbCalcul } = useCreateEbCalculationSheetData(EBMainSheetID);
+    const { data: fetchAcConsumtionSheetData, isPending: isAcConsumtion } = useAcConsumtionSheetData(findProperty ? findProperty["PG AC  Sheet ID"] : "", true);
+    const { mutate: createEBCalculationForMainSheetData, isPending: isCreateEbMainSheet } = useCreateEbCalculationForMainSheetData(MainSheetID);
+
+
+    // ===============================
+    const sheetData = fetchAcConsumtionSheetData?.data?.[0];
+
 
     useEffect(() => {
         const ebToBeRecovered =
             electricityAmt && totalFreeEB
-                ? Math.max(electricityAmt - totalFreeEB, 0)
+                ? Math.max(electricityAmt - totalFreeEB, 0).toFixed(2)
                 : 0;
-
         setEbToBeRecovered(ebToBeRecovered);
     }, [totalFreeEB, electricityAmt]);
 
@@ -494,8 +512,13 @@ const EBCalculation = () => {
 
 
     // per day EB
+    // per day EB
     const totalDaysCount = headerDays.length;
-    const perDayEB = totalDaysCount > 0 ? ebToBeRecovered / totalDaysCount : 0;
+
+    const perDayEB =
+        totalDaysCount > 0
+            ? (ebToBeRecovered - (sheetData?.ACTotalEB ?? 0)) / totalDaysCount
+            : 0;
 
     // check vacation for client on date
     // Normalize date helper
@@ -579,9 +602,111 @@ const EBCalculation = () => {
 
 
 
-    const { mutate: createEBCalculationData, isPending: isCreateEbCalcul } = useCreateEbCalculationSheetData(EBMainSheetID);
-    const { mutate: createEBCalculationForMainSheetData, isPending: isCreateEbMainSheet } = useCreateEbCalculationForMainSheetData(MainSheetID);
 
+    const AcConsumtion = {};
+
+    if (sheetData) {
+        Object.keys(sheetData).forEach((key) => {
+            if (key.startsWith("RoomNo_") && key.endsWith("_ACEB")) {
+                const roomKey = key
+                    .replace("RoomNo_", "")
+                    .replace("_ACEB", "");
+
+                AcConsumtion[roomKey] = sheetData[key];
+            }
+        });
+    }
+
+
+
+    const FilterDataForACBeds = data?.data?.filter((ele) => {
+        return (ele.ACRoom.toLowerCase() === "yes");
+    });
+
+    useEffect(() => {
+        if (FilterDataForACBeds && FilterDataForACBeds.length > 0 && sheetData) {
+            // setElectricityAmt(sheetData.CommonTotalEB || 0);
+            setElectricityAmt(sheetData.FlatTotalEB || 0);
+        }
+    }, [FilterDataForACBeds, sheetData])
+
+
+
+
+
+
+
+
+    const getBillingDaysCount = () => {
+        if (!startDate || !endDate) return 0;
+
+        const s = normalizeDate(startDate);
+        const e = normalizeDate(endDate);
+
+        const days =
+            Math.floor((e - s) / (1000 * 60 * 60 * 24)) + 1;
+
+        return Math.min(days, 31); // ✅ max 31 days
+    };
+
+    const getPresentCountByRoomForDate = (roomNo, date) => {
+        return data?.data?.filter(client => {
+            if (String(client.RoomNo) !== String(roomNo)) return false;
+            if (client.ACRoom !== "Yes") return false;
+            if (client.FullName == "") return false;
+
+            return getClientEBForDate(client, date) > 0; // ✅ present logic reuse
+        }).length || 0;
+    };
+
+
+
+    const getClientACEBForDate = (client, date) => {
+        // ❌ AC nahi
+        if (client.ACRoom !== "Yes") return 0;
+
+        // ❌ client present nahi
+        if (getClientEBForDate(client, date) === 0) return 0;
+
+        const roomNo = client.RoomNo;
+        const monthlyRoomAC = Number(AcConsumtion[roomNo] || 0);
+        if (!monthlyRoomAC) return 0;
+
+        const billingDays = getBillingDaysCount();
+        if (!billingDays) return 0;
+
+        const perDayRoomAC = monthlyRoomAC / billingDays;
+
+        const presentCount = getPresentCountByRoomForDate(roomNo, date);
+        if (!presentCount) return 0;
+
+        // ✅ DATE-WISE + PRESENT-WISE distribution
+        return perDayRoomAC / presentCount;
+    };
+
+
+
+    //     const getClientCountByRoom = (roomNo) => {
+    //   return data?.data?.filter(
+    //     client => String(client.RoomNo) === String(roomNo) && client.ACRoom === "Yes"
+    //   ).length || 0;
+    // };
+
+
+    //  const getClientACEBForDate = (client, date) => {
+    //   // ❌ AC room nahi hai
+    //   if (client.ACRoom !== "Yes") return 0;
+
+    //   const roomNo = client.RoomNo;
+    //   const roomAC = Number(AcConsumtion[roomNo] || 0);
+    //   if (!roomAC) return 0;
+
+    //   const clientCount = getClientCountByRoom(roomNo);
+    //   if (!clientCount) return 0;
+
+    //   // ✅ Equal distribution
+    //   return roomAC / clientCount;
+    // };
 
 
     // bulkupload function here ...........
@@ -692,6 +817,10 @@ const EBCalculation = () => {
                     const value = getClientEBForDate(ele, d.date);
                     return sum + value;
                 }, 0);
+                const totalACEB = headerDays.reduce((sum, d) => {
+                    const value = getClientACEBForDate(ele, d.date);
+                    return sum + value;
+                }, 0);
 
                 // ===== Format Dates =====
                 const formatDate = (date) => {
@@ -705,7 +834,7 @@ const EBCalculation = () => {
                 // ===== Final Payload =====
                 return {
                     PropertyCode: propertyCode?.label || "",
-                    FlatEB: electricityAmt || 0,
+                    FlatEB: sheetData?.FlatTotalEB ?? electricityAmt,
                     EBStartDate: formatDate(startDate) || "",
                     EBEndDate: formatDate(endDate) || "",
                     ClientName: ele.FullName,
@@ -713,6 +842,7 @@ const EBCalculation = () => {
                     vacationStart: overlapStart || "",
                     vacationEnd: overlapEnd || "",
                     CEB: totalEB.toFixed(2),
+                    ACEB: totalACEB.toFixed(2),
                     TotalDays: totalDays,
                     AdjFreeEB: adjustedFreeEB[`${ele.ClientID}_${ele.RentDOJ}`] || 0,
                     AdjEB: adjustedEB[`${ele.ClientID}_${ele.RentDOJ}`] || 0,
@@ -724,12 +854,21 @@ const EBCalculation = () => {
                     VED1: formatDate(dates[`${ele.ClientID}_${ele.RentDOJ}_VSD1`]?.endDate),
                     VSD2: formatDate(dates[`${ele.ClientID}_${ele.RentDOJ}_VSD2`]?.startDate),
                     VED2: formatDate(dates[`${ele.ClientID}_${ele.RentDOJ}_VSD2`]?.endDate),
-                    EBAmt: (
-                        totalEB + (adjustedEB[`${ele.ClientID}_${ele.RentDOJ}`] || 0)
+                    TotalClientEB: (
+                        totalEB + (adjustedEB[`${ele.ClientID}_${ele.RentDOJ}`] || 0) + totalACEB
                     ).toFixed(2),
-                    ACEB: 0,
+                    EBAmt: (
+                        totalEB + (adjustedEB[`${ele.ClientID}_${ele.RentDOJ}`] || 0) + totalACEB
+                    ).toFixed(2),
+
                     Comments1: comments1[`${ele.ClientID}_${ele.RentDOJ}`] || "N/A",
                     Comments2: comments2[`${ele.ClientID}_${ele.RentDOJ}`] || "N/A",
+                    FlatTotalEB: sheetData?.FlatTotalEB ?? electricityAmt,
+                    FlatTotalUnits: sheetData?.FlatTotalUnits ?? 0,
+                    PerUnitCost: sheetData?.PerUnitCost ?? 0,
+                    ACTotalUnits: sheetData?.ACTotalUnits ?? 0,
+                    ACTotalEB: sheetData?.ACTotalEB ?? 0,
+                    CommonEB: sheetData?.CommonTotalEB ?? electricityAmt
                 };
             });
 
@@ -831,15 +970,13 @@ const EBCalculation = () => {
 
 
 
-
-
-
-
-
     return (
         <>
             <div className='h-screen w-full  mt-52'>
-                <div className="flex justify-end m-2">
+                <div className="flex justify-between items-center m-2">
+                    <h1 className="text-xl font-bold">
+                        Electricity Bill Calculation
+                    </h1>
                     <button
                         onClick={handleBulkSubmit}
                         className="px-4 py-2 bg-orange-300 font-bold rounded hover:bg-orange-400"
@@ -851,24 +988,32 @@ const EBCalculation = () => {
                     </button>
                 </div>
                 {/* <h1 className='text-3xl font-bold text-center underline mt-20'>Electricity Bill Calculation</h1> */}
-                <div className='flex gap-5 p-2 top-24 z-50 bg-white fixed border-2  overflow-x-auto flex-nowrap'>
-                    <div className="flex-shrink-0 ">
-                        <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">Property Code</label>
+                <div className='flex gap-5 p-2 top-24 z-[9999] bg-white fixed border-2  overflow-x-auto flex-nowrap'>
+                    <div className="flex-shrink-0">
+                        <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">
+                            Property Code
+                        </label>
+
                         <Controller
                             name="PropertyCode"
                             control={control}
                             render={({ field }) => (
-                                <Select {...field} placeholder="Select Property Code"
+                                <Select
+                                    {...field}
+                                    placeholder="Select Property Code"
                                     isClearable
                                     styles={employeeSelectStyles}
                                     options={ProperyOptions}
-                                    // menuPortalTarget={document.body} // Add this
-                                    menuPosition={'fixed'} // Optional, ensures correct positioning
-
+                                    menuPosition="fixed"
+                                    onChange={(selectedOption) => {
+                                        field.onChange(selectedOption);   // RHF value update
+                                        setElectricityAmt(0);              // 🔥 RESET HERE
+                                    }}
                                 />
                             )}
                         />
                     </div>
+
                     <div className="flex-shrink-0">
                         <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">
                             Bill Start Date
@@ -926,42 +1071,6 @@ const EBCalculation = () => {
                     </div>
 
                     <div className="flex-shrink-0">
-                        <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">Electricity Bill Amount</label>
-                        <input
-                            type="text"
-                            placeholder="Enter EB Amount"
-                            className={inputClass}
-                            value={electricityAmt ?? 0}
-                            onChange={(e) =>
-                                setElectricityAmt(e.target.value === "" ? "" : Number(e.target.value))
-                            }
-                        />
-                    </div>
-                    <div className="flex-shrink-0">
-                        <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">Total Units</label>
-                        <input type="text"
-                            name=""
-                            id=""
-                            placeholder='Enter Total Units'
-                            value={totalUnits ?? 0}
-                            onChange={(e) =>
-                                setTotalUnits(e.target.value === "" ? "" : Number(e.target.value))
-                            }
-                            className={inputClass}
-                        />
-                    </div>
-                    <div className="flex-shrink-0">
-                        <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">Total Free EB</label>
-                        <input type="number"
-                            name=""
-                            id=""
-                            value={totalFreeEB || 0}
-                            placeholder='Enter Total Units'
-                            className={inputClass}
-                            disabled
-                        />
-                    </div>
-                    <div className="flex-shrink-0">
                         <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">EB To Be Recovered</label>
                         <input type="number"
                             name=""
@@ -973,400 +1082,125 @@ const EBCalculation = () => {
                         />
                     </div>
 
+
+                    <div className="flex-shrink-0">
+                        <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">Common Total EB</label>
+                        <input
+                            type="text"
+                            placeholder="Enter EB Amount"
+                            className={inputClass}
+                            disabled={FilterDataForACBeds && FilterDataForACBeds.length > 0}
+                            value={(
+                                Number(electricityAmt) - Number(sheetData?.ACTotalEB ?? 0)
+                            ).toFixed(0)}
+
+                            onChange={(e) =>
+                                setElectricityAmt(e.target.value === "" ? "" : Number(e.target.value))
+                            }
+                        />
+                    </div>
+                    {/* Ac Consumtion */}
+                    {FilterDataForACBeds && FilterDataForACBeds.length > 0 && (
+
+                        <div className='flex flex-shrink-0 gap-5'>
+                            <div className="flex-shrink-0">
+                                <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">Flat Total EB</label>
+                                <input type="number"
+                                    name=""
+                                    id=""
+                                    value={sheetData?.FlatTotalEB ?? 0}
+                                    placeholder='Enter Total Units'
+                                    className={inputClass}
+                                    disabled
+                                />
+                            </div>  <div className="flex-shrink-0">
+                                <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">Flat Total Units</label>
+                                <input type="number"
+                                    name=""
+                                    id=""
+                                    value={sheetData?.FlatTotalUnits ?? 0}
+                                    placeholder='Enter Total Units'
+                                    className={inputClass}
+                                    disabled
+                                />
+                            </div>  <div className="flex-shrink-0">
+                                <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">Per Unit Cost</label>
+                                <input type="number"
+                                    name=""
+                                    id=""
+                                    value={sheetData?.PerUnitCost ?? 0}
+                                    placeholder='Enter Total Units'
+                                    className={inputClass}
+                                    disabled
+                                />
+                            </div>
+                            <div className="flex-shrink-0">
+                                <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">AC Total Units</label>
+                                <input type="number"
+                                    name=""
+                                    id=""
+                                    value={sheetData?.ACTotalUnits ?? 0}
+                                    placeholder='Enter Total Units'
+                                    className={inputClass}
+                                    disabled
+                                />
+                            </div>
+
+                            <div className="flex-shrink-0">
+                                <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">AC Total EB</label>
+                                <input type="number"
+                                    name=""
+                                    id=""
+                                    value={sheetData?.ACTotalEB ?? 0}
+                                    placeholder='Enter Total Units'
+                                    className={inputClass}
+                                    disabled
+                                />
+                            </div>
+                            {/* <div className="flex-shrink-0">
+                                <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">Flat Total Units</label>
+                                <input type="text"
+                                    name=""
+                                    id=""
+                                    disabled={true}
+                                    placeholder='Enter Total Units'
+                                    value={sheetData?.FlatTotalUnits ?? 0}
+                                    onChange={(e) =>
+                                        setTotalUnits(e.target.value === "" ? "" : Number(e.target.value))
+                                    }
+                                    className={inputClass}
+                                />
+                            </div> */}
+                        </div>
+                    )}
+                    {/* Ac Consumtion */}
+
+
+                    <div className="flex-shrink-0">
+                        <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">Total Free EB</label>
+                        <input type="number"
+                            name=""
+                            id=""
+                            value={totalFreeEB || 0}
+                            placeholder='Enter Total Units'
+                            className={inputClass}
+                            disabled
+                        />
+                    </div>
+
+
                 </div>
 
-                {isLoading ? <div><LoaderPage /></div> :
 
-                    <table className="min-w-auto  border-red-500">
-                        <thead className="bg-orange-300 shadow-sm text-lg font-bold text-gray-700 sticky top-[-1px] ">
-                            <tr>
-                                {/* <th className="border font-bold whitespace-nowrap px-2 py-2 sticky left-0 z-50 bg-orange-300">Client Id</th> */}
-                                <th className="border border-gray-300 whitespace-nowrap font-bold  px-2 py-2 sticky left-0  z-50 bg-orange-300 text-left">Client Name &#8595;  Date &#8594; </th>
-                                <th className="border hidden border-gray-300 whitespace-nowrap font-bold  px-2 py-2 sticky left-0 z-30 bg-orange-300 text-left">Vacation SD</th>
-                                <th className="border hidden border-gray-300 whitespace-nowrap font-bold  px-2 py-2 sticky left-0 z-30 bg-orange-300 text-left">Vacation LD</th>
-                                {headerDays.map((d, i) => (
-                                    <th
-                                        key={i}
-                                        className="border border-gray-300 p-3"
-                                    >
-                                        {d.date.getDate()}
-                                    </th>
-                                ))}
-                                <th className="border whitespace-nowrap font-bold  border-gray-300 px-2 py-2 w-[100px]">Total Days</th>
-                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Adj Free EB</th>
-                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Free EB</th>
-                                <th className="border whitespace-nowrap font-bold border-gray-300 w-48 px-2 py-2">Comments1</th>
-
-                                {/* <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Fix Salary</th>
-                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Per Day</th>
-                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Adjusted Amt</th>
-                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Paid Leaves</th>
-                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Payable Salary</th>
-                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Paid Amt</th>
-                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Current Due</th>
-                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Previous Due</th>  
-                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Actions</th> */}
-
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            {data?.data?.filter(ele => ele.FullName && ele.FullName.trim() !== "")?.map((ele) => {
-                                const billStart = startDate ? new Date(startDate) : null;
-                                const billEnd = endDate ? new Date(endDate) : null;
-
-                                // const normalizeDate = (d) => {
-                                //     const nd = new Date(d);
-                                //     nd.setHours(0, 0, 0, 0);
-                                //     return nd;
-                                // };
-                                // ===== Existing (VSD1) =====
-                                const vacStart = dates[`${ele.ClientID}_${ele.RentDOJ}_VSD1`]?.startDate
-                                    ? normalizeDate(
-                                        new Date(
-                                            new Date(dates[`${ele.ClientID}_${ele.RentDOJ}_VSD1`].startDate).getTime() +
-                                            1 * 24 * 60 * 60 * 1000
-                                        )
-                                    )
-                                    : null;
-
-                                const vacEnd = dates[`${ele.ClientID}_${ele.RentDOJ}_VSD1`]?.endDate
-                                    ? normalizeDate(
-                                        new Date(
-                                            new Date(dates[`${ele.ClientID}_${ele.RentDOJ}_VSD1`].endDate).getTime() -
-                                            1 * 24 * 60 * 60 * 1000
-                                        )
-                                    )
-                                    : null;
-
-
-                                // ===== NEW (VSD2) — same logic =====
-                                const vacStart2 = dates[`${ele.ClientID}_${ele.RentDOJ}_VSD2`]?.startDate
-                                    ? normalizeDate(
-                                        new Date(
-                                            new Date(dates[`${ele.ClientID}_${ele.RentDOJ}_VSD2`].startDate).getTime() +
-                                            1 * 24 * 60 * 60 * 1000
-                                        )
-                                    )
-                                    : null;
-
-                                const vacEnd2 = dates[`${ele.ClientID}_${ele.RentDOJ}_VSD2`]?.endDate
-                                    ? normalizeDate(
-                                        new Date(
-                                            new Date(dates[`${ele.ClientID}_${ele.RentDOJ}_VSD2`].endDate).getTime() -
-                                            1 * 24 * 60 * 60 * 1000
-                                        )
-                                    )
-                                    : null;
-
-
-
-                                // 🔹 Calculate vacation length
-                                let vacationDays1 = 0;
-                                if (vacStart && vacEnd) {
-                                    vacationDays1 =
-                                        Math.floor((vacEnd - vacStart) / (1000 * 60 * 60 * 24)) + 1;
-                                }
-
-                                let vacationDays2 = 0;
-                                if (vacStart2 && vacEnd2) {
-                                    vacationDays2 =
-                                        Math.floor((vacEnd2 - vacStart2) / (1000 * 60 * 60 * 24)) + 1;
-                                }
-
-                                // 🔹 Apply vacation ONLY if >= 15 days
-                                let overlapStart1 = null;
-                                let overlapEnd1 = null;
-
-                                if (
-                                    vacationDays1 >= 15 &&
-                                    billStart &&
-                                    billEnd &&
-                                    vacStart &&
-                                    vacEnd
-                                ) {
-                                    overlapStart1 = vacStart < billStart ? billStart : vacStart;
-                                    overlapEnd1 = vacEnd > billEnd ? billEnd : vacEnd;
-                                }
-
-                                let overlapStart2 = null;
-                                let overlapEnd2 = null;
-
-                                if (
-                                    vacationDays2 >= 15 &&
-                                    billStart &&
-                                    billEnd &&
-                                    vacStart2 &&
-                                    vacEnd2
-                                ) {
-                                    overlapStart2 = vacStart2 < billStart ? billStart : vacStart2;
-                                    overlapEnd2 = vacEnd2 > billEnd ? billEnd : vacEnd2;
-                                }
-
-                                return (
-                                    <tr key={`${ele.ClientID}_${ele.RentDOJ}`} className={`text-lg text-gray-800 text-center `}>
-                                        <td className="border border-gray-300 px-2 sticky left-0 whitespace-nowrap bg-orange-300 font-bold  text-left">
-                                            {`${ele.FullName.slice(0, 18)}..`}
-                                        </td>
-                                        <td className='border-2 hidden p-2'>
-                                            <input
-                                                type="date"
-                                                className="border-none"
-                                                value={dates[`${ele.ClientID}_${ele.RentDOJ}`]?.startDate || ""}
-                                                onChange={(e) =>
-                                                    setDates(prev => ({
-                                                        ...prev,
-                                                        [`${ele.ClientID}_${ele.RentDOJ}`]: {
-                                                            ...prev[`${ele.ClientID}_${ele.RentDOJ}`],
-                                                            startDate: e.target.value
-                                                        }
-                                                    }))
-                                                }
-                                            />
-                                        </td>
-                                        <td className='border-2 hidden p-2'>
-                                            <input
-                                                type="date"
-                                                className="border-none"
-                                                value={dates[`${ele.ClientID}_${ele.RentDOJ}`]?.endDate || ""}
-                                                onChange={(e) =>
-                                                    setDates(prev => ({
-                                                        ...prev,
-                                                        [`${ele.ClientID}_${ele.RentDOJ}`]: {
-                                                            ...prev[`${ele.ClientID}_${ele.RentDOJ}`],
-                                                            endDate: e.target.value
-                                                        }
-                                                    }))
-                                                }
-                                            />
-                                        </td>
-
-                                        {headerDays.map((d, i) => {
-                                            const normalizeDate = (dt) => {
-                                                const nd = new Date(dt);
-                                                nd.setHours(0, 0, 0, 0);
-                                                return nd;
-                                            };
-
-                                            const currentDate = normalizeDate(d.date);
-
-                                            // DOJ
-                                            const doj = ele.EBDOJ
-                                                ? normalizeDate(
-                                                    new Date(
-                                                        ele.EBDOJ.replace(/(\d+)\s(\w+)\s(\d+)/, "$2 $1, $3")
-                                                    )
-                                                )
-                                                : null;
-
-                                            // Client Vacate Date
-                                            const cvd = ele.CVD
-                                                ? normalizeDate(
-                                                    new Date(new Date(ele.CVD).setDate(new Date(ele.CVD).getDate() + 1))
-                                                )
-                                                : null;
-
-                                            // ✅ Vacation check (VSD1 OR VSD2)
-                                            const isVacation =
-                                                (
-                                                    overlapStart1 &&
-                                                    overlapEnd1 &&
-                                                    currentDate >= normalizeDate(overlapStart1) &&
-                                                    currentDate <= normalizeDate(overlapEnd1)
-                                                ) ||
-                                                (
-                                                    overlapStart2 &&
-                                                    overlapEnd2 &&
-                                                    currentDate >= normalizeDate(overlapStart2) &&
-                                                    currentDate <= normalizeDate(overlapEnd2)
-                                                );
-
-                                            // ❌ Before DOJ
-                                            if (doj && currentDate < doj) {
-                                                return (
-                                                    <td key={i} className="border px-1 py-1  bg-red-100 text-red-700">
-                                                        0
-                                                    </td>
-                                                );
-                                            }
-
-                                            // ❌ On or after CVD
-                                            if (cvd && currentDate >= cvd) {
-                                                return (
-                                                    <td key={i} className="border px-1 py-1  bg-red-100 text-red-700">
-                                                        0
-                                                    </td>
-                                                );
-                                            }
-
-                                            // ❌ Vacation
-                                            if (isVacation) {
-                                                return (
-                                                    <td key={i} className="border px-1 py-1  bg-red-100 text-red-700">
-                                                        0
-                                                    </td>
-                                                );
-                                            }
-
-                                            // ✅ Present
-                                            return (
-                                                <td key={i} className="border px-1 py-1  bg-white text-black">
-                                                    1
-                                                </td>
-                                            );
-                                        })}
-
-
-
-                                        <td className="border px-2 py-1 font-semibold bg-orange-100">
-                                            {
-                                                headerDays.reduce((total, d) => {
-                                                    const normalizeDate = (dt) => {
-                                                        const nd = new Date(dt);
-                                                        nd.setHours(0, 0, 0, 0);
-                                                        return nd;
-                                                    };
-
-                                                    const currentDate = normalizeDate(d.date);
-
-                                                    // DOJ
-                                                    const doj = ele.EBDOJ
-                                                        ? normalizeDate(
-                                                            new Date(
-                                                                ele.EBDOJ.replace(/(\d+)\s(\w+)\s(\d+)/, "$2 $1, $3")
-                                                            )
-                                                        )
-                                                        : null;
-
-                                                    // Client Vacate Date (CVD)
-                                                    const cvd = ele.CVD
-                                                        ? normalizeDate(
-                                                            new Date(
-                                                                new Date(ele.CVD).setDate(new Date(ele.CVD).getDate() + 1)
-                                                            )
-                                                        )
-                                                        : null;
-
-                                                    // ✅ Vacation check (VSD1 OR VSD2)
-                                                    const isVacation =
-                                                        (
-                                                            overlapStart1 &&
-                                                            overlapEnd1 &&
-                                                            currentDate >= normalizeDate(overlapStart1) &&
-                                                            currentDate <= normalizeDate(overlapEnd1)
-                                                        ) ||
-                                                        (
-                                                            overlapStart2 &&
-                                                            overlapEnd2 &&
-                                                            currentDate >= normalizeDate(overlapStart2) &&
-                                                            currentDate <= normalizeDate(overlapEnd2)
-                                                        );
-
-                                                    // ❌ Before DOJ
-                                                    if (doj && currentDate < doj) {
-                                                        return total;
-                                                    }
-
-                                                    // ❌ On or after CVD
-                                                    if (cvd && currentDate >= cvd) {
-                                                        return total;
-                                                    }
-
-                                                    // ➕ Count present (vacation = 0)
-                                                    return total + (isVacation ? 0 : 1);
-                                                }, 0)
-                                            }
-                                        </td>
-
-
-                                        <td className="border ">
-                                            <input
-                                                type="text"
-                                                value={adjustedFreeEB[`${ele.ClientID}_${ele.RentDOJ}`] ?? 0} // default 0 if undefined
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    setAdjustedFreeEB((prev) => ({
-                                                        ...prev,
-                                                        [`${ele.ClientID}_${ele.RentDOJ}`]: val === "" ? 0 : Number(val), // default 0 if empty
-                                                    }));
-                                                }}
-                                                className="border  border-none outline-none px-1 py-1 w-16"
-                                            />
-
-                                        </td>
-
-                                        <td className="border bg-orange-100">
-                                            {/* {per head free eb} */}
-                                            {getPerHeadFreeEB(ele)}
-                                        </td>
-                                        <td className="border ">
-                                            <input
-                                                type="text"
-                                                value={comments1[`${ele.ClientID}_${ele.RentDOJ}`] ?? ""} // default 0 if undefined
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    setComments1((prev) => ({
-                                                        ...prev,
-                                                        [`${ele.ClientID}_${ele.RentDOJ}`]: val === "" ? 0 : val, // default 0 if empty
-                                                    }));
-                                                }}
-                                                className="border  border-none outline-none px-1 py-1 w-16"
-                                            />
-
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-
-
-
-                        </tbody>
-
-                        <tfoot>
-                            <tr className="bg-orange-300 font-bold text-center">
-                                {/* Client Name column */}
-                                <td className="border px-2 text-xl sticky left-0  font-bold bg-orange-300  text-left">
-                                    Total Present
-                                </td>
-
-                                {/* Vacation SD */}
-                                {/* <td className="border"></td> */}
-
-                                {/* Vacation LD */}
-                                {/* <td className="border"></td> */}
-
-                                {/* Per-date present count */}
-                                {headerDays.map((d, i) => (
-                                    <td key={i} className="border px-1 py-1">
-                                        {getPresentCountForDate(d.date)}
-                                    </td>
-                                ))}
-
-                                {/* Total Days column (optional) */}
-                                <td className="border"></td>
-
-                                {/* Adj EB */}
-                                <td className="border"></td>
-
-                                {/* Free EB */}
-                                <td className="border"></td>
-                                <td className="border"></td>
-
-                            </tr>
-                        </tfoot>
-
-                    </table>
-                }
 
                 {/* ================= CLIENT WISE EB TABLE ================= */}
-                <div className="">
-                    <h2 className="text-xl font-bold text-center mt-5 underline text-Black">
+                <div className="overflow-auto max-h-[600px] ">
+                    {/* <h2 className="text-xl font-bold text-center underline text-Black">
                         Client Wise EB Distribution
-                    </h2>
+                    </h2> */}
 
                     <table className="min-w-max border  text-lg border-gray-400 text-center">
-                        <thead className="bg-orange-300  font-bold text-gray-800">
+                        <thead className="bg-orange-300 sticky z-50 top-0 font-bold text-gray-800">
                             <tr>
                                 <th className="border text-start px-3 py-2 sticky left-0 bg-orange-300">
                                     Client Name &#8595;  Date &#8594;
@@ -1406,21 +1240,23 @@ const EBCalculation = () => {
                                     // Total EB for client across all dates
                                     const totalEB = headerDays.reduce((sum, d) => {
                                         const value = getClientEBForDate(client, d.date);
-
-
                                         return sum + value;
                                     }, 0);
 
+                                    const totalACEB = headerDays.reduce((sum, d) => {
+                                        return sum + getClientACEBForDate(client, d.date);
+                                    }, 0);
                                     return (
                                         <tr key={`${client.ClientID}_${client.RentDOJ}`}>
                                             {/* Client Name */}
                                             <td className="border px-3 py-2 font-bold sticky left-0 bg-orange-300  text-left z-40">
-                                                {client.FullName}
+                                                {client.FullName} <sup className='text-[12px] text-gray-500'>{client.ACRoom.toLowerCase() === "yes" ? `ACRoomNo-${client.RoomNo}` : ""}</sup>
                                             </td>
 
                                             {/* Date-wise EB */}
                                             {headerDays.map((d, i) => {
                                                 const value = getClientEBForDate(client, d.date);
+                                                const Acvalue = getClientACEBForDate(client, d.date);
 
                                                 return (
                                                     <td
@@ -1430,7 +1266,9 @@ const EBCalculation = () => {
                                                             : "bg-white text-black"
                                                             }`}
                                                     >
-                                                        {value.toFixed(2)}
+                                                        {value.toFixed(2)} <sup className="text-gray-600">
+                                                            {Acvalue !== 0 ? ` ${Acvalue.toFixed(2)}` : ""}
+                                                        </sup>
                                                     </td>
                                                 );
                                             })}
@@ -1441,39 +1279,52 @@ const EBCalculation = () => {
                                                 {totalEB.toFixed(2)}
                                             </td>
                                             <td className="border px-3 py-2 font-bold bg-orange-100">
-                                                {0}
+                                                {totalACEB.toFixed(2)}
+
                                             </td>
                                             <td className="border">
                                                 <input
+                                                placeholder='Enter Amt'
                                                     type="text"
-                                                    value={adjustedEB[`${client.ClientID}_${client.RentDOJ}`] ?? 0} // default 0 if undefined
+                                                    value={adjustedEB[`${client.ClientID}_${client.RentDOJ}`] ?? ""}
                                                     onChange={(e) => {
                                                         const val = e.target.value;
-                                                        setAdjustedEB((prev) => ({
-                                                            ...prev,
-                                                            [`${client.ClientID}_${client.RentDOJ}`]: val === "" ? 0 : Number(val), // default 0 if empty
-                                                        }));
+
+                                                        // allow empty, -, numbers, negative numbers
+                                                        if (/^-?\d*$/.test(val)) {
+                                                            setAdjustedEB((prev) => ({
+                                                                ...prev,
+                                                                [`${client.ClientID}_${client.RentDOJ}`]:
+                                                                    val === "" || val === "-" ? val : Number(val),
+                                                            }));
+                                                        }
                                                     }}
-                                                    className="border  border-none outline-none px-1 py-1 w-16"
+                                                    className="border border-none outline-none px-1 py-1 w-16"
                                                 />
+
 
                                             </td>
                                             <td className="border px-3 py-2 font-bold bg-orange-100">
-                                                {(totalEB + adjusted).toFixed(2)}
+                                                {(
+                                                    Number(totalEB || 0) +
+                                                    Number(adjusted || 0) +
+                                                    Number(totalACEB || 0)
+                                                ).toFixed(2)}
                                             </td>
 
                                             <td className="border">
                                                 <input
                                                     type="text"
-                                                    value={comments2[`${client.ClientID}_${client.RentDOJ}`] ?? ""} // default 0 if undefined
-                                                    onChange={(e) => {
+                                                    defaultValue={comments2[`${client.ClientID}_${client.RentDOJ}`] ?? ""} // default 0 if undefined
+                                                    onBlur={(e) => {
                                                         const val = e.target.value;
                                                         setComments2((prev) => ({
                                                             ...prev,
-                                                            [`${client.ClientID}_${client.RentDOJ}`]: val === "" ? 0 : val, // default 0 if empty
+                                                            [`${client.ClientID}_${client.RentDOJ}`]: val === "" ? "" : val, // default 0 if empty
                                                         }));
                                                     }}
-                                                    className="border  border-none outline-none px-1 py-1 w-16"
+                                                    placeholder='comment here'
+                                                    className="border  border-none outline-none px-1 py-1 w-full"
                                                 />
 
                                             </td>
@@ -1485,7 +1336,7 @@ const EBCalculation = () => {
                         </tbody>
                         <tfoot>
                             <tr className="bg-orange-300 font-bold text-center">
-                                {/* Client Name column */}
+
                                 <td className="border px-2 text-xl sticky left-0  font-bold bg-orange-300  text-left">
                                     {/* Total EB To Be Recovered */}
                                 </td>
@@ -1495,7 +1346,6 @@ const EBCalculation = () => {
                                         {/* {getPresentCountForDate(d.date)} */}
                                     </td>
                                 ))}
-
                                 {/* Free EB */}
                                 <td className="border">
                                     {data?.data
@@ -1505,15 +1355,37 @@ const EBCalculation = () => {
                                                 const value = getClientEBForDate(client, d.date);
                                                 return sum + (Number(value) || 0);
                                             }, 0);
+
                                             return sumClients + clientTotal;
                                         }, 0)
-                                        .toFixed(2)}
+                                        .toFixed(0)}
 
                                 </td>
                                 <td className="border px-2 text-xl sticky left-0  font-bold bg-orange-300  text-left">
-                                    {/* Total EB To Be Recovered */}
+                                    {/* Total AC EB To Be Recovered */}
+                                    {data?.data
+                                        ?.filter(ele => ele.FullName && ele.FullName.trim() !== "")
+                                        .reduce((sumClients, client) => {
+                                            const clientTotal = headerDays.reduce((sum, d) => {
+                                                const value = getClientACEBForDate(client, d.date);
+                                                return sum + (Number(value) || 0);
+                                            }, 0);
+
+                                            return sumClients + clientTotal;
+                                        }, 0)
+                                        .toFixed(0)}
                                 </td>    <td className="border px-2 text-xl sticky left-0  font-bold bg-orange-300  text-left">
-                                    {/* Total EB To Be Recovered */}
+                                    {/* Total Adjusted EB To Be Recovered */}
+                                    {data?.data
+                                        ?.filter(client => client.FullName && client.FullName.trim() !== "")
+                                        .reduce((grandTotal, client) => {
+
+                                            const adjusted =
+                                                Number(adjustedEB[`${client.ClientID}_${client.RentDOJ}`]) || 0;
+
+                                            return grandTotal + adjusted;
+                                        }, 0)
+                                        .toFixed(0)}
                                 </td>
                                 <td className="border px-2 text-xl sticky left-0 font-bold bg-orange-300 text-left">
                                     {data?.data
@@ -1524,21 +1396,413 @@ const EBCalculation = () => {
                                                 return sum + (Number(value) || 0);
                                             }, 0);
 
+                                            const totalACEB = headerDays.reduce((sum, d) => {
+                                                return sum + getClientACEBForDate(client, d.date);
+                                            }, 0);
+
                                             const adjusted =
                                                 Number(adjustedEB[`${client.ClientID}_${client.RentDOJ}`]) || 0;
 
-                                            return grandTotal + clientEBTotal + adjusted;
+                                            return grandTotal + clientEBTotal + adjusted + totalACEB;
                                         }, 0)
-                                        .toFixed(2)}
+                                        .toFixed(0)}
                                 </td>
-
-
                             </tr>
                         </tfoot>
 
                     </table>
                 </div>
+                {isLoading ? <div><LoaderPage /></div> :
+                    <div className='overflow-auto max-h-[600px] border'>
+                        <table className="min-w-auto mt-10   border-red-500">
+                            <thead className="bg-orange-300 shadow-sm text-lg font-bold text-gray-700 sticky top-[-1px] ">
+                                <tr>
+                                    {/* <th className="border font-bold whitespace-nowrap px-2 py-2 sticky left-0 z-50 bg-orange-300">Client Id</th> */}
+                                    <th className="border border-gray-300 whitespace-nowrap font-bold  px-2 py-2 sticky left-0  z-50 bg-orange-300 text-left">Client Name &#8595;  Date &#8594; </th>
+                                    <th className="border hidden border-gray-300 whitespace-nowrap font-bold  px-2 py-2 sticky left-0 z-30 bg-orange-300 text-left">Vacation SD</th>
+                                    <th className="border hidden border-gray-300 whitespace-nowrap font-bold  px-2 py-2 sticky left-0 z-30 bg-orange-300 text-left">Vacation LD</th>
+                                    {headerDays.map((d, i) => (
+                                        <th
+                                            key={i}
+                                            className="border border-gray-300 p-3"
+                                        >
+                                            {d.date.getDate()}
+                                        </th>
+                                    ))}
+                                    <th className="border whitespace-nowrap font-bold  border-gray-300 px-2 py-2 w-[100px]">Total Days</th>
+                                    <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Adj Free EB</th>
+                                    <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Free EB</th>
+                                    <th className="border whitespace-nowrap font-bold border-gray-300 w-48 px-2 py-2">Comments1</th>
 
+                                    {/* <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Fix Salary</th>
+                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Per Day</th>
+                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Adjusted Amt</th>
+                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Paid Leaves</th>
+                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Payable Salary</th>
+                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Paid Amt</th>
+                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Current Due</th>
+                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Previous Due</th>  
+                                <th className="border whitespace-nowrap font-bold border-gray-300 px-2 py-2">Actions</th> */}
+
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {data?.data?.filter(ele => ele.FullName && ele.FullName.trim() !== "")?.map((ele) => {
+                                    const billStart = startDate ? new Date(startDate) : null;
+                                    const billEnd = endDate ? new Date(endDate) : null;
+
+                                    // const normalizeDate = (d) => {
+                                    //     const nd = new Date(d);
+                                    //     nd.setHours(0, 0, 0, 0);
+                                    //     return nd;
+                                    // };
+                                    // ===== Existing (VSD1) =====
+                                    const vacStart = dates[`${ele.ClientID}_${ele.RentDOJ}_VSD1`]?.startDate
+                                        ? normalizeDate(
+                                            new Date(
+                                                new Date(dates[`${ele.ClientID}_${ele.RentDOJ}_VSD1`].startDate).getTime() +
+                                                1 * 24 * 60 * 60 * 1000
+                                            )
+                                        )
+                                        : null;
+
+                                    const vacEnd = dates[`${ele.ClientID}_${ele.RentDOJ}_VSD1`]?.endDate
+                                        ? normalizeDate(
+                                            new Date(
+                                                new Date(dates[`${ele.ClientID}_${ele.RentDOJ}_VSD1`].endDate).getTime() -
+                                                1 * 24 * 60 * 60 * 1000
+                                            )
+                                        )
+                                        : null;
+
+
+                                    // ===== NEW (VSD2) — same logic =====
+                                    const vacStart2 = dates[`${ele.ClientID}_${ele.RentDOJ}_VSD2`]?.startDate
+                                        ? normalizeDate(
+                                            new Date(
+                                                new Date(dates[`${ele.ClientID}_${ele.RentDOJ}_VSD2`].startDate).getTime() +
+                                                1 * 24 * 60 * 60 * 1000
+                                            )
+                                        )
+                                        : null;
+
+                                    const vacEnd2 = dates[`${ele.ClientID}_${ele.RentDOJ}_VSD2`]?.endDate
+                                        ? normalizeDate(
+                                            new Date(
+                                                new Date(dates[`${ele.ClientID}_${ele.RentDOJ}_VSD2`].endDate).getTime() -
+                                                1 * 24 * 60 * 60 * 1000
+                                            )
+                                        )
+                                        : null;
+
+
+
+                                    // 🔹 Calculate vacation length
+                                    let vacationDays1 = 0;
+                                    if (vacStart && vacEnd) {
+                                        vacationDays1 =
+                                            Math.floor((vacEnd - vacStart) / (1000 * 60 * 60 * 24)) + 1;
+                                    }
+
+                                    let vacationDays2 = 0;
+                                    if (vacStart2 && vacEnd2) {
+                                        vacationDays2 =
+                                            Math.floor((vacEnd2 - vacStart2) / (1000 * 60 * 60 * 24)) + 1;
+                                    }
+
+                                    // 🔹 Apply vacation ONLY if >= 15 days
+                                    let overlapStart1 = null;
+                                    let overlapEnd1 = null;
+
+                                    if (
+                                        vacationDays1 >= 15 &&
+                                        billStart &&
+                                        billEnd &&
+                                        vacStart &&
+                                        vacEnd
+                                    ) {
+                                        overlapStart1 = vacStart < billStart ? billStart : vacStart;
+                                        overlapEnd1 = vacEnd > billEnd ? billEnd : vacEnd;
+                                    }
+
+                                    let overlapStart2 = null;
+                                    let overlapEnd2 = null;
+
+                                    if (
+                                        vacationDays2 >= 15 &&
+                                        billStart &&
+                                        billEnd &&
+                                        vacStart2 &&
+                                        vacEnd2
+                                    ) {
+                                        overlapStart2 = vacStart2 < billStart ? billStart : vacStart2;
+                                        overlapEnd2 = vacEnd2 > billEnd ? billEnd : vacEnd2;
+                                    }
+
+                                    return (
+                                        <tr key={`${ele.ClientID}_${ele.RentDOJ}`} className={`text-lg text-gray-800 text-center `}>
+                                            <td className="border border-gray-300 px-2 sticky left-0 whitespace-nowrap bg-orange-300 font-bold  text-left">
+                                                {`${ele.FullName.slice(0, 18)}..`}
+                                            </td>
+                                            <td className='border-2 hidden p-2'>
+                                                <input
+                                                    type="date"
+                                                    className="border-none"
+                                                    value={dates[`${ele.ClientID}_${ele.RentDOJ}`]?.startDate || ""}
+                                                    onChange={(e) =>
+                                                        setDates(prev => ({
+                                                            ...prev,
+                                                            [`${ele.ClientID}_${ele.RentDOJ}`]: {
+                                                                ...prev[`${ele.ClientID}_${ele.RentDOJ}`],
+                                                                startDate: e.target.value
+                                                            }
+                                                        }))
+                                                    }
+                                                />
+                                            </td>
+                                            <td className='border-2 hidden p-2'>
+                                                <input
+                                                    type="date"
+                                                    className="border-none"
+                                                    value={dates[`${ele.ClientID}_${ele.RentDOJ}`]?.endDate || ""}
+                                                    onChange={(e) =>
+                                                        setDates(prev => ({
+                                                            ...prev,
+                                                            [`${ele.ClientID}_${ele.RentDOJ}`]: {
+                                                                ...prev[`${ele.ClientID}_${ele.RentDOJ}`],
+                                                                endDate: e.target.value
+                                                            }
+                                                        }))
+                                                    }
+                                                />
+                                            </td>
+
+                                            {headerDays.map((d, i) => {
+                                                const normalizeDate = (dt) => {
+                                                    const nd = new Date(dt);
+                                                    nd.setHours(0, 0, 0, 0);
+                                                    return nd;
+                                                };
+
+                                                const currentDate = normalizeDate(d.date);
+
+                                                // DOJ
+                                                const doj = ele.EBDOJ
+                                                    ? normalizeDate(
+                                                        new Date(
+                                                            ele.EBDOJ.replace(/(\d+)\s(\w+)\s(\d+)/, "$2 $1, $3")
+                                                        )
+                                                    )
+                                                    : null;
+
+                                                // Client Vacate Date
+                                                const cvd = ele.CVD
+                                                    ? normalizeDate(
+                                                        new Date(new Date(ele.CVD).setDate(new Date(ele.CVD).getDate() + 1))
+                                                    )
+                                                    : null;
+
+                                                // ✅ Vacation check (VSD1 OR VSD2)
+                                                const isVacation =
+                                                    (
+                                                        overlapStart1 &&
+                                                        overlapEnd1 &&
+                                                        currentDate >= normalizeDate(overlapStart1) &&
+                                                        currentDate <= normalizeDate(overlapEnd1)
+                                                    ) ||
+                                                    (
+                                                        overlapStart2 &&
+                                                        overlapEnd2 &&
+                                                        currentDate >= normalizeDate(overlapStart2) &&
+                                                        currentDate <= normalizeDate(overlapEnd2)
+                                                    );
+
+                                                // ❌ Before DOJ
+                                                if (doj && currentDate < doj) {
+                                                    return (
+                                                        <td key={i} className="border px-1 py-1  bg-red-100 text-red-700">
+                                                            0
+                                                        </td>
+                                                    );
+                                                }
+
+                                                // ❌ On or after CVD
+                                                if (cvd && currentDate >= cvd) {
+                                                    return (
+                                                        <td key={i} className="border px-1 py-1  bg-red-100 text-red-700">
+                                                            0
+                                                        </td>
+                                                    );
+                                                }
+
+                                                // ❌ Vacation
+                                                if (isVacation) {
+                                                    return (
+                                                        <td key={i} className="border px-1 py-1  bg-red-100 text-red-700">
+                                                            0
+                                                        </td>
+                                                    );
+                                                }
+
+                                                // ✅ Present
+                                                return (
+                                                    <td key={i} className="border px-1 py-1  bg-white text-black">
+                                                        1
+                                                    </td>
+                                                );
+                                            })}
+
+
+
+                                            <td className="border px-2 py-1 font-semibold bg-orange-100">
+                                                {
+                                                    headerDays.reduce((total, d) => {
+                                                        const normalizeDate = (dt) => {
+                                                            const nd = new Date(dt);
+                                                            nd.setHours(0, 0, 0, 0);
+                                                            return nd;
+                                                        };
+
+                                                        const currentDate = normalizeDate(d.date);
+
+                                                        // DOJ
+                                                        const doj = ele.EBDOJ
+                                                            ? normalizeDate(
+                                                                new Date(
+                                                                    ele.EBDOJ.replace(/(\d+)\s(\w+)\s(\d+)/, "$2 $1, $3")
+                                                                )
+                                                            )
+                                                            : null;
+
+                                                        // Client Vacate Date (CVD)
+                                                        const cvd = ele.CVD
+                                                            ? normalizeDate(
+                                                                new Date(
+                                                                    new Date(ele.CVD).setDate(new Date(ele.CVD).getDate() + 1)
+                                                                )
+                                                            )
+                                                            : null;
+
+                                                        // ✅ Vacation check (VSD1 OR VSD2)
+                                                        const isVacation =
+                                                            (
+                                                                overlapStart1 &&
+                                                                overlapEnd1 &&
+                                                                currentDate >= normalizeDate(overlapStart1) &&
+                                                                currentDate <= normalizeDate(overlapEnd1)
+                                                            ) ||
+                                                            (
+                                                                overlapStart2 &&
+                                                                overlapEnd2 &&
+                                                                currentDate >= normalizeDate(overlapStart2) &&
+                                                                currentDate <= normalizeDate(overlapEnd2)
+                                                            );
+
+                                                        // ❌ Before DOJ
+                                                        if (doj && currentDate < doj) {
+                                                            return total;
+                                                        }
+
+                                                        // ❌ On or after CVD
+                                                        if (cvd && currentDate >= cvd) {
+                                                            return total;
+                                                        }
+
+                                                        // ➕ Count present (vacation = 0)
+                                                        return total + (isVacation ? 0 : 1);
+                                                    }, 0)
+                                                }
+                                            </td>
+
+
+                                            <td className="border ">
+                                                <input
+                                                placeholder='Enter Amt'
+                                                    type="text"
+                                                    value={adjustedFreeEB[`${ele.ClientID}_${ele.RentDOJ}`] ?? ""} // default 0 if undefined
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        // allow empty, -, numbers, negative numbers
+                                                      if (/^-?\d*$/.test(val)) {
+                                                            setAdjustedFreeEB((prev) => ({
+                                                                ...prev,
+                                                                [`${ele.ClientID}_${ele.RentDOJ}`]:
+                                                                    val === "" || val === "-" ? val : Number(val),
+                                                            }));
+                                                        }
+                                                    }}
+                                                    className="border  border-none outline-none px-1 py-1 w-full"
+                                                />
+
+                                            </td>
+
+                                            <td className="border bg-orange-100">
+                                                {/* {per head free eb} */}
+                                                {getPerHeadFreeEB(ele)}
+                                            </td>
+
+                                            <td className="border">
+                                                <input
+                                                    type="text"
+                                                    defaultValue={comments1[`${ele.ClientID}_${ele.RentDOJ}`] ?? ""}
+                                                    onBlur={(e) => {
+                                                        const val = e.target.value;
+                                                        setComments1((prev) => ({
+                                                            ...prev,
+                                                            [`${ele.ClientID}_${ele.RentDOJ}`]: val,
+                                                        }));
+                                                    }}
+                                                    placeholder='Enter comment here'
+                                                    className="border border-none outline-none px-1 py-1 w-full"
+                                                />
+                                            </td>
+
+
+                                        </tr>
+                                    );
+                                })}
+
+
+
+                            </tbody>
+
+                            <tfoot>
+                                <tr className="bg-orange-300 font-bold text-center">
+                                    {/* Client Name column */}
+                                    <td className="border px-2 text-xl sticky left-0  font-bold bg-orange-300  text-left">
+                                        Total Present
+                                    </td>
+
+                                    {/* Vacation SD */}
+                                    {/* <td className="border"></td> */}
+
+                                    {/* Vacation LD */}
+                                    {/* <td className="border"></td> */}
+
+                                    {/* Per-date present count */}
+                                    {headerDays.map((d, i) => (
+                                        <td key={i} className="border px-1 py-1">
+                                            {getPresentCountForDate(d.date)}
+                                        </td>
+                                    ))}
+
+                                    {/* Total Days column (optional) */}
+                                    <td className="border"></td>
+
+                                    {/* Adj EB */}
+                                    <td className="border"></td>
+
+                                    {/* Free EB */}
+                                    <td className="border"></td>
+                                    <td className="border"></td>
+                                </tr>
+                            </tfoot>
+
+                        </table>
+                    </div>
+                }
             </div>
 
         </>

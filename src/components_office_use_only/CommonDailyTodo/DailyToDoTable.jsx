@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useApp } from "../TicketSystem/AppProvider";
 import LoaderPage from "../NewBooking/LoaderPage";
+
 /* ================= CONFIG ================= */
 
-const SR_NO_WIDTH = 70;
-const FREQUENCY_WIDTH = 70;
-const ACTIVITIES_WIDTH = 200;
-const FIXED_COL_WIDTH = 126; // Fixed width for remaining columns
+const SR_NO_WIDTH = 40;
+const FREQUENCY_WIDTH = 60;
+const ACTIVITIES_WIDTH = 290;
+const FIXED_COL_WIDTH = 140; // Fixed width for remaining columns
 const HIDDEN_COLUMNS = ["Notify"];
 
 /* ================= COLOR CONFIG ================= */
@@ -34,11 +35,44 @@ export default function DailyTodoTable({
   const [editingCell, setEditingCell] = useState(null);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  // const [filteredRows, setFilteredRows] = useState([]);
+  const [filteredColumns, setFilteredColumns] = useState([]);
 
   //  const [setDiffDaysForAll, setDiffDaysForAll] = useState();
   /* ================= TANSTACK QUERY ================= */
   //const { data, isLoading } = useHouseKeepingData(month.sheet);
   const { data, isPending } = useFetchHook(sheetName);
+  // Highlight clicked activity cell
+  const [activeCell, setActiveCell] = useState(null);
+  // { row: number, col: string }
+
+  // Filter logic
+  const [selectedActivities, setSelectedActivities] = useState([]);
+
+  // column name like "01 Jan 2025"
+
+  // for mobile long press
+  const LONG_PRESS_TIME = 500; // ms
+  let longPressTimer = null;
+
+  const startLongPress = (rIdx, head, cIdx) => {
+    if (cIdx < 3) return;
+
+    longPressTimer = setTimeout(() => {
+      setEditingCell({ row: rIdx, col: head });
+    }, LONG_PRESS_TIME);
+  };
+
+  const cancelLongPress = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  };
+
+  const [statusFilter, setStatusFilter] = useState(null);
+  // "OVERDUE" | "DONE" | "UPCOMING" | "SAMEDAY"
+
   const updateMutation = useUpdateHook();
 
   /* ================= SYNC API → LOCAL STATE ================= */
@@ -52,11 +86,38 @@ export default function DailyTodoTable({
     setHeaders(apiHeaders.filter((h) => !HIDDEN_COLUMNS.includes(h)));
 
     setRows(data.data);
+    // console.log(data.data);
     setEditedRows(JSON.parse(JSON.stringify(data.data)));
     setHasChanges(false);
   }, [data]);
 
+  // Apply filtering logic
+
   /* ================= DATE UTILITIES ================= */
+  //  reset filter
+  const resetFilters = () => {
+    setSelectedActivities([]);
+    setStatusFilter(null);
+    setFilteredColumns([]);
+    setActiveCell(null);
+    //window.location.reload();
+  };
+
+  // toggle activity selection
+  const toggleActivitySelection = (rIdx, activity) => {
+    setActiveCell({ row: rIdx, col: "Activities" });
+
+    setSelectedActivities((prev) =>
+      prev.includes(activity)
+        ? prev.filter((a) => a !== activity)
+        : [...prev, activity]
+    );
+
+    // when activities change → reset column filters
+    setStatusFilter(null);
+    setFilteredColumns([]);
+  };
+
   //  future date validation
   const isFutureDate = (value) => {
     if (!isValidDateFormat(value)) return false;
@@ -162,7 +223,7 @@ export default function DailyTodoTable({
     if (diffDays >= 0 && diffDays <= freq) {
       return COLORS.DONE;
     }
-    console.log(4444444444, diffDays === freq);
+    // console.log(4444444444, diffDays === freq);
     // 1️⃣ SAME DAY (exact due date)
     if (diffDays === freq) {
       return COLORS.SAMEDAY;
@@ -186,55 +247,61 @@ export default function DailyTodoTable({
   };
 
   /* ================= SAVE ALL CHANGES ================= */
-
   const saveAllChanges = async () => {
-    try {
-      setSaving(true);
-      const requests = [];
-      const changes = [];
+    setSaving(true);
 
-      // Find all changed cells
-      for (let r = 0; r < editedRows.length; r++) {
-        for (let h of headers) {
-          if (h === "S.No") continue;
+    const batchUpdates = [];
 
-          if (editedRows[r][h] !== rows[r][h]) {
-            changes.push({
-              name: decryptedUser?.name,
-              row: r,
-              column: h,
-              value: editedRows[r][h],
-            });
-            requests.push(
-              updateMutation.mutateAsync({
-                name: decryptedUser?.name,
-                sheetName,
-                rowIndex: r,
-                columnName: h,
-                value: `${editedRows[r][h]} `,
-              })
-            );
-          }
+    const getPureValue = (val) =>
+      val?.split("$")[0]?.split("_")[0]?.trim() || "NA";
+
+    for (let r = 0; r < editedRows.length; r++) {
+      const columnUpdates = [];
+
+      for (let h of headers) {
+        if (h === "S.No") continue;
+
+        const editedVal = getPureValue(editedRows[r][h]);
+        const originalVal = getPureValue(rows[r][h]);
+
+        if (editedVal !== originalVal) {
+          columnUpdates.push({
+            columnName: h,
+            value: editedRows[r][h],
+            name: decryptedUser?.name,
+          });
         }
       }
 
-      if (changes.length === 0) {
-        toast("No changes to save!");
-        setSaving(false);
-        return;
+      // ✅ Only push rows that actually changed
+      if (columnUpdates.length > 0) {
+        batchUpdates.push({
+          rowIndex: r, // frontend row index (0-based)
+          columns: columnUpdates,
+        });
       }
+    }
 
-      await Promise.all(requests);
+    if (batchUpdates.length === 0) {
+      toast.warn("You can't save without any changes!");
+      setSaving(false);
+      return;
+    }
 
-      // Update local state
+    try {
+      // 🔥 SINGLE API CALL
+      await updateMutation.mutateAsync({
+        sheetName,
+        updates: batchUpdates,
+      });
+
+      // Sync local state
       setRows(JSON.parse(JSON.stringify(editedRows)));
       setHasChanges(false);
-      toast.success(" updated successfully");
-      // alert(`✅ ${changes.length} cell(s) updated successfully`);
+
+      toast.success("Updated successfully");
     } catch (err) {
-      console.error(err);
-      toast.error(" Failed to save changes");
-      // alert("❌ Failed to save changes");
+      toast.error("Failed to update data");
     } finally {
       setSaving(false);
     }
@@ -348,30 +415,178 @@ export default function DailyTodoTable({
     );
   }
 
+  // filter logic
+
+  const isFilterApplied =
+    selectedActivities.length > 0 ||
+    filteredColumns.length > 0 ||
+    statusFilter !== null;
+
+  // generic helper function for filtering activities with columns
+  const getColumnsByStatusForActivities = (activities, targetStatus) => {
+    const unionSet = new Set();
+
+    activities.forEach((activity) => {
+      const row = rows.find((r) => r.Activities === activity);
+      if (!row) return;
+
+      const frequency = row["Freq"];
+      const upl = row["Notify"];
+
+      headers.forEach((head, idx) => {
+        if (idx < 3) return; // skip SrNo, Activities, Freq
+
+        const status = getStatusForCell(frequency, row[head], upl);
+        if (status === targetStatus) {
+          unionSet.add(head);
+        }
+      });
+    });
+
+    // console.log(unionSet);
+    if ([...unionSet].length >= 1) {
+      //  console.log("unionSet.length", [...unionSet].length);
+      return Array.from(unionSet);
+    }
+    return [];
+  };
+
+  // getFilterClass
+  const getFilterClass = (type, baseClass) =>
+    `${baseClass} cursor-pointer transition ${
+      statusFilter === type ? "  font-bold" : ""
+    }`;
+
+  //  apply status filter
+  const applyStatusFilter = (type, color) => {
+    if (selectedActivities.length === 0) {
+      toast.error("Please select at least one activity");
+      return;
+    }
+
+    const cols = getColumnsByStatusForActivities(selectedActivities, color);
+
+    setFilteredColumns(cols);
+    setStatusFilter(type);
+  };
+
+  // no filtered data
+  const hideDataColumns =
+    statusFilter &&
+    filteredColumns.length === 0 &&
+    selectedActivities.length > 0;
+
+  // empty filtered result
+  const showNoDataFound =
+    statusFilter &&
+    filteredColumns.length === 0 &&
+    selectedActivities.length > 0;
+
+  const moveToNextCell = (rowIndex, colIndex) => {
+    let nextCol = colIndex + 1;
+
+    // Skip non-editable columns (first 3)
+    while (nextCol < headers.length && nextCol < 3) {
+      nextCol++;
+    }
+
+    if (nextCol < headers.length) {
+      setEditingCell({ row: rowIndex, col: headers[nextCol] });
+    } else {
+      // Optional: move to first editable cell of next row
+      const nextRow = rowIndex + 1;
+      if (nextRow < rows.length) {
+        setEditingCell({ row: nextRow, col: headers[3] });
+      } else {
+        setEditingCell(null);
+      }
+    }
+  };
+
   /* ================= UI ================= */
 
   return (
-    <div className="min-h-screen bg-gray-50 md:pt-8 lg:pt-24 my-2 ">
-      <div className="flex flex-wrap items-center justify-between  gap-16 mx-2 mb-0">
-        <h1 className="text-lg font-bold px-5">
+    <div className="min-h-screen w-auto bg-gray-50  pt-24 my-2 ">
+      <div className="flex flex-wrap  md:items-center md:justify-between  mx-2 mb-0">
+        <h1 className="text-xl font-bold  px-5">
           {title}
           {/* DailyTodo – Housekeeping ({month.label}) */}
         </h1>
 
         {/* title color code  */}
-        <div className="flex flex-wrap items-center text-lg gap-8 mx-2 font-bold  px-4 py-2 ">
-          <p className="px-6 py-1  bg-red-400 text-black">Already Late</p>
+        <div className="flex   items-center md:text-lg md:gap-8 whitespace-nowrap md:mx-2 font-bold  md:px-4 md:py-2 ">
+          {/* already late */}
+          <p
+            onClick={() => applyStatusFilter("OVERDUE", COLORS.OVERDUE)}
+            className={getFilterClass(
+              "OVERDUE",
+              "px-6 p-1 md:py-1 bg-red-400 text-black"
+            )}
+          >
+            {statusFilter === "OVERDUE" && <span className=" mx-2">✔</span>}
+            Already Late
+          </p>
 
-          <p className="px-6 py-1  bg-green-200 text-black">Done</p>
+          {/* done */}
+          <p
+            onClick={() => applyStatusFilter("DONE", COLORS.DONE)}
+            className={getFilterClass(
+              "DONE",
+              "px-6 py-1 bg-green-200 text-black"
+            )}
+          >
+            {statusFilter === "DONE" && <span className=" mx-2">✔</span>}
+            Done
+          </p>
 
-          <p className="px-6 py-1  bg-yellow-200 text-black">Upcoming</p>
+          {/* upcoming */}
+          <p
+            onClick={() => applyStatusFilter("UPCOMING", COLORS.UPCOMING)}
+            className={getFilterClass(
+              "UPCOMING",
+              "px-6 py-1 bg-yellow-200 text-black"
+            )}
+          >
+            {statusFilter === "UPCOMING" && <span className=" mx-2">✔</span>}
+            Upcoming
+          </p>
 
-          <p className="px-6 py-1  bg-blue-300 text-black animate-pulse">
+          {/* same day */}
+          <p
+            onClick={() => applyStatusFilter("SAMEDAY", COLORS.SAMEDAY)}
+            className={getFilterClass(
+              "SAMEDAY",
+              "px-6 py-1 bg-blue-300 animate-pulse text-black"
+            )}
+          >
+            {statusFilter === "SAMEDAY" && <span className=" mx-2">✔</span>}
             Today’s work
           </p>
+          <div className="hidden">
+            {isFilterApplied && (
+              <button
+                onClick={resetFilters}
+                className="px-6 py-1 bg-gray-300 hover:bg-gray-400
+               text-black font-bold rounded transition"
+              >
+                Reset Filters
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex gap-2 my-1 items-center text-[14px] px-8">
+          <div>
+            {isFilterApplied && (
+              <button
+                onClick={resetFilters}
+                className="px-6 py-1 bg-gray-300 hover:bg-gray-400
+               text-black font-bold rounded transition"
+              >
+                Reset Filters
+              </button>
+            )}
+          </div>
           {hasChanges && (
             <button
               onClick={saveAllChanges}
@@ -381,89 +596,77 @@ export default function DailyTodoTable({
             >
               {saving ? (
                 <>
-                  <svg
-                    className="animate-spin h-4 w-4 text-white px-4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Saving...
+                  <LoaderPage /> Saving...
                 </>
               ) : (
-                <>
-                  {" "}
-                  Save
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                </>
+                <> Save</>
               )}
             </button>
           )}
         </div>
       </div>
 
-      <div className="relative lg:h-[79vh] h-auto  overflow-auto bg-white shadow-lg rounded-lg ">
-        <table className="border-collapse min-w-full text-sm ">
-          <thead className="sticky top-0  z-40">
+      <div className="relative lg:h-[79vh] h-auto overflow-x-auto overflow-y-auto bg-white shadow-lg rounded-lg ">
+        {showNoDataFound && (
+          <div className=" absolute top-[198px] left-[640px] z-[200] flex items-center gap-3 bg-white/90 backdrop-blur px-32 py-8 border border-gray-200 rounded-xl shadow-lg text-gray-600 font-semibold pointer-events-none animate-fadeIn">
+            <span className="text-orange-400 text-xl">📭</span>
+            <span>No Property Found with given Service</span>
+          </div>
+        )}
+
+        <table className="border-collapse text-sm table-fixed overflow-visible">
+          <thead className="sticky top-0 z-[100] bg-orange-300">
             <tr>
-              {headers.map((head, i) => (
-                <th
-                  key={i}
-                  className={`border bg-orange-300 w-[200px]  px-4 py-3 text-start font-semibold border border-gray-100
-                  ${i < 3 ? "sticky z-50 bg-orange-300" : "bg-gray-50"}`}
-                  style={
-                    i < 3
-                      ? {
-                          left: getStickyLeft(i),
-                          minWidth: getColumnWidth(i, head),
-                          width: getColumnWidth(i, head),
-                          maxWidth: getColumnWidth(i, head),
-                        }
-                      : {
-                          minWidth: getColumnWidth(i, head),
-                          width: getColumnWidth(i, head),
-                          maxWidth: getColumnWidth(i, head),
-                        }
-                  }
-                >
-                  <div className="truncate">{head}</div>
-                </th>
-              ))}
+              {headers.map((head, i) => {
+                const isFilteredColumn =
+                  i < 3 || // always show SrNo, Activities, Freq
+                  (!hideDataColumns && // ⛔ hide when no data
+                    (filteredColumns.length === 0 ||
+                      filteredColumns.includes(head)));
+
+                // if (!isFilteredColumn) return null; // 🔥 HIDE HEADER
+
+                return (
+                  <th
+                    key={i}
+                    className={`border bg-orange-300 ${
+                      i === 0 || i === 2 ? "" : "px-5"
+                    } py-3  font-semibold border-gray-100     ${
+                      i < 3 ? "sticky z-50 bg-orange-300" : ""
+                    }      ${
+                      !isFilteredColumn && i >= 3 ? "hidden border-none" : ""
+                    }`}
+                    style={{
+                      left: i < 3 ? getStickyLeft(i) : undefined,
+                      width: getColumnWidth(i, head),
+                      minWidth: getColumnWidth(i, head),
+                      maxWidth: getColumnWidth(i, head),
+                      flexShrink: 0, // 🔒 IMPORTANT
+                    }}
+                  >
+                    <div className="truncate">{head}</div>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="overflow-visible">
             {rows.map((row, rIdx) => {
               const frequency = row["Freq"];
               const upl = row["Notify"];
 
               return (
-                <tr key={rIdx} className="">
+                <tr
+                  key={rIdx}
+                  className={`transition-opacity overflow-visible duration-200 ${
+                    statusFilter &&
+                    selectedActivities.length > 0 &&
+                    !selectedActivities.includes(row.Activities)
+                      ? "bg-red-500/50 opacity-30"
+                      : "opacity-100"
+                  }`}
+                >
                   {headers.map((head, cIdx) => {
                     const sticky = cIdx < 3;
                     const isEditing =
@@ -477,31 +680,69 @@ export default function DailyTodoTable({
                       cIdx >= 3
                         ? getStatusForCell(frequency, currentValue, upl)
                         : "";
+                    const isFilteredColumn =
+                      cIdx < 3 || // always show SrNo, Activities, Freq
+                      (!hideDataColumns && // ⛔ hide when no data
+                        (filteredColumns.length === 0 ||
+                          filteredColumns.includes(head)));
+
+                    // filteredColumns.length === 0 ||
+                    // filteredColumns.includes(head);
 
                     return (
                       <td
                         key={cIdx}
+                        // onClick={() => {
+                        //   if (cIdx === 1) {
+                        //     toggleActivitySelection(rIdx, head, row.Activities);
+                        //   }
+                        // }}
+                        // onDoubleClick={() => {
+                        //   if (cIdx < 3) return; // Don't edit first 3 columns
+                        //   setEditingCell({ row: rIdx, col: head });
+                        // }}
+
                         onDoubleClick={() => {
-                          if (cIdx < 3) return; // Don't edit first 3 columns
+                          if (cIdx < 3) return;
                           setEditingCell({ row: rIdx, col: head });
                         }}
-                        className={`border px-4 py-3 border-gray-50 relative ${
-                          sticky ? "sticky z-30 bg-orange-300 font-bold" : ""
-                        } ${cIdx >= 3 ? cellStatus : ""}${
-                          cIdx === 0 || head === "Freq" ? "text-center" : ""
-                        }
-`}
+                        onTouchStart={() => startLongPress(rIdx, head, cIdx)}
+                        onTouchEnd={cancelLongPress}
+                        onTouchMove={cancelLongPress}
+                        className={`border px-4 py-3 border-gray-50 hover:animate-none relative ${
+                          // Removed overflow-visible here as it's redundant if z-index is right
+                          sticky ? "sticky z-20 font-bold" : "z-10"
+                        } 
+    hover:z-[110] 
+    ${head === "Activities" ? "z-30" : ""} 
+    ${cIdx >= 3 ? cellStatus : ""}
+    ${cIdx === 0 || head === "Freq" ? "text-center" : ""}  
+    ${
+      activeCell?.row === rIdx && activeCell?.col === head
+        ? "bg-orange-300"
+        : sticky
+        ? "bg-orange-300"
+        : ""
+    }
+    ${!isFilteredColumn && cIdx >= 3 ? "hidden border-none" : ""}
+    `}
                         style={{
-                          minWidth: width,
                           width: width,
+                          minWidth: width,
                           maxWidth: width,
+                          flexShrink: 0, // 🔒 IMPORTANT
                           ...(sticky && { left: getStickyLeft(cIdx) }),
                         }}
                       >
                         {head === "SrNo" ? (
-                          <span className="font-bold">{rIdx + 1}</span>
+                          <span className="font-bold flex justify-start items-start">
+                            {rIdx + 1}
+                          </span>
                         ) : isEditing ? (
-                          <div className="absolute inset-0 flex items-center justify-center z-40">
+                          <div
+                            className="absolute inset-0 flex border-2
+                           border-black items-center justify-center z-40"
+                          >
                             <input
                               defaultValue={
                                 currentValue?.split("$")[0]?.split("_")[0] || ""
@@ -527,7 +768,8 @@ export default function DailyTodoTable({
                                 handleCellEdit(rIdx, head, trimmedValue);
                               }}
                               onKeyDown={(e) => {
-                                if (e.key === "Enter") {
+                                if (e.key === "Enter" || e.key === "Tab") {
+                                  e.preventDefault();
                                   const trimmedValue = formatDateInput(
                                     e.target.value.trim()
                                   );
@@ -548,6 +790,8 @@ export default function DailyTodoTable({
                                   }
 
                                   handleCellEdit(rIdx, head, trimmedValue);
+                                  // 🔥 Move to next column in same row
+                                  moveToNextCell(rIdx, cIdx);
                                 }
                                 if (e.key === "Escape") {
                                   setEditingCell(null);
@@ -571,59 +815,84 @@ export default function DailyTodoTable({
 
                               return (
                                 <>
-                                  <div className="relative group ">
-                                    <span
-                                      className={`truncate block ${
+                                  <div className="relative group flex items-center gap-2 ">
+                                    {head === "Activities" && (
+                                      <div>
+                                        <input
+                                          type="checkbox"
+                                          checked={selectedActivities.includes(
+                                            row.Activities
+                                          )}
+                                          className="mr-2 h-5 w-5 accent-black border-gray-300 rounded focus:ring-orange-500"
+                                          // onClick={(e) => e.stopPropagation()}
+                                          onChange={() =>
+                                            toggleActivitySelection(
+                                              rIdx,
+                                              row.Activities
+                                            )
+                                          }
+                                        />
+                                      </div>
+                                    )}
+                                    <div
+                                      className={`block ${
+                                        head === "Freq"
+                                          ? "whitespace-nowrap"
+                                          : "truncate max-w-[20ch]"
+                                      } ${
                                         !currentValue || currentValue === "NA"
                                           ? "text-gray-400"
                                           : "text-black"
                                       }`}
-                                      style={{ maxWidth: width - 32 }}
+                                      style={{ maxWidth: width - 36 }}
                                     >
                                       {displayValue}
+
                                       {isChanged && (
                                         <span className="ml-1 text-xs">*</span>
                                       )}
-                                    </span>
+                                    </div>
                                   </div>
 
                                   {historyArr.length > 0 && (
-                                    <div
-                                      className={` absolute  left-full top-1/2 -translate-y-1/2  opacity-0 group-hover:opacity-100 transition bg-white border rounded shadow-lg z-[9999] min-w-[320px] [240px] pointer-events-none  ${
-                                        cIdx > 3 ? "mt-20 ml-0" : "ml-24 mt-12"
-                                      } `}
-                                    >
-                                      <div className="p-3 space-y-2">
-                                        {cIdx > 2 && (
-                                          <div className="text-xs font-semibold text-gray-500 uppercase">
-                                            Previous History - ( {diffDays} )
-                                          </div>
-                                        )}
-
-                                        {historyArr
-                                          .slice(0, 4)
-                                          .map((item, idx) => (
-                                            <div
-                                              key={idx}
-                                              className={`p-2 rounded  text-xs ${
-                                                idx === 0
-                                                  ? "bg-gray-50"
-                                                  : "bg-gray-50"
-                                              }`}
-                                            >
-                                              <div className="whitespace-nowrap">
-                                                <span className="font-semibold">
-                                                  {" "}
-                                                  {item.text}
-                                                </span>{" "}
-                                                {item.meta && (
-                                                  <span className="text-[10px] text-gray-500">
-                                                    {item.meta}
-                                                  </span>
-                                                )}
-                                              </div>
+                                    <div className="relative group overflow-visible ">
+                                      <div
+                                        className={`absolute left-[90%] top-0 opacity-0 group-hover:opacity-100 transition-all bg-white border border-gray-200 rounded-lg shadow-2xl z-[9999] min-w-[320px] pointer-events-none 
+    ${cIdx < 3 ? "ml-4" : "  ml-38"} 
+  `}
+                                      >
+                                        <div className="p-3 space-y-2 z-100 ">
+                                          {cIdx > 2 && (
+                                            <div className="text-xs font-semibold text-gray-500 uppercase">
+                                              Previous History - ( {diffDays} )
                                             </div>
-                                          ))}
+                                          )}
+
+                                          {historyArr
+                                            .slice(0, 4)
+                                            .map((item, idx) => (
+                                              <div
+                                                key={idx}
+                                                className={`p-2 rounded  text-xs ${
+                                                  idx === 0
+                                                    ? "bg-gray-50"
+                                                    : "bg-gray-50"
+                                                }`}
+                                              >
+                                                <div className="whitespace-nowrap">
+                                                  <span className="font-semibold">
+                                                    {" "}
+                                                    {item.text}
+                                                  </span>{" "}
+                                                  {item.meta && (
+                                                    <span className="text-[10px] text-gray-500">
+                                                      {item.meta}
+                                                    </span>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            ))}
+                                        </div>
                                       </div>
                                     </div>
                                   )}

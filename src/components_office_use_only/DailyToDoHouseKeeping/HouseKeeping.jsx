@@ -1,7 +1,7 @@
 import DailyTodoTable from "../CommonDailyTodo/DailyToDoTable";
 import {
   useHouseKeepingData,
-  useUpdateHouseKeepingCell,
+  useUpdateHouseKeepingRow,
 } from "../DailyToDoHouseKeeping/services/index";
 
 export default function HousekeepingPage() {
@@ -10,7 +10,7 @@ export default function HousekeepingPage() {
       title="DailyTodo – Housekeeping"
       sheetName="DailyToDo"
       useFetchHook={useHouseKeepingData}
-      useUpdateHook={useUpdateHouseKeepingCell}
+      useUpdateHook={useUpdateHouseKeepingRow}
     />
   );
 }

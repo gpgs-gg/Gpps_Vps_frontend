@@ -1,16 +1,14 @@
 import DailyTodoTable from "../CommonDailyTodo/DailyToDoTable";
-import {
-  useMaintenanceData,
-  useUpdateMaintenanceCell,
-} from "./services/index";
+import { useMaintenanceData, useUpdateMaintenanceRow } from "./services";
+
 
 export default function Maintenance() {
   return (
-    <DailyTodoTable
+    <DailyTodoTable 
       title="DailyTodo – Maintenance"
       sheetName="DailyToDo"
       useFetchHook={useMaintenanceData}
-      useUpdateHook={useUpdateMaintenanceCell}
+      useUpdateHook={useUpdateMaintenanceRow}
     />
-  ); 
+  );
 }

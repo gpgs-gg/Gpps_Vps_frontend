@@ -177,7 +177,7 @@ const Gpgsaction = () => {
                     to="/gpgs-actions/leads-list"
                     className={`${subBtnClasses} bg-indigo-100 text-indigo-800 hover:bg-indigo-200`}
                   >
-                    ➕ Our Leads
+                    ➕ PG Leads
                   </Link>
                 </div>
               )}
@@ -205,7 +205,7 @@ const Gpgsaction = () => {
                 <div className="w-full flex flex-col gap-3 mt-5">
                   <Link
                     to="/gpgs-actions/Client-Creation"
-                    className={`${subBtnClasses} bg-green-100 text-green-800 hover:bg-green-200`}
+                    className={`${subBtnClasses} bg-red-100 text-red-800 hover:bg-red-200`}
                   >
                     Client Creation
                   </Link>
@@ -216,10 +216,22 @@ const Gpgsaction = () => {
                     RNR Update
                   </Link>
                   <Link
-                    to="/gpgs-actions/eb-calculation"
-                    className={`${subBtnClasses} bg-blue-100 text-blue-800 hover:bg-blue-200`}
+                    to="/gpgs-actions/eb-info"
+                    className={`${subBtnClasses} bg-yellow-100 text-yello-800 hover:bg-yellow-200`}
                   >
-                    EB Calculation
+                    EB Info
+                  </Link>
+                  <Link
+                    to="/gpgs-actions/eb-calculation"
+                    className={`${subBtnClasses} bg-red-100 text-red-800 hover:bg-red-200`}
+                  >
+                    EB Calculator
+                  </Link>
+                  <Link
+                    to="/gpgs-actions/eb-calculated-list"
+                    className={`${subBtnClasses} bg-green-100 text-green-800 hover:bg-green-200`}
+                  >
+                    View Calculated EBs
                   </Link>
                 </div>
               )}

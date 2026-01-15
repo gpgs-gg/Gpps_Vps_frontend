@@ -36,7 +36,6 @@ const BedsAvilable = () => {
           `${process.env.REACT_APP_BASE_URL}/Beds-status`
         );
 
-        console.log(22222222, process.env.Base_Url)
         if (res.data.success) {
           const raw = res.data.data;
           setData(raw);
@@ -69,7 +68,7 @@ const BedsAvilable = () => {
   };
 
   const clearFilters = () => {
-    setGenderFilter(null);
+    setGenderFilter("");
     setActiveFilters([]);
   };
 
@@ -78,6 +77,9 @@ const BedsAvilable = () => {
   dynamicFilters.sharing.forEach((val) => (FILTER_FIELDS[val] = { key: "Sharing Type", value: val }));
   dynamicFilters.location.forEach((val) => (FILTER_FIELDS[val] = { key: "Location", value: val }));
   dynamicFilters.bathroom.forEach((val) => (FILTER_FIELDS[val] = { key: "Attached Bathroom", value: val }));
+
+
+
 
   const filteredData = data
     .filter((item) => {
@@ -112,6 +114,51 @@ const BedsAvilable = () => {
   useEffect(() => {
     setFilterTotal(filteredData.length);
   }, [filteredData]);
+
+
+
+
+  const [IACount, setIACount] = useState(0);
+  const [redFlag, setRedFlag] = useState(0);
+
+  useEffect(() => {
+    if (!Array.isArray(data)) {
+      setIACount(0);
+      setRedFlag(0);
+      return;
+    }
+
+    const Icount = filteredData.filter(
+      item =>
+        item["Bed Available From"]?.toLowerCase().trim() === "available immediate".toLowerCase()
+    ).length;
+
+    const redFlagCount = filteredData.filter(
+      item =>
+        item["Red Flag"]?.toLowerCase() === "red flag".toLowerCase()
+    ).length
+
+
+    setIACount(Icount);
+    setRedFlag(redFlagCount);
+  }, [filteredData, data]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   const renderCheckboxList = (options) => (
     <div className="space-y-2">
@@ -202,7 +249,7 @@ const BedsAvilable = () => {
     );
 
   return (
-    
+
     <div className="min-h-screen bg-[#F8F9FB]">
       <div className="sticky top-0 z-5 ">
         <div className="relative flex items-center justify-center ">
@@ -213,44 +260,44 @@ const BedsAvilable = () => {
             /> */}
           </div>
         </div>
-    
-      
+
+
       </div>
 
-         {showContent && (
-          <div className="grid grid-cols-2 mt-[100px] sm:flex sm:flex-wrap justify-center  gap-2">
-            {filterButtons.map((btn) => {
-              let selectedOptions = [];
-              if (btn.id === "gender" && genderFilter) {
-                selectedOptions = [genderFilter];
-              } else {
-                selectedOptions = activeFilters.filter(
-                  (label) => FILTER_FIELDS[label]?.key === btn.label
-                );
-              }
+      {showContent && (
+        <div className="grid grid-cols-2 mt-[100px] sm:flex sm:flex-wrap justify-center  gap-2">
+          {filterButtons.map((btn) => {
+            let selectedOptions = [];
+            if (btn.id === "gender" && genderFilter) {
+              selectedOptions = [genderFilter];
+            } else {
+              selectedOptions = activeFilters.filter(
+                (label) => FILTER_FIELDS[label]?.key === btn.label
+              );
+            }
 
-              return (
-                <div
-                  key={btn.id}
-                  className="relative w-full sm:w-auto"
-                  onMouseEnter={() => setPopup(btn.id)}
-                  onMouseLeave={() => setPopup(null)}
-                >
-                  <button className="flex items-center mt-5 justify-between w-full sm:justify-center gap-2 px-4 py-1 border border-orange-500 text-orange-600 bg-white rounded-xl hover:bg-orange-50 shadow-sm transition-all">
-                    {btn.icon}
-                    <span className="font-medium">{btn.label}</span>
-                  </button>
+            return (
+              <div
+                key={btn.id}
+                className="relative w-full sm:w-auto"
+                onMouseEnter={() => setPopup(btn.id)}
+                onMouseLeave={() => setPopup(null)}
+              >
+                <button className="flex items-center mt-5 justify-between w-full sm:justify-center gap-2 px-4 py-1 border border-orange-500 text-orange-600 bg-white rounded-xl hover:bg-orange-50 shadow-sm transition-all">
+                  {btn.icon}
+                  <span className="font-medium">{btn.label}</span>
+                </button>
 
-                  {popup === btn.id && (
-                    <div className="absolute top-6.5 left-0 z-50 bg-white border border-orange-300 shadow-lg rounded-xl p-4 w-64 mt-1">
-                      <h2 className="text-sm text-orange-500 font-bold mb-3 capitalize">
-                        {btn.label} Filter
-                      </h2>
-                      {renderPopupContent()}
-                    </div>
-                  )}
+                {popup === btn.id && (
+                  <div className="absolute top-6.5 left-0 z-50 bg-white border border-orange-300 shadow-lg rounded-xl p-4 w-64 mt-1">
+                    <h2 className="text-sm text-orange-500 font-bold mb-3 capitalize">
+                      {btn.label} Filter
+                    </h2>
+                    {renderPopupContent()}
+                  </div>
+                )}
 
-                  {/* {selectedOptions.length > 0 && (
+                {/* {selectedOptions.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1 text-xs">
                       {selectedOptions.map((opt) => (
                         <span
@@ -263,42 +310,40 @@ const BedsAvilable = () => {
                       ))}
                     </div>
                   )} */}
-                </div>
-              );
-            })}
+              </div>
+            );
+          })}
 
 
-            {activeFilters.length > 0 && (
-              <button className="flex items-center mt-5 bg-orange-100 justify-between h-8 sm:justify-center gap-2 px-4 py-1 border border-orange-500 text-orange-600  rounded-xl hover:bg-orange-50 shadow-sm transition-all">
-                {/* {btn.icon} */}
-                <span onClick={clearFilters}
-                  className="font-medium flex items-center gap-2 ">
-                  <AiOutlineClear /> Clear Filters
-                  {/* {btn.label} */}
-
-
-                </span>
-              </button>
-
-            )}
-
-            <div className="flex items-center justify-end mt-5 mb-2 gap-2">
-              <button
-                onClick={() => setSortByVacatingDate((prev) => !prev)}
-                className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-all ${sortByVacatingDate ? "bg-orange-500" : "bg-gray-300"
-                  }`}
+          {(activeFilters.length > 0 || genderFilter) && (
+            <button className="flex items-center mt-5 bg-orange-100 justify-between h-8 sm:justify-center gap-2 px-4 py-1 border border-orange-500 text-orange-600 rounded-xl hover:bg-orange-50 shadow-sm transition-all">
+              <span
+                onClick={clearFilters}
+                className="font-medium flex items-center gap-2"
               >
-                <div
-                  className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${sortByVacatingDate ? "translate-x-6" : "translate-x-0"
-                    }`}
-                />
-              </button>
-              <label className="text-lg font-medium  text-orange-600">
-                Sort By CVD
-              </label>
-            </div>
+                <AiOutlineClear /> Clear Filters
+              </span>
+            </button>
+          )}
+
+
+          <div className="flex items-center justify-end mt-5 mb-2 gap-2">
+            <button
+              onClick={() => setSortByVacatingDate((prev) => !prev)}
+              className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-all ${sortByVacatingDate ? "bg-orange-500" : "bg-gray-300"
+                }`}
+            >
+              <div
+                className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${sortByVacatingDate ? "translate-x-6" : "translate-x-0"
+                  }`}
+              />
+            </button>
+            <label className="text-lg font-medium  text-orange-600">
+              Sort By CVD
+            </label>
           </div>
-        )}
+        </div>
+      )}
 
       <div className="max-w-full mx-auto ">
         {filteredData.length === 0 ? (
@@ -308,10 +353,12 @@ const BedsAvilable = () => {
           </p>
         ) : (
           <>
-     
+
             {filterTotal > 0 && (
               <div className="text-end text-sm text-gray-600 mr-8 mb-1">
-                Showing{" "}
+                IA: <span className="font-semibold text-orange-600">{IACount}</span> &nbsp;&nbsp;
+                RF: <span className="font-semibold text-orange-600">{redFlag}</span>&nbsp;&nbsp;
+                Showing{"     "}
                 <span className="font-semibold text-orange-600">
                   {filterTotal}
                 </span>{" "}
@@ -326,10 +373,10 @@ const BedsAvilable = () => {
                       <th
                         key={key}
                         className={`px-2 py-2 border-b font-bold border-gray-300 whitespace-nowrap  ${idx === 0
-                            ? "sticky left-0 z-20 bg-orange-300"
-                            : idx === 1
-                              ? "sticky left-[30px] z-20 bg-orange-300 "
-                              : ""
+                          ? "sticky left-0 z-20 bg-orange-300"
+                          : idx === 1
+                            ? "sticky left-[30px] z-20 bg-orange-300 "
+                            : ""
                           }`}
                       >
                         {key === "1" ? "Sr.No" : key}
@@ -347,10 +394,10 @@ const BedsAvilable = () => {
                         <td
                           key={idx}
                           className={`px-2 py-2 text-[15px] align-top whitespace-nowrap ${idx === 0
-                              ? "sticky left-0  font-bold bg-orange-300"
-                              : idx === 1
-                                ? "sticky left-[30px] font-bold bg-orange-300"
-                                : ""
+                            ? "sticky left-0  font-bold bg-orange-300"
+                            : idx === 1
+                              ? "sticky left-[30px] font-bold bg-orange-300"
+                              : ""
                             }`}
                         // style={{ minWidth: "100px" }}
                         >
@@ -366,7 +413,7 @@ const BedsAvilable = () => {
         )}
       </div>
     </div>
-  
+
   );
 };
 

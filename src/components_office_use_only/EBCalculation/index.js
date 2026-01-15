@@ -29,6 +29,34 @@ export const useMainSheetDataForEb = (sheetId, enabled) => {
   });
 };
 
+const fetchAcConsumtionSheetData = async (sheetId) => {
+  if (sheetId) {
+    const response = await apiClient.get(`/get-ac-consumtion?sheetId=${sheetId}`);
+    return response.data;
+  }
+};
+
+export const useAcConsumtionSheetData = (sheetId, enabled) => {
+  return useQuery({
+    queryKey: ["property-sheet-for-eb", sheetId],
+    queryFn: () => fetchAcConsumtionSheetData(sheetId),
+    enabled: !!sheetId && enabled, // Only fetch when sheetId is available
+  });
+};  
+
+
+// const fetchAcConsumtionSheetData = async () => {
+//     const response = await apiClient.get(`/get-ac-consumtion`);
+//     return response.data;
+// };
+
+// export const useAcConsumtionSheetData = () => {
+//   return useQuery({
+//     queryKey: ["property-sheet-for-eb", ],
+//     queryFn:fetchAcConsumtionSheetData,
+//   });
+// };
+
 
 
 
@@ -76,3 +104,22 @@ export const useCreateEbCalculationForMainSheetData = (EBMainSheetID) => {
     },
   });
 };
+
+
+
+// const fetchEbPropertySheetData = async (sheetId) => {
+//   if (!sheetId || sheetId.length === 0) {
+//     return [];
+//   }
+//   const response = await apiClient.get(`/main-sheet-data-for-eb?sheetId=${sheetId}`);
+//   return response.data;
+// };
+
+// export const useEbPropertySheetData = (sheetId, enabled = true) => {
+//   return useQuery({
+//     queryKey: ["property-sheet", sheetId],
+//     queryFn: () => fetchEbPropertySheetData(sheetId),
+//     enabled: !!sheetId && enabled,
+//     initialData: [], // optional, safe default value
+//   });
+// };

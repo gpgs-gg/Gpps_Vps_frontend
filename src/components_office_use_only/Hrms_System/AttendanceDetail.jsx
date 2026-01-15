@@ -438,18 +438,18 @@ const AttendanceDetail = () => {
     const today = new Date();
 
     // Change length to however many months you want to show
-    const monthOptions = Array.from({ length: 12 }, (_, i) => {
-        const baseDate = new Date(today.getFullYear(), today.getMonth() + i, 1);
-        const year = baseDate.getFullYear();
-        const monthIndex = baseDate.getMonth();
-        const shortMonth = MONTH_SHORT_NAMES[monthIndex]; // Example: "Nov"
-        const fullMonth = baseDate.toLocaleString("default", { month: "long" }); // "November"
+    // const monthOptions = Array.from({ length: 12 }, (_, i) => {
+    //     const baseDate = new Date(today.getFullYear(), today.getMonth() + i, 1);
+    //     const year = baseDate.getFullYear();
+    //     const monthIndex = baseDate.getMonth();
+    //     const shortMonth = MONTH_SHORT_NAMES[monthIndex]; // Example: "Nov"
+    //     const fullMonth = baseDate.toLocaleString("default", { month: "long" }); // "November"
 
-        return {
-            value: `${shortMonth}${year}`,       // Example: "Nov2025"
-            label: `${fullMonth} ${year}`        // Example: "November 2025"
-        };
-    });
+    //     return {
+    //         value: `${shortMonth}${year}`,       // Example: "Nov2025"
+    //         label: `${fullMonth} ${year}`        // Example: "November 2025"
+    //     };
+    // });
 
 
     const handleEditAttendance = (entry) => {
@@ -517,7 +517,7 @@ const AttendanceDetail = () => {
                         )} */}
                     </div>
                     {/* Date Filter */}
-                    <div>
+                        <div>
                         <label className="block text-lg font-medium text-black mb-2">Date</label>
                         <Controller
                             control={control}
@@ -582,7 +582,7 @@ const AttendanceDetail = () => {
                                     'Out Time', 'Out Selfie', 'Total Hours', 'OverTime',
                                     'DeficitHours', 'Status', `Action`
                                 ].map(header => (
-                                    <th key={header} className="px-4 py-3 text-left font-semibold border-b border-gray-200">
+                                    <th key={header} className="px-4 py-3 text-left font-semibold whitespace-nowrap border-b border-gray-200">
                                         {header}
                                     </th>
                                 ))}
