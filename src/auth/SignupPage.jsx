@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useChangePassword, useGetOtp } from './services';
+import { useChangePassword, useGetOtp , useVerifyOtp } from './services';
 import CryptoJS from 'crypto-js';
 import { SECRET_KEY } from '../Config';
 import LoaderPage from '../components_office_use_only/NewBooking/LoaderPage';
@@ -9,6 +9,8 @@ import { toast } from 'react-toastify';
 const SignupPage = ({ isOpen, setIsOpen, userData, clientData }) => {
   const { mutate: changePassword, isPending: isChange } = useChangePassword();
   const { mutate: getOtp, isPending: isGettingOtp } = useGetOtp();
+    const { mutate: verifyOtp, isPending: isVerifyingOtp } = useVerifyOtp();
+
 
   const [step, setStep] = useState(1);
   const [emailMatched, setEmailMatched] = useState('');
@@ -29,40 +31,45 @@ const SignupPage = ({ isOpen, setIsOpen, userData, clientData }) => {
   const password = watch('password');
 
   // 🧠 Save OTP and expiry to localStorage
-  const saveOtpToLocal = (otp) => {
-    const expiryTime = new Date().getTime() + 10 * 60 * 1000; // 10 mins in ms
-    const otpData = {
-      otp,
-      expiry: expiryTime,
-    };
-    localStorage.setItem('otpData', JSON.stringify(otpData));
-  };
+  // const saveOtpToLocal = (otp) => {
+  //   const expiryTime = new Date().getTime() + 10 * 60 * 1000; // 10 mins in ms
+  //   const otpData = {
+  //     otp,
+  //     expiry: expiryTime,
+  //   };
+  //   localStorage.setItem('otpData', JSON.stringify(otpData));
+  // };
 
   // 🔍 Read and validate OTP from localStorage
-  const getValidOtpFromLocal = () => {
-    const data = JSON.parse(localStorage.getItem('otpData'));
-    if (!data) return null;
+  // const getValidOtpFromLocal = () => {
+  //   const data = JSON.parse(localStorage.getItem('otpData'));
+  //   if (!data) return null;
 
-    const now = new Date().getTime();
-    if (now > data.expiry) {
-      localStorage.removeItem('otpData');
-      return null;
-    }
-    return data.otp;
-  };
+  //   const now = new Date().getTime();
+  //   if (now > data.expiry) {
+  //     localStorage.removeItem('otpData');
+  //     return null;
+  //   }
+  //   return data.otp;
+  // };
+
+
+
+
+
 
   const handleGetOtp = ({ loginId }) => {
     const trimmedEmail = loginId?.trim()?.toLowerCase();
 
-    const foundUser =
-      userData?.data.find((user) => user?.LoginID?.trim()?.toLowerCase() === trimmedEmail) ||
-      clientData?.data?.find((client) => client.LoginID?.trim()?.toLowerCase() === trimmedEmail);
+    // const foundUser =
+    //   userData?.data.find((user) => user?.LoginID?.trim()?.toLowerCase() === trimmedEmail) ||
+    //   clientData?.data?.find((client) => client.LoginID?.trim()?.toLowerCase() === trimmedEmail);
 
-    if (!foundUser) {
-      toast.dismiss();
-      toast.error('Email is not registered. Please check and try again.');
-      return;
-    }
+    // if (!foundUser) {
+    //   toast.dismiss();
+    //   toast.error('Email is not registered. Please check and try again.');
+    //   return;
+    // }
 
     getOtp(
       { email: trimmedEmail },
@@ -74,37 +81,74 @@ const SignupPage = ({ isOpen, setIsOpen, userData, clientData }) => {
           setStep(2);
 
           // 🧠 Save OTP locally (for dev/testing only)
-          if (data?.otp) {
-            saveOtpToLocal(data.otp);
-          } else {
-            toast.warning("No OTP returned from server. Can't verify.");
-          }
+          // if (data?.otp) {
+          //   saveOtpToLocal(data.otp);
+          // } else {
+          //   toast.warning("No OTP returned from server. Can't verify.");
+          // }
         },
-        onError: () => {
+        onError: (error) => {
           toast.dismiss();
-          toast.error('Failed to send OTP. Try again.');
+          toast.error(error?.response?.data?.message || "Failed to send OTP. Try again.")
         },
       }
     );
   };
 
-  const handleVerifyOtp = ({ otp }) => {
-    const enteredOtp = otp?.trim();
-    const savedOtp = getValidOtpFromLocal();
+const handleVerifyOtp = ({ otp }) => {
+  const enteredOtp = otp?.trim();
 
-    if (!savedOtp) {
-      toast.error('OTP expired or not found. Please request a new one.');
-      return;
-    }
+  if (!enteredOtp) {
+    toast.error("Please enter OTP");
+    return;
+  }
 
-    if (enteredOtp === savedOtp) {
-      toast.success('OTP verified.');
-      setStep(3);
-      localStorage.removeItem('otpData'); // clean up
-    } else {
-      toast.error('Invalid OTP. Please try again.');
+  verifyOtp(
+    {
+      email: emailMatched,   // 👈 email bhej rahe
+      otp: enteredOtp,       // 👈 otp bhej rahe
+    },
+    {
+      onSuccess: () => {
+        toast.success("OTP verified successfully");
+        setStep(3);
+      },
+      onError: (err) => {
+        toast.error(
+          err?.response?.data?.message || "Invalid OTP"
+        );
+      },
     }
-  };
+  );
+};
+
+
+
+//   const handleVerifyOtp = ({ otp }) => {
+//     const enteredOtp = otp?.trim();
+//     const savedOtp = getValidOtpFromLocal();
+
+//     if (!savedOtp) {
+//       toast.error('OTP expired or not found. Please request a new one.');
+//       return;
+//     }
+// verifyOtp{
+
+// }
+//     if (enteredOtp === savedOtp) {
+//       toast.success('OTP verified.');
+//       setStep(3);
+//       localStorage.removeItem('otpData'); // clean up
+//     } else {
+//       toast.error('Invalid OTP. Please try again.');
+//     }
+//   };
+
+
+
+
+
+
 
   const handleUpdatePassword = ({ password }) => {
     const encryptedPassword = CryptoJS.AES.encrypt(password.trim(), SECRET_KEY).toString();

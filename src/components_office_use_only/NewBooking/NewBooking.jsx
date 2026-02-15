@@ -602,7 +602,7 @@ const NewBooking = () => {
   const [permanentPropertyFilledChecked, setPermanentPropertyFilledChecked] = useState()
   const [applyPermBedRent, setApplyPermBedRent] = useState(true);
   const decryptedUserRef = useRef(null);
-
+             console.log("decryptedUserRef", decryptedUserRef)
   useEffect(() => {
     const encrypted = localStorage.getItem("user");
     const decrypted = decryptUser(encrypted);
@@ -965,8 +965,8 @@ useEffect(() => {
         month: "short",
         year: "numeric",
       }),
-      ID: decryptedUserRef.current?.id,
-      EmployeeName: decryptedUserRef.current?.name,
+      ID: decryptedUserRef?.current?.employee?.EmployeeID,
+      EmployeeName: decryptedUserRef?.current?.employee?.Name,
       ClientFullName: data.ClientFullName,
       WhatsAppNo: data.WhatsAppNo,
       CallingNo: data.CallingNo,

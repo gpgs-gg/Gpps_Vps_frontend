@@ -2,10 +2,15 @@ import React from 'react'
 import LeadsTable from './LeadsTable';
 import ClientLeads from './ClientLeads';
 import LeadsTab from './LeadsTab';
+import Dashboard from './Dashboard';
 // import Leads from './Leads';
 
 function LeadsNavigation({activeTab, setActiveTab  , activeLead, setActiveLead}) {
     switch(activeTab) {
+       case "Dashboard":
+    // code block
+    return <Dashboard setActiveTab={setActiveTab} activeLead={activeLead} setActiveLead={setActiveLead} />;
+    
   case "leadsList":
     // code block
     return <LeadsTable setActiveTab={setActiveTab} activeLead={activeLead} setActiveLead={setActiveLead} />;
@@ -15,7 +20,7 @@ function LeadsNavigation({activeTab, setActiveTab  , activeLead, setActiveLead})
     // code block
 }
   return (
-    <div className="min-h-screen bg-[#F8F9FB]">
+    <div className=" max-h-[800px] border border-gray-50 bg-[#F8F9FB]">
       <LeadsTab />
     </div>
   )

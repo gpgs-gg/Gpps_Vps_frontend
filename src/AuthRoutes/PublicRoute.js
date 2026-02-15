@@ -40,7 +40,7 @@ const PublicRoute = ({ children }) => {
             return;
           }
 
-          setIsAuthenticated(!!user?.loginId);
+          setIsAuthenticated(!!user?.employee?.LoginID);
         } catch (decryptErr) {
           console.error('Decryption error:', decryptErr);
           setIsAuthenticated(false);

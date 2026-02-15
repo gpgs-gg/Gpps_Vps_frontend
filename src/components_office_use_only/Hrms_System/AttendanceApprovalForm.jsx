@@ -78,6 +78,14 @@ function AttendanceApprovalForm({ isOpen, setIsOpen, editableData, setEditableDa
         },
     });
 
+
+      const getChangeText = (oldVal, newVal, label) => {
+    if ((oldVal || "") !== (newVal || "")) {
+      return `${label} changed from ${oldVal || "N/A"} to ${newVal || "N/A"}`;
+    }
+    return null;
+  };
+
     // --------------------------------------------
     //  Utility: Attendance Calculation Function
     // --------------------------------------------
@@ -177,10 +185,34 @@ function AttendanceApprovalForm({ isOpen, setIsOpen, editableData, setEditableDa
             `${String(newHours).padStart(2, "0")}:` +
             `${String(newMinutes).padStart(2, "0")} ` +
             newMod;
-
         setValue("OutTime", formatted);
     };
 
+
+
+
+
+
+
+  const formatLogDate = () => {
+    return new Date().toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+
+
+
+
+
+
+
+    
     // -----------------------------------------------------
     //  1️⃣ Set Initial Values When Popup Opens (editableData)
     // -----------------------------------------------------
@@ -227,12 +259,87 @@ function AttendanceApprovalForm({ isOpen, setIsOpen, editableData, setEditableDa
     if (!isOpen) return null;
 
     const onSubmit = (data) => {
+
+
+
+ const hasAnyFieldChanged =
+        editableData.OutTime !== data.OutTime ||
+        editableData.Status !== data.Status?.value ||
+        editableData.InTime !== data.InTime
+        
+   const changes = [];
+
+      const phoneChange = getChangeText(
+        editableData.OutTime,
+        data?.OutTime?.trim(),
+        "Out Time"
+      );
+
+      const whatsappChange = getChangeText(
+        editableData.Status,
+        data?.Status?.value,
+        "Status"
+      );
+
+      const bookingStatusChange = getChangeText(
+        editableData.InTime,
+        data?.InTime?.trim(),
+        "In Time"
+      );
+
+      if (phoneChange) changes.push(phoneChange);
+      if (whatsappChange) changes.push(whatsappChange);
+    //   if (visitedChange) changes.push(visitedChange);
+      if (bookingStatusChange) changes.push(bookingStatusChange);
+
+      /* ---------- 3️⃣ Block update if NOTHING changed ---------- */
+      if (!hasAnyFieldChanged && !changes.length && !data?.comment?.trim()) {
+        toast.warn("No changes to update");
+        return;
+      }
+
+   /* ---------- 4️⃣ Prepare WorkLogs (ONLY when needed) ---------- */
+
+const oldComments = editableData?.comment?.trim() || "";
+let log = "";
+
+/* Build new log only if something changed */
+if (changes.length || data?.comment?.trim()) {
+  const userComment = data?.comment?.trim() || "";
+
+  const changeText = changes
+    .map(c => c.trim())
+    .join("\n");
+
+  log = `[${formatLogDate()} - (${decryptedUser?.employee?.EmployeeID}) ${decryptedUser?.employee?.Name}]
+${changeText}${userComment ? `\n${userComment}` : ""}`;
+}
+
+/* ---------- 🔥 FINAL COMMENT (NO DUPLICATES) ---------- */
+let finalWorkLog = "";
+
+/* Case 1: New log + old comments */
+if (log && oldComments) {
+  finalWorkLog = `${log}\n\n${oldComments}`;
+}
+
+/* Case 2: Only new log */
+else if (log) {
+  finalWorkLog = log;
+}
+
+/* Case 3: Only old comments (rare but safe) */
+else {
+  finalWorkLog = oldComments;
+}
+
+
         const updatedData = {
             ...data,
             AttendanceStatus: data?.Status || editableData?.AttendanceStatus,
             selectedMonth: selectedMonth,
-            comment: `${editableData.comment ? editableData.comment : ""}\n[${decryptedUser.id} - ${decryptedUser.name}] - ${data.comment}`.trim(),
-            ApprovedBy: `${decryptedUser.id} - ${decryptedUser.name} - ${new Date().toString().split(" GMT")[0]
+            comment: finalWorkLog,
+            ApprovedBy: `${decryptedUser?.employee?.EmployeeID} - ${decryptedUser?.employee?.Name} - ${new Date().toString().split(" GMT")[0]
                 }`,
         };
 
@@ -248,7 +355,7 @@ function AttendanceApprovalForm({ isOpen, setIsOpen, editableData, setEditableDa
             editableData?.InTime ? "Check Out" : "Check In"
         );
         // Send name for Google Drive folder
-        formData.append("Name", decryptedUser?.name);
+        formData.append("Name", decryptedUser?.employee?.Name);
         // Upload OutSelfie
         if (imageBlob) {
             editableData?.InTime ?
@@ -543,3 +650,7 @@ function AttendanceApprovalForm({ isOpen, setIsOpen, editableData, setEditableDa
 }
 
 export default AttendanceApprovalForm;
+
+
+
+

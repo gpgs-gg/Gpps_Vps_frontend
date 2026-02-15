@@ -30,13 +30,15 @@ import Sallarydetail from './components_office_use_only/Hrms_System/Sallarydetai
 import { usePermissionData } from './components_office_use_only/TicketSystem/Services';
 import { useApp } from './components_office_use_only/TicketSystem/AppProvider';
 import LoaderPage from './components_office_use_only/NewBooking/LoaderPage';
-import BedAvailabeDetails from './components/BedAvailabeDetails';
+// import BedAvailabeDetails from './components/BedAvailabeDetails';
 import EBCalculation from './components_office_use_only/EBCalculation/EBCalculation';
 import HouseKeeping from './components_office_use_only/DailyToDoHouseKeeping/HouseKeeping';
 import Maintenance from './components_office_use_only/DailyToDoMaintenance/Maintanance';
 import EBSheetDetails from './components_office_use_only/EBCalculation/EBSheetDetails';
 import EBInfo from './components_office_use_only/EBInfo/EBInfo';
 import LeadsNavigation from './components_office_use_only/LeadsForGpgs/LeadsNavigation';
+import PropertyManagement from "./components_office_use_only/Properties_Management/PropertyManagement";
+import TodoBankTransaction from './components_office_use_only/BankTransaction/TodoBankTransaction';
 // import Footer from './components/Footer';
 // import { useAuth } from './context/AuthContext';
 
@@ -51,7 +53,7 @@ function App() {
 
   const functionPermission = permission?.data || []
 
-  const userEmail = decryptedUser?.loginId;
+  const userEmail = decryptedUser?.employee?.LoginID;
 
   // Check Attendance Permission
   const hasAttendancePermission = functionPermission.some(
@@ -190,12 +192,50 @@ function App() {
       window.removeEventListener("touchstart", updateActivity);
     };
   }, [TEN_HOURS, logout]);
-  // lock right click
-  // useEffect(() => {
-  //   const onContext = (e) => e.preventDefault();
-  //   document.addEventListener('contextmenu', onContext);
-  //   return () => document.removeEventListener('contextmenu', onContext);
-  // }, []);
+
+
+
+
+
+
+
+
+
+// useEffect(() => {
+//   const onContext = (e) => e.preventDefault();
+
+//   const onKeyDown = (e) => {
+//     // F12
+//     if (e.key === 'F12') {
+//       e.preventDefault();
+//     }
+
+//     // Ctrl / Cmd + Shift + I / J / C
+//     if (
+//       (e.ctrlKey || e.metaKey) &&
+//       e.shiftKey &&
+//       ['I', 'J', 'C'].includes(e.key)
+//     ) {
+//       e.preventDefault();
+//     }
+
+//     // Ctrl / Cmd + U (view source)
+//     if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+//       e.preventDefault();
+//     }
+//   };
+
+//   document.addEventListener('contextmenu', onContext);
+//   document.addEventListener('keydown', onKeyDown);
+
+//   return () => {
+//     document.removeEventListener('contextmenu', onContext);
+//     document.removeEventListener('keydown', onKeyDown);
+//   };
+// }, []);
+
+
+
 
 
 
@@ -267,12 +307,21 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/gpgs-actions/property-management"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+              < PropertyManagement/>
+            </ProtectedRoute>
+          }
+        />
         <Route path="/gpgs-actions/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route path="/gpgs-actions" element={<ProtectedRoute><Gpgsaction /></ProtectedRoute>} />
 
         <Route path="*" element={<PageNotFound />} />
         <Route path="/gallery" element={<Gallary />} />
-        <Route path="/availabe-beds" element={<BedAvailabeDetails />} />
+        {/* <Route path="/availabe-beds" element={<BedAvailabeDetails />} /> */}
         <Route path="gpgs-actions/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
         <Route
@@ -292,6 +341,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+  
         <Route
           path="/gpgs-actions/maintenance-todo"
           element={
@@ -323,6 +373,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
               <EBInfo/>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/gpgs-actions/bank-transaction"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+              <TodoBankTransaction/>
             </ProtectedRoute>
           }
         />

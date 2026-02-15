@@ -7,6 +7,55 @@ const apiClient = axios.create({
   // baseURL: "http://localhost:3000/api", // for Local Developement
 });
 
+
+
+
+const login= async (data) => {
+  const response = await apiClient.post("/login", data);
+  return response.data;
+};
+
+export const useLogin = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: login,
+    onSuccess: () => {
+      // 🔄 Refetch ticket sheet after update
+      queryClient.invalidateQueries(["login"]);
+    },
+  });
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // fecting data for employees
 const fetchEmployeeDetailsData = async () => {
   const response = await apiClient.get("/Employees-details");

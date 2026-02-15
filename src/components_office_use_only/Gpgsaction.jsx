@@ -19,7 +19,7 @@ const Gpgsaction = () => {
 
   const functionPermission = permission?.data || []
 
-  const userEmail = decryptedUser?.loginId;
+  const userEmail = decryptedUser?.employee?.LoginID;
 
   // Check Attendance Permission
   const hasAttendancePermission = functionPermission.some(
@@ -60,7 +60,7 @@ const Gpgsaction = () => {
   const subBtnClasses = "py-2 px-4 rounded-md text-center transition text-sm";
 
   useEffect(() => {
-    if (decryptedUser?.role.toLowerCase() === "client") {
+    if (decryptedUser?.employee?.Role?.toLowerCase() === "client") {
       navigate("/gpgs-actions/tickets")
 
     }
@@ -69,7 +69,7 @@ const Gpgsaction = () => {
 
   return (
     <section className="bg-gray-200 min-h-screen py-10 px-4 md:px-6 flex items-center justify-center">
-      {decryptedUser?.role === "admin" && (
+      {decryptedUser?.employee?.Role === "admin" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-4xl">
           {/* Hrms  */}
 
@@ -210,6 +210,12 @@ const Gpgsaction = () => {
                     Client Creation
                   </Link>
                   <Link
+                    to="/gpgs-actions/bank-transaction"
+                    className={`${subBtnClasses} bg-red-100 text-red-800 hover:bg-red-200`}
+                  >
+                    Bank Transaction
+                  </Link>
+                  <Link
                     to="/gpgs-actions/accounts"
                     className={`${subBtnClasses} bg-indigo-100 text-indigo-800 hover:bg-indigo-200`}
                   >
@@ -238,26 +244,26 @@ const Gpgsaction = () => {
             </div>
           </div>
 
-            <Link to="/gpgs-actions/housekeeping-todo">
+          <Link to="/gpgs-actions/housekeeping-todo">
             <div className={cardClasses}>
               <div className={`${iconClasses} bg-red-100 text-rose-500`}>
                 <i className="fa-solid fa-ticket text-xl"></i>
               </div>
               <h3 className={titleClasses}>HouseKeeping</h3>
               <button className={`${btnClasses} bg-rose-500 hover:bg-rose-600`}>
-               To-Do HouseKeeping 
+                To-Do HouseKeeping
               </button>
             </div>
           </Link>
-            <Link to="/gpgs-actions/maintenance-todo">
+          <Link to="/gpgs-actions/maintenance-todo">
             <div className={cardClasses}>
               <div className={`${iconClasses} bg-blue-100 text-blue-500`}>
                 <i className="fa-solid fa-ticket text-xl"></i>
               </div>
               <h3 className={titleClasses}>Maintenance
-</h3>
+              </h3>
               <button className={`${btnClasses} bg-blue-500 hover:bg-blue-600`}>
-               To-Do Maintenance 
+                To-Do Maintenance
               </button>
             </div>
           </Link>

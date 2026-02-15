@@ -60,6 +60,7 @@ function EBSheetDetails() {
   //   return `${sheetBaseId},${currentMonth}`;
   // }, [filteredAdminPropertySheetData]);
 
+const selectedMonth = watch("selectedMonth") || "";
 
 
   const mainSheetIdForAdmin = useMemo(() => {
@@ -67,8 +68,8 @@ function EBSheetDetails() {
 
     const sheetBaseId = filteredAdminPropertySheetData[0]["PG EB  Sheet ID"];
 
-    return `${sheetBaseId},${watch("selectedMonth")}`;
-  }, [filteredAdminPropertySheetData]);
+    return `${sheetBaseId},${selectedMonth}`;
+  }, [filteredAdminPropertySheetData, selectedMonth]);
 
 
   const ebSheetDataObjForAdmin = useMemo(() => {
@@ -117,22 +118,18 @@ function EBSheetDetails() {
 
   const filteredPropertySheetData = useMemo(() => {
     return MainPropertyData?.data?.filter(
-      (ele) => ele["Property Code"] === decryptedUser?.propertyCode
+      (ele) => ele["Property Code"] === decryptedUser?.employee?.PropertyCode
     );
-  }, [MainPropertyData, decryptedUser?.propertyCode]);
+  }, [MainPropertyData, decryptedUser?.employee?.PropertyCode]);
 
 
-  const mainSheetId = useMemo(() => {
-    if (!filteredPropertySheetData?.length) return "";
+const mainSheetId = useMemo(() => {
+  if (!filteredPropertySheetData?.length || !selectedMonth) return "";
 
-    const sheetBaseId = filteredPropertySheetData[0]["PG EB  Sheet ID"];
+  const sheetBaseId = filteredPropertySheetData[0]["PG EB  Sheet ID"];
+  return `${sheetBaseId},${selectedMonth}`;
+}, [filteredPropertySheetData, selectedMonth]);
 
-
-
-    return `${sheetBaseId},${watch("selectedMonth")}`;
-  }, [filteredPropertySheetData , watch("selectedMonth")]);
-
-       console.log("Main Sheet ID:", mainSheetId);
 
   const { data: ebPropertyData, isLoading, isError, isFetching, isPending } = useMainSheetDataForEb(mainSheetId || mainSheetIdForAdmin);
 
@@ -163,24 +160,23 @@ function EBSheetDetails() {
     // return () => clearInterval(timer);
   }, []);
   const sortedEbSheetData = useMemo(() => {
-    if (!ebSheetData?.data || !decryptedUser?.clientID) return [];
+    if (!ebSheetData?.data || !decryptedUser?.employee?.ClientID) return [];
 
-    const myClientId = String(decryptedUser.clientID);
-    console.log("My Client ID:", myClientId);
+    const myClientId = String(decryptedUser?.employee?.ClientID);
     return [...ebSheetData.data].sort((a, b) => {
       console.log("Comparing Client IDs:", a.ClientID,);
       if (String(a.ClientID) === myClientId) return -1;
       if (String(b.ClientID) === myClientId) return 1;
       return 0;
     });
-  }, [ebSheetData, decryptedUser?.clientID]);
+  }, [ebSheetData, decryptedUser?.employee?.ClientID]);
 
 
   useEffect(() => {
     if (decryptedUser?.role?.toLowerCase() === "client") {
-      // Find the full option object in ProperyOptions that matches decryptedUser.propertyCode
+      // Find the full option object in ProperyOptions that matches decryptedUser?.employee?.PropertyCode
       const selectedOption = ProperyOptions.find(
-        (opt) => opt.value === decryptedUser.propertyCode
+        (opt) => opt.value === decryptedUser?.employee?.PropertyCode
       );
 
       if (selectedOption) {
@@ -194,9 +190,9 @@ function EBSheetDetails() {
     if (!ebSheetData?.data || !Array.isArray(ebSheetData.data)) return {};
 
     return ebSheetData.data.find(
-      (item) => String(item.ClientID) === String(decryptedUser?.clientID)
+      (item) => String(item.ClientID) === String(decryptedUser?.employee?.ClientID)
     ) || {};
-  }, [ebSheetData, decryptedUser?.clientID]);
+  }, [ebSheetData, decryptedUser?.employee?.ClientID]);
 
 
 
@@ -208,9 +204,12 @@ function EBSheetDetails() {
   // 2️⃣ API failed / error
   if (isError || !ebSheetData) {
     return (
-      <div className="flex items-center justify-center h-[80vh] px-5">
+      <div className="flex items-center justify-center h-[50vh] px-5">
         <h2 className="text-xl font-semibold text-red-600">
-          Please Note : Electricity Bill is not generated yet for the selected month.
+          Please Note : Electricity Bill is not generated yet for the selected {selectedMonth} month.
+     <button className='underline  text-black' onClick={() => window.location.reload()}>
+  Go Back
+</button>
         </h2>
       </div>
     );
@@ -229,18 +228,17 @@ function EBSheetDetails() {
 
   // const { propertyCode, billingPeriod, propertySummary, clients } = propertyData
 
-  // console.log("Logged clientID:", decryptedUser?.clientID);
+  // console.log("Logged clientID:", decryptedUser?.employee?.ClientID);
 
   // console.log(
   //   "All sheet clientIDs:",
   //   ebSheetData?.data?.map(i => i.clientID)
   // );
 
-  console.log("1111111", watch("selectedMonth"));
 
   return (
     <>
-      {decryptedUser?.role === 'client' && (
+      {decryptedUser?.employee?.Role === 'client' && (
         <div className=" h-screen flex flex-col gap-10 ">
 
           {/* ================= PROPERTY SUMMARY ================= */}
@@ -261,7 +259,7 @@ function EBSheetDetails() {
                       render={({ field }) => {
                         // Ensure value is an option object, not just the raw value
                         const selectedOption = ProperyOptions.find(
-                          (opt) => opt.value === field.value || opt.value === decryptedUser?.propertyCode
+                          (opt) => opt.value === field.value || opt.value === decryptedUser?.employee?.PropertyCode
                         ) || null;
 
                         return (
@@ -269,7 +267,7 @@ function EBSheetDetails() {
                             {...field}
                             value={selectedOption}
                             onChange={(option) => field.onChange(option?.value)} // store only the value in the form
-                            isDisabled={decryptedUser?.role === 'client'}
+                            isDisabled={decryptedUser?.employee?.Role === 'client'}
                             placeholder="Select Property Code"
                             isClearable
                             styles={employeeSelectStyles}
@@ -494,7 +492,7 @@ function EBSheetDetails() {
 
 
 
-      {decryptedUser?.role !== 'client' && (
+      {decryptedUser?.employee?.Role !== 'client' && (
         <div className=" h-screen flex flex-col gap-5 mt-32 px-5">
 
           {/* 🔹 FULL PAGE LOADER – ONLY FIRST LOAD */}
@@ -527,59 +525,58 @@ function EBSheetDetails() {
                     </div>
 
 
-                    <div>
-                      <label className="block text-sm font-medium text-black-700 mb-1">
-                        Select Month
-                      </label>
-                      <Controller
-                        name="selectedMonth"
-                        control={control}
-                        rules={{ required: "Please select a month" }}
-                        render={({ field }) => {
-                          // FIX: Convert "Dec2024" back to a Date object safely
-                          let selectedDate = null;
+                <div>
+                    <label className="block text-sm font-medium text-black-700 mb-1">
+                      Select Month
+                    </label>
+                    <Controller
+                      name="selectedMonth"
+                      control={control}
+                      rules={{ required: "Please select a month" }}
+                      render={({ field }) => {
 
-                          if (field.value) {
-                            const monthStr = field.value.slice(0, 3); // "Dec"
-                            const yearStr = field.value.slice(3);     // "2024"
+                        let selectedDate = null;
 
-                            const monthIndex = MONTH_SHORT_NAMES.indexOf(monthStr);
+                        if (field.value) {
+                          const monthStr = field.value.slice(0, 3); // "Dec"
+                          const yearStr = field.value.slice(3);     // "2024"
+                          const monthIndex = MONTH_SHORT_NAMES.indexOf(monthStr);
 
-                            if (monthIndex !== -1) {
-                              selectedDate = new Date(Number(yearStr), monthIndex, 1);
-                            }
+                          if (monthIndex !== -1) {
+                            selectedDate = new Date(Number(yearStr), monthIndex, 1);
                           }
+                        } else {
+                          // Default to current month
+                          const now = new Date();
+                          selectedDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                          // Update the field value so the form knows about it
+                          const defaultMonth = `${MONTH_SHORT_NAMES[now.getMonth()]}${now.getFullYear()}`;
+                          field.onChange(defaultMonth);
+                        }
 
-                          return (
-                            <DatePicker
-                              selected={selectedDate}
-                              onChange={(date) => {
-                                if (!date) return field.onChange("");
+                        return (
+                          <DatePicker
+                            selected={selectedDate}
+                            onChange={(date) => {
+                              if (!date) return field.onChange("");
 
-                                const month = MONTH_SHORT_NAMES[date.getMonth()];
-                                const year = date.getFullYear();
-                                const formatted = `${month}${year}`;
+                              const month = MONTH_SHORT_NAMES[date.getMonth()];
+                              const year = date.getFullYear();
+                              const formatted = `${month}${year}`;
 
-                                field.onChange(formatted);
-                              }}
-                              dateFormat="MMM yyyy"
-                              showMonthYearPicker
-                              popperPlacement="right-start"
-                              placeholderText="Select month"
-                              className="w-full border focus:ring-1 focus:ring-orange-500 px-3 py-2 border-orange-500 outline-none rounded-md"
-                            />
-                          );
-                        }}
-                      />
+                              field.onChange(formatted);
+                            }}
+                            dateFormat="MMM yyyy"
+                            showMonthYearPicker
+                            popperPlacement="right-start"
+                            placeholderText="Select month"
+                            className="w-full border focus:ring-1 focus:ring-orange-500 px-3 py-2 border-orange-500 outline-none rounded-md"
+                          />
+                        );
+                      }}
+                    />
 
-
-                      {/* {errors.selectedDate && (
-                                            <p className="text-red-500 text-sm mt-1">
-                                                {errors.selectedDate.message}
-                                            </p>
-                                        )} */}
-                    </div>
-
+                  </div>
                   </div>
 
 

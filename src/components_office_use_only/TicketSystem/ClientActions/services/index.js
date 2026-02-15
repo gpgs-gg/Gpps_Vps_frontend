@@ -60,6 +60,7 @@ export const useUploadClientDocs = () => {
 
 
 const fetchClientDetailsData = async () => {
+  return
   const response = await apiClient.get("/Clients-details");
   return response.data;
 };

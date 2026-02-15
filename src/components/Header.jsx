@@ -5,7 +5,7 @@ import 'aos/dist/aos.css';
 import { useAuth } from "../context/AuthContext";
 import CryptoJS from 'crypto-js';
 import { SECRET_KEY } from "../Config";
-import gpgsLogo from "../logo/Gpgs-logo.jpg"; 
+import gpgsLogo from "../logo/Gpgs-logo.jpg";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -80,17 +80,17 @@ const Header = () => {
   );
 
   return (
-    <header className="fixed top-0 left-0 w-full z-[200] bg-white shadow-md">
+    <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-md">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-2 lg:px-2">
         <div className="flex justify-between items-center h-20 md:h-24">
           
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/">
+            <Link to="/" className="inline-block">
               <img
                 src={gpgsLogo}
                 alt="GPGS Logo"
-                className="h-20  md:h-24"
+                className="h-20 md:h-24 w-auto object-contain"
               />
             </Link>
           </div>
@@ -100,27 +100,27 @@ const Header = () => {
             {navLinks}
 
             {/* <Link to="/gallery" className="nav-link">Gallery</Link> */}
-            
+
             <Link to="/gpgs-actions" className="nav-link"><span className="text-xl">|</span>  My Account</Link>
-      
+
             {decryptedUser && (
-              <div  className="flex items-center space-x-4 ml-6">
+              <div className="flex items-center space-x-4 ml-6">
                 <div className="text-right">
-                  <div className="text-sm font-semibold text-gray-800">{decryptedUser?.name?.substring(0, 12) + "..."}</div>
+                  <div className="text-sm font-semibold text-gray-800">{decryptedUser?.employee?.Name?.substring(0, 12) + "..."}</div>
                   {/* <div className="text-xs text-gray-500">({decryptedUser.role})</div> */}
                 </div>
                 <div className="w-9 h-9 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold">
-                  {decryptedUser.name.split(' ').map(n => n[0]).join('')}
+                  {decryptedUser?.employee?.Name?.split(' ').map(n => n[0]).join('')}
                 </div>
                 <button onClick={handleLogout} className="text-sm text-gray-700 hover:text-indigo-600">Logout</button>
               </div>
             )}
           </nav>
           {/* Mobile Menu Button */}
-          <div  className="md:hidden flex items-center space-x-2">
+          <div className="md:hidden flex items-center space-x-2">
             {decryptedUser && (
               <div className="text-right mr-2">
-                <div className="text-sm font-semibold text-gray-800">{decryptedUser.name.substring(0, 12) + "..."}</div>
+                <div className="text-sm font-semibold text-gray-800">{decryptedUser?.employee?.Name?.substring(0, 12) + "..."}</div>
                 {/* <div className="text-xs text-gray-500">({decryptedUser.role})</div> */}
               </div>
             )}
@@ -138,25 +138,25 @@ const Header = () => {
       {/* Mobile Menu */}
       {menuOpen && (
         <div data-aos="fade-down"
-     data-aos-easing="linear"
-     data-aos-duration="300" className="md:hidden flex flex-col bg-white border-t border-gray-200 px-4 py-4 space-y-4">
+          data-aos-easing="linear"
+          data-aos-duration="300" className="md:hidden flex flex-col bg-white border-t border-gray-200 px-4 py-4 space-y-4">
           {isHomePage ? (
             <>
               <a onClick={() => setMenuOpen(false)} href="#home" className="mobile-link">Home</a>
-                  <a onClick={() => setMenuOpen(false)} href="/gallery" className="mobile-link">Gallery</a>
+              <a onClick={() => setMenuOpen(false)} href="/gallery" className="mobile-link">Gallery</a>
               <a onClick={() => setMenuOpen(false)} href="#services" className="mobile-link">Facilities</a>
               <a onClick={() => setMenuOpen(false)} href="#locations" className="mobile-link">Locations</a>
               <a onClick={() => setMenuOpen(false)} href="#about" className="mobile-link">About Us</a>
-          
+
               <a onClick={() => setMenuOpen(false)} href="#contact" className="mobile-link">Contact Us</a>
             </>
           ) : (
             <>
               <Link onClick={() => setMenuOpen(false)} to="/" className="mobile-link">Home</Link>
-               <Link onClick={() => setMenuOpen(false)} to="/gallery" className="mobile-link">Gallery</Link>
+              <Link onClick={() => setMenuOpen(false)} to="/gallery" className="mobile-link">Gallery</Link>
               <Link onClick={() => setMenuOpen(false)} to="/services" className="mobile-link">Facilities</Link>
               <Link onClick={() => setMenuOpen(false)} to="/locations" className="mobile-link">Locations</Link>
-             
+
               <Link onClick={() => setMenuOpen(false)} to="/about" className="mobile-link">About Us</Link>
               <Link onClick={() => setMenuOpen(false)} to="/contact" className="mobile-link">Contact Us</Link>
             </>

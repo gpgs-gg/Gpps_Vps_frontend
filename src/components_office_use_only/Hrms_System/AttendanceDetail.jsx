@@ -317,7 +317,6 @@ const AttendanceDetail = () => {
     });
     const selectedMonth = watch("selectedMonth") || ""
     const { user } = useAuth();
-
     const { data, isPending } = useAttendanceData(selectedMonth)
     const [selectedImage, setSelectedImage] = useState(null);
     const handleImageClick = (imgSrc) => setSelectedImage(imgSrc);
@@ -330,7 +329,7 @@ const AttendanceDetail = () => {
         year: "numeric",
     });
     const filteredDataForTotalHours =
-        attendanceList?.find(ele => ele.EmployeeID === user?.id && ele.Date === currentDate) || [];
+        attendanceList?.find(ele => ele.EmployeeID === user.employee?.EmployeeID && ele.Date === currentDate) || [];
 
     let { InTime, MinHours, HalfDayHrs } = filteredDataForTotalHours || {};
 

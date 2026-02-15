@@ -22,7 +22,7 @@ const rawMenuItems = [
 
   {
     id: 'tickets',
-    label: decryptedUser?.role === 'client' ? 'My Tickets' : 'All Tickets',
+    label: decryptedUser?.employee?.Role === 'client' ? 'My Tickets' : 'All Tickets',
     icon: 'fas fa-ticket-alt'
   },
   { id: 'create', label: 'Create Ticket', icon: 'fas fa-plus-circle' },
@@ -30,7 +30,7 @@ const rawMenuItems = [
   
 // Filter logic based on role
 const menuItems = rawMenuItems.filter(item => {
-  if (decryptedUser?.role === 'client') {
+  if (decryptedUser?.employee?.Role === 'client') {
     // For clients, exclude 'dashboard'
     return ['pgpropertydetails', 'personalinfo', 'payments', "documents" ,"mypgtickets" ,'tickets', 'create', 'EBInfo'].includes(item.id);
   } else {
@@ -82,7 +82,7 @@ const menuItems = rawMenuItems.filter(item => {
     `}
         >
           {menuItems.map(item => {
-            if (item.adminOnly && currentUser?.role !== 'Admin') return null;
+            if (item.adminOnly && decryptedUser?.employee?.Role !== 'Admin') return null;
             return (
               <button
                 key={item.id}

@@ -36,18 +36,18 @@ const PersonalInfo = () => {
             {/* Helper component pattern would be ideal, but keeping it simple here */}
 
             {[
-                { label: "Full Name", value: decryptedUser?.name },
-                { label: "Calling No", value: decryptedUser?.calling },
-                { label: "WhatsApp No", value: decryptedUser?.whatsAppNo },
-                { label: "Email Id", value: decryptedUser?.loginId },
-                { label: "Date Of Birth", value: decryptedUser?.dob },
-                { label: "Blood Group", value: decryptedUser?.bloodGroup },
-                { label: "Occupation", value: decryptedUser?.occupation },
-                { label: "Organisation", value: decryptedUser?.organisation },
-                { label: "Emergency Cont1 Name", value: decryptedUser?.emgyCont1FullName },
-                { label: "Emergency Cont1 No", value: decryptedUser?.emgyCont1No },
-                { label: "Emergency Cont2 Name", value: decryptedUser?.emgyCont2FullName },
-                { label: "Emergency Cont2 No", value: decryptedUser?.emgyCont2No },
+                { label: "Full Name", value: decryptedUser?.employee?.Name },
+                { label: "Calling No", value: decryptedUser?.employee?.CallingNo },
+                { label: "WhatsApp No", value: decryptedUser?.employee?.WhatsAppNo },
+                { label: "Email Id", value: decryptedUser?.employee?.LoginID },
+                { label: "Date Of Birth", value: decryptedUser?.employee?.DOB },
+                { label: "Blood Group", value: decryptedUser?.employee?.BloodGroup },
+                { label: "Occupation", value: decryptedUser?.employee?.Occupation },
+                { label: "Organisation", value: decryptedUser?.employee?.Organisation },
+                { label: "Emergency Cont1 Name", value: decryptedUser?.employee?.EmgyCont1FullName },
+                { label: "Emergency Cont1 No", value: decryptedUser?.employee?.EmgyCont1No },
+                { label: "Emergency Cont2 Name", value: decryptedUser?.employee?.EmgyCont2FullName },
+                { label: "Emergency Cont2 No", value: decryptedUser?.employee?.EmgyCont2No },
             ].map((item, index) => (
                 <div
                     key={index}
@@ -62,7 +62,7 @@ const PersonalInfo = () => {
             <div className="p-3 bg-white rounded-lg  shadow-lg md:col-span-3">
                 <p className="text-lg font-bold">Permanent Address</p>
                 <p className="font-medium text-gray-900">
-                    {decryptedUser?.permanentAddress || "N/A"}
+                    {decryptedUser?.employee?.PermanentAddress || "N/A"}
                 </p>
             </div>
         </div>

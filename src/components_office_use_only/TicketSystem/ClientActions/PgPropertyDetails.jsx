@@ -20,7 +20,7 @@ const OverView = () => {
     });
     const { data: ClientDetails, isPending: isClientPending } = useClientDetails();
     const filteredClientData = ClientDetails?.data?.find(
-        (ele) => ele.ClientID === decryptedUser?.clientID
+        (ele) => ele.ClientID === decryptedUser?.employee?.ClientID
     );
 
 
@@ -29,9 +29,9 @@ const OverView = () => {
     // Use useMemo to prevent unnecessary recalculations
     const filteredPropertySheetData = useMemo(() => {
         return propertyDataFromApi?.data?.filter(
-            (ele) => ele["Property Code"] === decryptedUser?.propertyCode
+            (ele) => ele["Property Code"] === decryptedUser?.employee?.PropertyCode
         );
-    }, [propertyDataFromApi, decryptedUser?.propertyCode]);
+    }, [propertyDataFromApi, decryptedUser?.employee?.PropertyCode]);
 
     const mainSheetId = useMemo(() => {
         if (!filteredPropertySheetData || filteredPropertySheetData.length === 0) return [];
@@ -50,11 +50,12 @@ const OverView = () => {
 
 
     const { data: pgMainSheetData } = usePropertySheetData(mainSheetId);
-
+      console.log(111111111, decryptedUser?.employee)
     const mainSheetDataForNameWise = useMemo(() => {
         return pgMainSheetData?.data?.length > 0
-            ? pgMainSheetData?.data?.filter((ele) => ele.ClientID.trim() === decryptedUser.clientID.trim()) : []
+            ? pgMainSheetData?.data?.filter((ele) => ele.ClientID.trim() === decryptedUser?.employee?.ClientID?.trim()) : []
     }, [pgMainSheetData])
+
 
     useEffect(() => {
         const encrypted = localStorage.getItem('user');
@@ -125,13 +126,13 @@ const OverView = () => {
                             {/* Date of Joining */}
                             <div className="p-4 bg-white rounded-lg border border-orange-300 break-words">
                                 <p className="text-lg font-bold">Date Of Joining</p>
-                                <p className="text-gray-900 font-medium">{decryptedUser?.doj}</p>
+                                <p className="text-gray-900 font-medium">{decryptedUser?.employee?.DOJ}</p>
                             </div>
 
                             {/* Check-In Date */}
                             <div className="p-4 bg-white rounded-lg border border-orange-300 break-words">
                                 <p className="text-lg font-bold">Check-In Date</p>
-                                <p className="text-gray-900 font-medium">{decryptedUser?.actualDoj}</p>
+                                <p className="text-gray-900 font-medium">{decryptedUser?.employee?.ActualDOJ}</p>
                             </div>
 
                             {/* Monthly Rent */}

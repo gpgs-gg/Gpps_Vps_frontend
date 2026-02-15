@@ -70,8 +70,8 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
         const bytes = CryptoJS.AES.decrypt(encryptedUser, SECRET_KEY);
         const decrypted = bytes.toString(CryptoJS.enc.Utf8);
         const user = JSON.parse(decrypted);
-        if (user?.loginId) {
-          if (allowedRoles.length === 0 || allowedRoles.includes(user.role)) {
+        if (user?.employee?.LoginID) {
+          if (allowedRoles.length === 0 || allowedRoles.includes(user?.employee?.Role)) {
             setStatus('authorized');
           } else {
             setStatus('unauthorized');

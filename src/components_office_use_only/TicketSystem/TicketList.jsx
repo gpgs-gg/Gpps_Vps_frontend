@@ -437,7 +437,7 @@ export const TicketList = () => {
   ];
 
   const headers = useMemo(() => {
-    return decryptedUser?.role === "client" ? clientHeaders : fullHeaders;
+    return decryptedUser?.employee?.Role === "client" ? clientHeaders : fullHeaders;
   }, [decryptedUser]);
 
   // Selection handlers
@@ -1185,7 +1185,7 @@ export const TicketList = () => {
 //   ];
 
 //   const headers = useMemo(() => {
-//     return decryptedUser?.role === "client" ? clientHeaders : fullHeaders;
+//     return decryptedUser?.employee?.Role === "client" ? clientHeaders : fullHeaders;
 //   }, [decryptedUser]);
 
 

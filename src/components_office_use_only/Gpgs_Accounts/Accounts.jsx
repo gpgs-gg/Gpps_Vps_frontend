@@ -28,8 +28,6 @@ const Accounts = () => {
   const selectedMonth = watch("selectedMonth");
   const selectedProperty = watch("selectedProperty");
 
-  console.log("rnrSheetData", rnrSheetData[0])
-
   // akash code //
   const findClient = (name) => {
     if (!showNumbers) return null;
@@ -127,7 +125,7 @@ const Accounts = () => {
             const client = findClient(trimmed);
 
             if (client) {
-              return `${trimmed} ${client.CallingNo || ""} | ${client.WhatsAppNo || ""}`;
+              return `${trimmed} ${client.CallingNo || ""} | ${client.WhatsAppNo || ""} (${client.RentDate})`;
             }
             return trimmed;
           })
@@ -474,7 +472,7 @@ Customer Care / Emergency No. 2 : 9326325181
                   ...rnrSheetData[0].ClientNameDepositDue.split("\n").map(n => n.trim())
                 ])
               ).map((name, index) => {
-
+                console.log("name", name)
                 const client = showNumbers ? findClient(name) : null;
 
                 /** GET MATCHED AMOUNTS */
@@ -490,17 +488,39 @@ Customer Care / Emergency No. 2 : 9326325181
                 const previousDue = previousNames.indexOf(name) >= 0 ? previousAmounts[previousNames.indexOf(name)] : "";
                 const depositDue = depositNames.indexOf(name) >= 0 ? depositAmounts[depositNames.indexOf(name)] : "";
 
+                const extractNumbersPart = (name) => {
+                  if (!name) return "";
+
+                  const match = name.match(/\d.*$/);
+                  return match ? match[0] : "";
+                };
+
+
                 return (
                   <tr key={index} className="border hover:bg-orange-50">
 
                     {/* NAME + NUMBER */}
-                    <td className="border p-2 font-semibold">
+                    {/* <td className="border p-2 font-semibold">
                       {name.replace(/[0-9|]/g, '').trim()}
-                    </td>
+                    </td> */}
                     <td className="border p-2 font-semibold">
+                      {name.replace(/[0-9|()]/g, '').trim()}
+                    </td>
+
+                    {/* <td className="border p-2 font-semibold">
                       {name?.match(/\d+/g)?.join('\n') ? name?.match(/\d+/g)?.join('\n') : <p className="text-sm text-orange-500">please update Whatsapp and Calling No (ClientMasterTable)
                         </p>}
+                    </td> */}
+                    <td className="border p-2 font-semibold">
+                      {extractNumbersPart(name) ? (
+                        extractNumbersPart(name)
+                      ) : (
+                        <p className="text-sm text-orange-500">
+                          please update Whatsapp and Calling No (ClientMasterTable)
+                        </p>
+                      )}
                     </td>
+
 
                     {/* CURRENT DUE */}
                     <td className="border p-2 text-center font-semibold text-orange-600">

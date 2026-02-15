@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 import { useAttendanceData, useCheckInOut } from "./services";
 import LoaderPage from "../NewBooking/LoaderPage";
+import { CheckInOutSkeleton } from "./CheckInOutSkeleton";
 
 const OFFICE_LOCATION = { latitude: 19.067422, longitude: 72.921907 };
 const MAX_DISTANCE_METERS = 500;
@@ -29,7 +30,7 @@ const CheckInOut = () => {
     const { data: attendanceData, isPending: isPendingAttendance } = useAttendanceData(selectedMonth);
 
     const filteredAttendanceData =
-        attendanceData?.data?.filter((ele) => ele.EmployeeID === user?.id) || [];
+        attendanceData?.data?.filter((ele) => ele.EmployeeID ===    user.employee?.EmployeeID) || [];
 
 
     // filter data for current date (TotalHours Cal)
@@ -41,7 +42,7 @@ const CheckInOut = () => {
     });
 
     const filteredDataForTotalHours =
-        attendanceData?.data?.find(ele => ele.EmployeeID === user?.id && ele.Date === currentDate) || [];
+        attendanceData?.data?.find(ele => ele.EmployeeID === user.employee?.EmployeeID && ele.Date === currentDate) || [];
 
 
     const formatDate = (date) => {
@@ -477,8 +478,8 @@ const CheckInOut = () => {
 
             // Prepare form data
             const formData = new FormData();
-            formData.append("EmployeeID", user?.id);
-            formData.append("Name", user?.name);
+            formData.append("EmployeeID", user?.employee.EmployeeID);
+            formData.append("Name", user?.employee?.Name);
             formData.append("Date", formatDate(now));
             formData.append("action", action);
 
@@ -596,9 +597,7 @@ const CheckInOut = () => {
     };
 
     if (isPendingAttendance) {
-        return <div className="flex justify-center h-screen w-full items-center">
-            <LoaderPage />
-        </div>
+        return <CheckInOutSkeleton isMobile={isMobile} />;
     }
 
     return (

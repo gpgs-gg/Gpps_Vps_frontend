@@ -106,7 +106,7 @@
 //   ?.filter((prop) => {
 //     if (!prop.Departments) return false;
 
-//     if (decryptedUser?.role?.toLowerCase() === "client") {
+//     if (decryptedUser?.employee?.Role?.toLowerCase() === "client") {
 //       // Only include departments from the allowed list if the user is a client
 //       return allowedClientDepartments.includes(prop.Departments);
 //     }
@@ -180,10 +180,10 @@
 //   }, [isEdit, selectedTicket, setValue, ProperyOptions, ManagerOptions]);
 
 //   useEffect(() => {
-//     if (decryptedUser?.role?.toLowerCase() === "client") {
-//       // Find the full option object in ProperyOptions that matches decryptedUser.propertyCode
+//     if (decryptedUser?.employee?.Role?.toLowerCase() === "client") {
+//       // Find the full option object in ProperyOptions that matches decryptedUser?.employee?.propertyCode
 //       const selectedOption = ProperyOptions.find(
-//         (opt) => opt.value === decryptedUser.propertyCode
+//         (opt) => opt.value === decryptedUser?.employee?.propertyCode
 //       );
 
 //       if (selectedOption) {
@@ -480,7 +480,7 @@
 
 //   //   // Format WorkLogs
 //   //   const newWorkLogEntry = data.WorkLogs
-//   //     ? `[${currentTimestamp} - ${decryptedUser?.name}]  ${data.WorkLogs.trim()}`
+//   //     ? `[${currentTimestamp} - ${decryptedUser?.employee?.Name}]  ${data.WorkLogs.trim()}`
 //   //     : "";
 
 //   //   const statusValue = isEdit ? data.Status?.value || "" : "Open";
@@ -489,7 +489,7 @@
 //   //   // Compose WorkLogs
 //   //   let updatedWorkLogs = "";
 //   //   if (isStatusChanged) {
-//   //     const statusChangeLog = `[${currentTimestamp} - ${decryptedUser?.name}] Status changed from ${selectedTicket.Status} to ${data.Status?.value}`;
+//   //     const statusChangeLog = `[${currentTimestamp} - ${decryptedUser?.employee?.Name}] Status changed from ${selectedTicket.Status} to ${data.Status?.value}`;
 //   //     updatedWorkLogs += statusChangeLog;
 //   //   }
 //   //   if (newWorkLogEntry) {
@@ -515,12 +515,12 @@
 //   //     CustomerImpacted: data.CustomerImpacted?.value || "",
 //   //     Escalated: data.Escalated?.value || "",
 //   //     WorkLogs: updatedWorkLogs || "",
-//   //     // CreatedByName: decryptedUser?.name || "Unknown",
+//   //     // CreatedByName: decryptedUser?.employee?.Name || "Unknown",
 //   //     // CreatedById: selectedTicket?.CreatedById || "Unknown",
 //   //     ClosedDate: statusValue === "Closed" ? Timestamp() : "",
 //   //     ...(isEdit
 //   //       ? {
-//   //         UpdatedByName: decryptedUser?.name || "Unknown",
+//   //         UpdatedByName: decryptedUser?.employee?.Name || "Unknown",
 //   //         UpdatedById: decryptedUser?.clientID || decryptedUser?.id || "Unknown",
 //   //         UpdatedDateTime: Timestamp(),
 //   //         Attachment: previews.map(ele => ele.url),
@@ -529,9 +529,9 @@
 
 //   //       }
 //   //       : {
-//   //         CreatedByName: decryptedUser?.name || "Unknown",
+//   //         CreatedByName: decryptedUser?.employee?.Name || "Unknown",
 //   //         CreatedById: decryptedUser?.clientID || decryptedUser?.id || "Unknown",
-//   //         CreatedBy: decryptedUser?.role.charAt(0).toUpperCase() + decryptedUser?.role.slice(1).toLowerCase() || "Unknown",
+//   //         CreatedBy: decryptedUser?.employee?.Role.charAt(0).toUpperCase() + decryptedUser?.employee?.Role.slice(1).toLowerCase() || "Unknown",
 //   //       }),
 //   //   };
 //   //   const formData = new FormData();
@@ -583,7 +583,7 @@
 //     const currentTimestamp = getFormattedTimestamp();
 
 //     const newWorkLogEntry = data.WorkLogs
-//       ? `[${currentTimestamp} - ${decryptedUser?.name}]  ${data.WorkLogs.trim()}`
+//       ? `[${currentTimestamp} - ${decryptedUser?.employee?.Name}]  ${data.WorkLogs.trim()}`
 //       : "";
 
 //     const statusValue = isEdit ? data.Status?.value || "" : "Open";
@@ -591,7 +591,7 @@
 
 //     let updatedWorkLogs = "";
 //     if (isStatusChanged) {
-//       const statusChangeLog = `[${currentTimestamp} - ${decryptedUser?.name}] Status changed from ${selectedTicket.Status} to ${data.Status?.value}`;
+//       const statusChangeLog = `[${currentTimestamp} - ${decryptedUser?.employee?.Name}] Status changed from ${selectedTicket.Status} to ${data.Status?.value}`;
 //       updatedWorkLogs += statusChangeLog;
 //     }
 //     if (newWorkLogEntry) {
@@ -619,7 +619,7 @@
 //       Attachment: data.Attachment, // ✅ Cloudinary URLs
 //       ...(isEdit
 //         ? {
-//           UpdatedByName: decryptedUser?.name || "Unknown",
+//           UpdatedByName: decryptedUser?.employee?.Name || "Unknown",
 //           UpdatedById: decryptedUser?.clientID || decryptedUser?.id || "Unknown",
 //           UpdatedDateTime: Timestamp(),
 //           CreatedById: selectedTicket?.CreatedById || "Unknown",
@@ -629,9 +629,9 @@
 
 //         }
 //         : {
-//           CreatedByName: decryptedUser?.name || "Unknown",
+//           CreatedByName: decryptedUser?.employee?.Name || "Unknown",
 //           CreatedById: decryptedUser?.clientID || decryptedUser?.id || "Unknown",
-//           CreatedBy: decryptedUser?.role.charAt(0).toUpperCase() + decryptedUser?.role.slice(1).toLowerCase() || "Unknown",
+//           CreatedBy: decryptedUser?.employee?.Role.charAt(0).toUpperCase() + decryptedUser?.employee?.Role.slice(1).toLowerCase() || "Unknown",
 //         }),
 //     };
 
@@ -659,7 +659,7 @@
 //     }
 //   }, [isEdit])
 
-//   if (isEdit && decryptedUser?.role.toLowerCase() === "client") {
+//   if (isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client") {
 //     return <>
 //       <div className="">
 //         <h2 className="text-2xl font-bold text-gray-900 ml-5">
@@ -668,7 +668,7 @@
 //           ) : (
 //             <div className="lg:flex   items-center gap-5">
 //               <h1>Create New Ticket</h1>
-//               {decryptedUser?.role.toLowerCase().toLowerCase() === "client" && (
+//               {decryptedUser?.employee?.Role.toLowerCase().toLowerCase() === "client" && (
 //                 <p className="text-orange-500 text-sm lg:text-lg">Kindly submit a new ticket for any maintenance requests, housekeeping services, notice to vacate, rent receipts, rental agreements, full and final settlements, or electricity bill-related concerns</p>
 //               )}
 //             </div>
@@ -705,7 +705,7 @@
 //                         styles={SelectStyles}
 //                         isClearable
 //                         placeholder="Search & Select Property Code"
-//                         isDisabled={decryptedUser?.role.toLowerCase() === "client" || isEdit && decryptedUser?.role.toLowerCase() !== "client"}
+//                         isDisabled={decryptedUser?.employee?.Role.toLowerCase() === "client" || isEdit && decryptedUser?.employee?.Role.toLowerCase() !== "client"}
 //                       // isDisabled={isEdit}
 //                       />
 
@@ -718,10 +718,10 @@
 //               {[
 //                 { name: "Department", options: DepartmentOptions, placeholder: "Search & Select Department" },
 //                 { name: "Category", options: CategoryOptions, placeholder: "Search &  Select Category" },
-//                 ...(isEdit && decryptedUser?.role.toLowerCase() === "client"
+//                 ...(isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"
 //                   ? []
 //                   : [{ name: "Priority", options: PriorityOptions, placeholder: " Select Priority" }]),
-//                 ...(decryptedUser?.role.toLowerCase() === "admin"
+//                 ...(decryptedUser?.employee?.Role.toLowerCase() === "admin"
 //                   ? [{ name: "Priority", options: PriorityOptions, placeholder: "Search & Select Priority" }]
 //                   : []),
 //               ].map(({ name, options, placeholder }) => (
@@ -732,13 +732,13 @@
 //                     name={name}
 //                     rules={{
 //                       required:
-//                         name === "Priority" && decryptedUser?.role.toLowerCase() === "client"
+//                         name === "Priority" && decryptedUser?.employee?.Role.toLowerCase() === "client"
 //                           ? false
 //                           : `${name} is required`,
 //                     }}
 //                     render={({ field, fieldState: { error } }) => (
 //                       <>
-//                         <Select {...field} options={options} styles={SelectStyles} placeholder={placeholder} isClearable isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                         <Select {...field} options={options} styles={SelectStyles} placeholder={placeholder} isClearable isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                         {error && <p className="text-red-500 text-sm">{error.message}</p>}
 //                       </>
 //                     )}
@@ -754,7 +754,7 @@
 //                 </label>
 //                 <input
 //                   {...register("Title", { required: "Title is required" })}
-//                   disabled={isEdit && decryptedUser?.role.toLowerCase() === "client"}
+//                   disabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"}
 //                   className={`w-full border ${isEdit ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
 //                     } border-orange-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-300`}
 //                   placeholder="Enter Title"
@@ -776,7 +776,7 @@
 //                     name="Status"
 //                     rules={{ required: "Status is required" }}
 //                     render={({ field, fieldState: { error } }) => {
-//                       const isClient = decryptedUser?.role.toLowerCase() === "client";
+//                       const isClient = decryptedUser?.employee?.Role.toLowerCase() === "client";
 //                       const isResolved = selectedTicket.Status === "Resolved";
 //                       const showOnlyReopen = isEdit && isClient && isResolved;
 
@@ -791,7 +791,7 @@
 //                             options={filteredOptions}
 //                             styles={SelectStyles}
 //                             isClearable
-//                             isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client" && selectedTicket.Status !== "Resolved"}
+//                             isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client" && selectedTicket.Status !== "Resolved"}
 //                           />
 //                           {error && <p className="text-red-500 text-sm">{error.message}</p>}
 //                         </>
@@ -801,14 +801,14 @@
 //                 </div>
 //               )}
 
-//               {!isEdit && decryptedUser?.role.toLowerCase() !== "client" && (<>
+//               {!isEdit && decryptedUser?.employee?.Role.toLowerCase() !== "client" && (<>
 //                 <div>
 //                   <label className="block text-sm font-medium text-black mb-2">Manager</label>
 //                   <Controller
 //                     control={control}
 //                     name="Manager"
 //                     render={({ field }) => (
-//                       <Select {...field} placeholder="Search & Select " options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                       <Select {...field} placeholder="Search & Select " options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                     )}
 
 //                   />
@@ -819,7 +819,7 @@
 //                     control={control}
 //                     name="Assignee"
 //                     render={({ field }) => (
-//                       <Select {...field} placeholder="Search & Select " options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"}
+//                       <Select {...field} placeholder="Search & Select " options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"}
 //                       />
 //                     )}
 //                   />
@@ -837,7 +837,7 @@
 //                   rules={{ required: "Status is required" }}
 //                   render={({ field, fieldState: { error } }) => (
 //                     <>
-//                       <Select {...field} options={StatusOptions} styles={SelectStyles} isClearable isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                       <Select {...field} options={StatusOptions} styles={SelectStyles} isClearable isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                       {error && <p className="text-red-500 text-sm">{error.message}</p>}
 //                     </>
 //                   )}
@@ -845,7 +845,7 @@
 //                 />
 //               </div>
 //             )} */}
-//               {decryptedUser?.role.toLowerCase() !== "client" && (
+//               {decryptedUser?.employee?.Role.toLowerCase() !== "client" && (
 //                 <div>
 //                   <label className="block text-sm font-medium text-black mb-2">
 //                     Target Date
@@ -1046,7 +1046,7 @@
 //                       control={control}
 //                       name="Manager"
 //                       render={({ field }) => (
-//                         <Select {...field} options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                         <Select {...field} options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                       )}
 //                     />
 //                   </div>
@@ -1056,7 +1056,7 @@
 //                       control={control}
 //                       name="Assignee"
 //                       render={({ field }) => (
-//                         <Select {...field} options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                         <Select {...field} options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                       )}
 //                     />
 //                   </div>
@@ -1072,7 +1072,7 @@
 //                       control={control}
 //                       name="CustomerImpacted"
 //                       render={({ field }) => (
-//                         <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                         <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                       )}
 //                     />
 //                   </div>
@@ -1084,7 +1084,7 @@
 //                       control={control}
 //                       name="Escalated"
 //                       render={({ field }) => (
-//                         <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                         <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                       )}
 //                     />
 //                   </div>
@@ -1168,7 +1168,7 @@
 //         ) : (
 //           <div className="flex flex-col justify-start">
 //             <h2 className="text-2xl font-bold text-gray-900">Create New Ticket</h2>
-//             {decryptedUser?.role?.toLowerCase() === "client" && (
+//             {decryptedUser?.employee?.Role?.toLowerCase() === "client" && (
 //               <p className="text-orange-500 text-sm lg:text-[14px] mt-1">
 //                 Kindly submit a new ticket for any maintenance requests, housekeeping services, notice to vacate, rent receipts, rental agreements, full and final settlements, or electricity bill-related concerns etc.
 //               </p>
@@ -1206,7 +1206,7 @@
 //                       styles={SelectStyles}
 //                       isClearable
 //                       placeholder="Search & Select"
-//                       isDisabled={decryptedUser?.role.toLowerCase() === "client" || isEdit && decryptedUser?.role.toLowerCase() !== "client"}
+//                       isDisabled={decryptedUser?.employee?.Role.toLowerCase() === "client" || isEdit && decryptedUser?.employee?.Role.toLowerCase() !== "client"}
 //                     // isDisabled={isEdit}
 //                     />
 //                     {error && <p className="text-red-500 text-sm">{error.message}</p>}
@@ -1218,10 +1218,10 @@
 //             {[
 //               { name: "Department", options: DepartmentOptions, placeholder: "Search & Select" },
 //               { name: "Category", options: CategoryOptions, placeholder: "Search &  Select" },
-//               ...(isEdit && decryptedUser?.role.toLowerCase() === "client"
+//               ...(isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"
 //                 ? [{ name: "Priority", options: PriorityOptionsForForm, placeholder: "Search & Select" }]
 //                 : []),
-//               ...(decryptedUser?.role.toLowerCase() === "admin"
+//               ...(decryptedUser?.employee?.Role.toLowerCase() === "admin"
 //                 ? [{ name: "Priority", options: PriorityOptionsForForm, placeholder: "Search & Select" }]
 //                 : []),
 //             ].map(({ name, options, placeholder }) => (
@@ -1232,13 +1232,13 @@
 //                   name={name}
 //                   rules={{
 //                     required:
-//                       name === "Priority" && decryptedUser?.role.toLowerCase() === "client" || name === "Priority" && decryptedUser?.role.toLowerCase() === "admin"
+//                       name === "Priority" && decryptedUser?.employee?.Role.toLowerCase() === "client" || name === "Priority" && decryptedUser?.employee?.Role.toLowerCase() === "admin"
 //                         ? false
 //                         : `${name} is required`,
 //                   }}
 //                   render={({ field, fieldState: { error } }) => (
 //                     <>
-//                       <Select {...field} options={options} styles={SelectStyles} placeholder={placeholder} isClearable isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                       <Select {...field} options={options} styles={SelectStyles} placeholder={placeholder} isClearable isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                       {error && <p className="text-red-500 text-sm">{error.message}</p>}
 //                     </>
 //                   )}
@@ -1262,14 +1262,14 @@
 //                 </p>
 //               )}
 //             </div>
-//             {decryptedUser?.role.toLowerCase() !== "client" && !isEdit && (<>
+//             {decryptedUser?.employee?.Role.toLowerCase() !== "client" && !isEdit && (<>
 //               <div>
 //                 <label className="block text-sm font-medium text-black mb-2">Manager</label>
 //                 <Controller
 //                   control={control}
 //                   name="Manager"
 //                   render={({ field }) => (
-//                     <Select {...field} placeholder="Search & Select " options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                     <Select {...field} placeholder="Search & Select " options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                   )}
 
 //                 />
@@ -1280,7 +1280,7 @@
 //                   control={control}
 //                   name="Assignee"
 //                   render={({ field }) => (
-//                     <Select {...field} placeholder="Search & Select " options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"}
+//                     <Select {...field} placeholder="Search & Select " options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"}
 //                     />
 //                   )}
 //                 />
@@ -1298,7 +1298,7 @@
 //                   rules={{ required: "Status is required" }}
 //                   render={({ field, fieldState: { error } }) => (
 //                     <>
-//                       <Select {...field} options={StatusOptions} styles={SelectStyles} isClearable isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                       <Select {...field} options={StatusOptions} styles={SelectStyles} isClearable isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                       {error && <p className="text-red-500 text-sm">{error.message}</p>}
 //                     </>
 //                   )}
@@ -1306,7 +1306,7 @@
 //                 />
 //               </div>
 //             )}
-//             {decryptedUser?.role.toLowerCase() !== "client" && (
+//             {decryptedUser?.employee?.Role.toLowerCase() !== "client" && (
 //               <div>
 //                 <label className="block text-sm font-medium text-black mb-2">
 //                   Target Date
@@ -1321,7 +1321,7 @@
 //                         type="date"
 //                         {...field}
 //                         value={field.value || ""}
-//                         disabled={isEdit && decryptedUser?.role.toLowerCase() === "client"}
+//                         disabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"}
 //                         className="w-full  border-orange-300 border-2 rounded px-3 py-2 pr-10 focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
 //                       />
 //                       {field.value && (
@@ -1385,7 +1385,7 @@
 
 
 
-//             {decryptedUser?.role?.toLowerCase() !== "client" && !isEdit && (
+//             {decryptedUser?.employee?.Role?.toLowerCase() !== "client" && !isEdit && (
 //               <div className="grid grid-cols-2 gap-5">
 //                 <div>
 //                   <label className="block text-sm font-medium text-black mb-2">Customer Impacted </label>
@@ -1393,7 +1393,7 @@
 //                     control={control}
 //                     name="CustomerImpacted"
 //                     render={({ field }) => (
-//                       <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                       <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                     )}
 //                   />
 //                 </div>
@@ -1403,7 +1403,7 @@
 //                     control={control}
 //                     name="Escalated"
 //                     render={({ field }) => (
-//                       <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                       <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                     )}
 //                   />
 //                 </div>
@@ -1526,7 +1526,7 @@
 //               </div>
 //             )}
 
-//             {decryptedUser?.role === "client" && !isEdit && (
+//             {decryptedUser?.employee?.Role === "client" && !isEdit && (
 //               <div>
 //                 <div>
 //                   <label className="block text-sm font-medium text-black mb-2">Attachment</label>
@@ -1652,7 +1652,7 @@
 //                       control={control}
 //                       name="Manager"
 //                       render={({ field }) => (
-//                         <Select {...field} options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                         <Select {...field} options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                       )}
 //                     />
 //                   </div>
@@ -1662,7 +1662,7 @@
 //                       control={control}
 //                       name="Assignee"
 //                       render={({ field }) => (
-//                         <Select {...field} options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                         <Select {...field} options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                       )}
 //                     />
 //                   </div>
@@ -1677,7 +1677,7 @@
 //                       control={control}
 //                       name="CustomerImpacted"
 //                       render={({ field }) => (
-//                         <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                         <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                       )}
 //                     />
 //                   </div>
@@ -1687,7 +1687,7 @@
 //                       control={control}
 //                       name="Escalated"
 //                       render={({ field }) => (
-//                         <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+//                         <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
 //                       )}
 //                     />
 //                   </div>
@@ -1995,7 +1995,7 @@ const DepartmentOptions = DynamicValuesDetails?.data
   ?.filter((prop) => {
     if (!prop.Departments) return false;
 
-    if (decryptedUser?.role?.toLowerCase() === "client") {
+    if (decryptedUser?.employee?.Role?.toLowerCase() === "client") {
       // Only include departments from the allowed list if the user is a client
       return allowedClientDepartments.includes(prop.Departments);
     }
@@ -2068,11 +2068,14 @@ const DepartmentOptions = DynamicValuesDetails?.data
     }
   }, [isEdit, selectedTicket, setValue, ProperyOptions, ManagerOptions]);
 
+
+
+
   useEffect(() => {
-    if (decryptedUser?.role?.toLowerCase() === "client") {
-      // Find the full option object in ProperyOptions that matches decryptedUser.propertyCode
+    if (decryptedUser?.employee?.Role?.toLowerCase() === "client") {
+      // Find the full option object in ProperyOptions that matches decryptedUser?.employee?.propertyCode
       const selectedOption = ProperyOptions.find(
-        (opt) => opt.value === decryptedUser.propertyCode
+        (opt) => opt.value === decryptedUser?.employee?.PropertyCode
       );
 
       if (selectedOption) {
@@ -2379,7 +2382,7 @@ const [uploadingFiles, setUploadingFiles] = useState(new Set());
 
     // Format WorkLogs
     const newWorkLogEntry = data.WorkLogs
-      ? `[${currentTimestamp} - ${decryptedUser?.name}]  ${data.WorkLogs.trim()}`
+      ? `[${currentTimestamp} - ${decryptedUser?.employee?.Name}]  ${data.WorkLogs.trim()}`
       : "";
 
     const statusValue = isEdit ? data.Status?.value || "" : "Open";
@@ -2388,7 +2391,7 @@ const [uploadingFiles, setUploadingFiles] = useState(new Set());
     // Compose WorkLogs
     let updatedWorkLogs = "";
     if (isStatusChanged) {
-      const statusChangeLog = `[${currentTimestamp} - ${decryptedUser?.name}] Status changed from ${selectedTicket.Status} to ${data.Status?.value}`;
+      const statusChangeLog = `[${currentTimestamp} - ${decryptedUser?.employee?.Name}] Status changed from ${selectedTicket.Status} to ${data.Status?.value}`;
       updatedWorkLogs += statusChangeLog;
     }
     if (newWorkLogEntry) {
@@ -2414,13 +2417,13 @@ const [uploadingFiles, setUploadingFiles] = useState(new Set());
       CustomerImpacted: data.CustomerImpacted?.value || "",
       Escalated: data.Escalated?.value || "",
       WorkLogs: updatedWorkLogs || "",
-      // CreatedByName: decryptedUser?.name || "Unknown",
+      // CreatedByName: decryptedUser?.employee?.Name || "Unknown",
       // CreatedById: selectedTicket?.CreatedById || "Unknown",
       ClosedDate: statusValue === "Closed" ? Timestamp() : "",
       ...(isEdit
         ? {
-          UpdatedByName: decryptedUser?.name || "Unknown",
-          UpdatedById: decryptedUser?.clientID || decryptedUser?.id || "Unknown",
+          UpdatedByName: decryptedUser?.employee?.Name || "Unknown",
+          UpdatedById: decryptedUser?.employee?.ClientID || decryptedUser?.employee?.EmployeeID|| "Unknown",
           UpdatedDateTime: Timestamp(),
           Attachment: previews.map(ele => ele.url),
           CreatedById: selectedTicket?.CreatedById || "Unknown",
@@ -2428,9 +2431,9 @@ const [uploadingFiles, setUploadingFiles] = useState(new Set());
 
         }
         : {
-          CreatedByName: decryptedUser?.name || "Unknown",
-          CreatedById: decryptedUser?.clientID || decryptedUser?.id || "Unknown",
-          CreatedBy: decryptedUser?.role.charAt(0).toUpperCase() + decryptedUser?.role.slice(1).toLowerCase() || "Unknown",
+          CreatedByName: decryptedUser?.employee?.Name || "Unknown",
+          CreatedById: decryptedUser?.employee?.ClientID || decryptedUser?.employee?.EmployeeID|| "Unknown",
+          CreatedBy: decryptedUser?.employee?.Role.charAt(0).toUpperCase() + decryptedUser?.employee?.Role.slice(1).toLowerCase() || "Unknown",
         }),
     };
 
@@ -2484,7 +2487,7 @@ const [uploadingFiles, setUploadingFiles] = useState(new Set());
   //   const currentTimestamp = getFormattedTimestamp();
 
   //   const newWorkLogEntry = data.WorkLogs
-  //     ? `[${currentTimestamp} - ${decryptedUser?.name}]  ${data.WorkLogs.trim()}`
+  //     ? `[${currentTimestamp} - ${decryptedUser?.employee?.Name}]  ${data.WorkLogs.trim()}`
   //     : "";
 
   //   const statusValue = isEdit ? data.Status?.value || "" : "Open";
@@ -2492,7 +2495,7 @@ const [uploadingFiles, setUploadingFiles] = useState(new Set());
 
   //   let updatedWorkLogs = "";
   //   if (isStatusChanged) {
-  //     const statusChangeLog = `[${currentTimestamp} - ${decryptedUser?.name}] Status changed from ${selectedTicket.Status} to ${data.Status?.value}`;
+  //     const statusChangeLog = `[${currentTimestamp} - ${decryptedUser?.employee?.Name}] Status changed from ${selectedTicket.Status} to ${data.Status?.value}`;
   //     updatedWorkLogs += statusChangeLog;
   //   }
   //   if (newWorkLogEntry) {
@@ -2520,7 +2523,7 @@ const [uploadingFiles, setUploadingFiles] = useState(new Set());
   //     Attachment: data.Attachment, // ✅ Cloudinary URLs
   //     ...(isEdit
   //       ? {
-  //         UpdatedByName: decryptedUser?.name || "Unknown",
+  //         UpdatedByName: decryptedUser?.employee?.Name || "Unknown",
   //         UpdatedById: decryptedUser?.clientID || decryptedUser?.id || "Unknown",
   //         UpdatedDateTime: Timestamp(),
   //         CreatedById: selectedTicket?.CreatedById || "Unknown",
@@ -2530,9 +2533,9 @@ const [uploadingFiles, setUploadingFiles] = useState(new Set());
 
   //       }
   //       : {
-  //         CreatedByName: decryptedUser?.name || "Unknown",
+  //         CreatedByName: decryptedUser?.employee?.Name || "Unknown",
   //         CreatedById: decryptedUser?.clientID || decryptedUser?.id || "Unknown",
-  //         CreatedBy: decryptedUser?.role.charAt(0).toUpperCase() + decryptedUser?.role.slice(1).toLowerCase() || "Unknown",
+  //         CreatedBy: decryptedUser?.employee?.Role.charAt(0).toUpperCase() + decryptedUser?.employee?.Role.slice(1).toLowerCase() || "Unknown",
   //       }),
   //   };
 
@@ -2561,7 +2564,7 @@ useEffect(() => {
       PropertyCode: currentPropertyCode, // preserve PropertyCode
       // all other fields will be reset to their default values
     });
-    if(decryptedUser?.role !== "client"){
+    if(decryptedUser?.employee?.Role !== "client"){
       setValue("PropertyCode" , "")
     }
     setValue("Title" , "")
@@ -2584,7 +2587,7 @@ useEffect(() => {
 
 
 
-  if (isEdit && decryptedUser?.role.toLowerCase() === "client") {
+  if (isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client") {
     return <>
       <div className="">
         <h2 className="text-2xl font-bold text-gray-900 ml-5">
@@ -2593,7 +2596,7 @@ useEffect(() => {
           ) : (
             <div className="lg:flex   items-center gap-5">
               <h1>Create New Ticket</h1>
-              {decryptedUser?.role.toLowerCase().toLowerCase() === "client" && (
+              {decryptedUser?.employee?.Role.toLowerCase().toLowerCase() === "client" && (
                 <p className="text-orange-500 text-sm lg:text-lg">Kindly submit a new ticket for any maintenance requests, housekeeping services, notice to vacate, rent receipts, rental agreements, full and final settlements, or electricity bill-related concerns</p>
               )}
             </div>
@@ -2630,7 +2633,7 @@ useEffect(() => {
                         styles={SelectStyles}
                         isClearable
                         placeholder="Search & Select Property Code"
-                        isDisabled={decryptedUser?.role.toLowerCase() === "client" || isEdit && decryptedUser?.role.toLowerCase() !== "client"}
+                        isDisabled={decryptedUser?.employee?.Role.toLowerCase() === "client" || isEdit && decryptedUser?.employee?.Role.toLowerCase() !== "client"}
                       // isDisabled={isEdit}
                       />
 
@@ -2643,10 +2646,10 @@ useEffect(() => {
               {[
                 { name: "Department", options: DepartmentOptions, placeholder: "Search & Select Department" },
                 { name: "Category", options: CategoryOptions, placeholder: "Search &  Select Category" },
-                ...(isEdit && decryptedUser?.role.toLowerCase() === "client"
+                ...(isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"
                   ? []
                   : [{ name: "Priority", options: PriorityOptions, placeholder: " Select Priority" }]),
-                ...(decryptedUser?.role.toLowerCase() === "admin"
+                ...(decryptedUser?.employee?.Role.toLowerCase() === "admin"
                   ? [{ name: "Priority", options: PriorityOptions, placeholder: "Search & Select Priority" }]
                   : []),
               ].map(({ name, options, placeholder }) => (
@@ -2657,13 +2660,13 @@ useEffect(() => {
                     name={name}
                     rules={{
                       required:
-                        name === "Priority" && decryptedUser?.role.toLowerCase() === "client"
+                        name === "Priority" && decryptedUser?.employee?.Role.toLowerCase() === "client"
                           ? false
                           : `${name} is required`,
                     }}
                     render={({ field, fieldState: { error } }) => (
                       <>
-                        <Select {...field} options={options} styles={SelectStyles} placeholder={placeholder} isClearable isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                        <Select {...field} options={options} styles={SelectStyles} placeholder={placeholder} isClearable isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                         {error && <p className="text-red-500 text-sm">{error.message}</p>}
                       </>
                     )}
@@ -2679,7 +2682,7 @@ useEffect(() => {
                 </label>
                 <input
                   {...register("Title", { required: "Title is required" })}
-                  disabled={isEdit && decryptedUser?.role.toLowerCase() === "client"}
+                  disabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"}
                   className={`w-full border ${isEdit ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
                     } border-orange-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-300`}
                   placeholder="Enter Title"
@@ -2701,7 +2704,7 @@ useEffect(() => {
                     name="Status"
                     rules={{ required: "Status is required" }}
                     render={({ field, fieldState: { error } }) => {
-                      const isClient = decryptedUser?.role.toLowerCase() === "client";
+                      const isClient = decryptedUser?.employee?.Role.toLowerCase() === "client";
                       const isResolved = selectedTicket.Status === "Resolved";
                       const showOnlyReopen = isEdit && isClient && isResolved;
 
@@ -2716,7 +2719,7 @@ useEffect(() => {
                             options={filteredOptions}
                             styles={SelectStyles}
                             isClearable
-                            isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client" && selectedTicket.Status !== "Resolved"}
+                            isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client" && selectedTicket.Status !== "Resolved"}
                           />
                           {error && <p className="text-red-500 text-sm">{error.message}</p>}
                         </>
@@ -2726,14 +2729,14 @@ useEffect(() => {
                 </div>
               )}
 
-              {!isEdit && decryptedUser?.role.toLowerCase() !== "client" && (<>
+              {!isEdit && decryptedUser?.employee?.Role.toLowerCase() !== "client" && (<>
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">Manager</label>
                   <Controller
                     control={control}
                     name="Manager"
                     render={({ field }) => (
-                      <Select {...field} placeholder="Search & Select " options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                      <Select {...field} placeholder="Search & Select " options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                     )}
 
                   />
@@ -2744,7 +2747,7 @@ useEffect(() => {
                     control={control}
                     name="Assignee"
                     render={({ field }) => (
-                      <Select {...field} placeholder="Search & Select " options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"}
+                      <Select {...field} placeholder="Search & Select " options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"}
                       />
                     )}
                   />
@@ -2762,7 +2765,7 @@ useEffect(() => {
                   rules={{ required: "Status is required" }}
                   render={({ field, fieldState: { error } }) => (
                     <>
-                      <Select {...field} options={StatusOptions} styles={SelectStyles} isClearable isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                      <Select {...field} options={StatusOptions} styles={SelectStyles} isClearable isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                       {error && <p className="text-red-500 text-sm">{error.message}</p>}
                     </>
                   )}
@@ -2770,7 +2773,7 @@ useEffect(() => {
                 />
               </div>
             )} */}
-              {decryptedUser?.role.toLowerCase() !== "client" && (
+              {decryptedUser?.employee?.Role.toLowerCase() !== "client" && (
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
                     Target Date
@@ -2973,7 +2976,7 @@ useEffect(() => {
                       control={control}
                       name="Manager"
                       render={({ field }) => (
-                        <Select {...field} options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                        <Select {...field} options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                       )}
                     />
                   </div>
@@ -2983,7 +2986,7 @@ useEffect(() => {
                       control={control}
                       name="Assignee"
                       render={({ field }) => (
-                        <Select {...field} options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                        <Select {...field} options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                       )}
                     />
                   </div>
@@ -2999,7 +3002,7 @@ useEffect(() => {
                       control={control}
                       name="CustomerImpacted"
                       render={({ field }) => (
-                        <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                        <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                       )}
                     />
                   </div>
@@ -3011,7 +3014,7 @@ useEffect(() => {
                       control={control}
                       name="Escalated"
                       render={({ field }) => (
-                        <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                        <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                       )}
                     />
                   </div>
@@ -3095,7 +3098,7 @@ useEffect(() => {
         ) : (
           <div className="flex flex-col justify-start">
             <h2 className="text-2xl font-bold text-gray-900">Create New Ticket</h2>
-            {decryptedUser?.role?.toLowerCase() === "client" && (
+            {decryptedUser?.employee?.Role?.toLowerCase() === "client" && (
               <p className="text-orange-500 text-sm lg:text-[14px] mt-1">
                 Kindly submit a new ticket for any maintenance requests, housekeeping services, notice to vacate, rent receipts, rental agreements, full and final settlements, or electricity bill-related concerns etc.
               </p>
@@ -3133,7 +3136,7 @@ useEffect(() => {
                       styles={SelectStyles}
                       isClearable
                       placeholder="Search & Select"
-                      isDisabled={decryptedUser?.role.toLowerCase() === "client" || isEdit && decryptedUser?.role.toLowerCase() !== "client"}
+                      isDisabled={decryptedUser?.employee?.Role.toLowerCase() === "client" || isEdit && decryptedUser?.employee?.Role.toLowerCase() !== "client"}
                     // isDisabled={isEdit}
                     />
                     {error && <p className="text-red-500 text-sm">{error.message}</p>}
@@ -3145,10 +3148,10 @@ useEffect(() => {
             {[
               { name: "Department", options: DepartmentOptions, placeholder: "Search & Select" },
               { name: "Category", options: CategoryOptions, placeholder: "Search &  Select" },
-              ...(isEdit && decryptedUser?.role.toLowerCase() === "client"
+              ...(isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"
                 ? [{ name: "Priority", options: PriorityOptionsForForm, placeholder: "Search & Select" }]
                 : []),
-              ...(decryptedUser?.role.toLowerCase() === "admin"
+              ...(decryptedUser?.employee?.Role.toLowerCase() === "admin"
                 ? [{ name: "Priority", options: PriorityOptionsForForm, placeholder: "Search & Select" }]
                 : []),
             ].map(({ name, options, placeholder }) => (
@@ -3159,13 +3162,13 @@ useEffect(() => {
                   name={name}
                   rules={{
                     required:
-                      name === "Priority" && decryptedUser?.role.toLowerCase() === "client" || name === "Priority" && decryptedUser?.role.toLowerCase() === "admin"
+                      name === "Priority" && decryptedUser?.employee?.Role.toLowerCase() === "client" || name === "Priority" && decryptedUser?.employee?.Role.toLowerCase() === "admin"
                         ? false
                         : `${name} is required`,
                   }}
                   render={({ field, fieldState: { error } }) => (
                     <>
-                      <Select {...field} options={options} styles={SelectStyles} placeholder={placeholder} isClearable isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                      <Select {...field} options={options} styles={SelectStyles} placeholder={placeholder} isClearable isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                       {error && <p className="text-red-500 text-sm">{error.message}</p>}
                     </>
                   )}
@@ -3189,14 +3192,14 @@ useEffect(() => {
                 </p>
               )}
             </div>
-            {decryptedUser?.role.toLowerCase() !== "client" && !isEdit && (<>
+            {decryptedUser?.employee?.Role.toLowerCase() !== "client" && !isEdit && (<>
               <div>
                 <label className="block text-sm font-medium text-black mb-2">Manager</label>
                 <Controller
                   control={control}
                   name="Manager"
                   render={({ field }) => (
-                    <Select {...field} placeholder="Search & Select " options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                    <Select {...field} placeholder="Search & Select " options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                   )}
 
                 />
@@ -3207,7 +3210,7 @@ useEffect(() => {
                   control={control}
                   name="Assignee"
                   render={({ field }) => (
-                    <Select {...field} placeholder="Search & Select " options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"}
+                    <Select {...field} placeholder="Search & Select " options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"}
                     />
                   )}
                 />
@@ -3225,7 +3228,7 @@ useEffect(() => {
                   rules={{ required: "Status is required" }}
                   render={({ field, fieldState: { error } }) => (
                     <>
-                      <Select {...field} options={StatusOptions} styles={SelectStyles} isClearable isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                      <Select {...field} options={StatusOptions} styles={SelectStyles} isClearable isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                       {error && <p className="text-red-500 text-sm">{error.message}</p>}
                     </>
                   )}
@@ -3233,7 +3236,7 @@ useEffect(() => {
                 />
               </div>
             )}
-            {decryptedUser?.role.toLowerCase() !== "client" && (
+            {decryptedUser?.employee?.Role.toLowerCase() !== "client" && (
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
                   Target Date
@@ -3248,7 +3251,7 @@ useEffect(() => {
                         type="date"
                         {...field}
                         value={field.value || ""}
-                        disabled={isEdit && decryptedUser?.role.toLowerCase() === "client"}
+                        disabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"}
                         className="w-full  border-orange-300 border-2 rounded px-3 py-2 pr-10 focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
                       />
                       {field.value && (
@@ -3312,7 +3315,7 @@ useEffect(() => {
 
 
 
-            {decryptedUser?.role?.toLowerCase() !== "client" && !isEdit && (
+            {decryptedUser?.employee?.Role?.toLowerCase() !== "client" && !isEdit && (
               <div className="grid grid-cols-2 gap-5">
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">Customer Impacted </label>
@@ -3320,7 +3323,7 @@ useEffect(() => {
                     control={control}
                     name="CustomerImpacted"
                     render={({ field }) => (
-                      <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                      <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                     )}
                   />
                 </div>
@@ -3330,7 +3333,7 @@ useEffect(() => {
                     control={control}
                     name="Escalated"
                     render={({ field }) => (
-                      <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                      <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                     )}
                   />
                 </div>
@@ -3455,7 +3458,7 @@ useEffect(() => {
               </div>
             )}
 
-            {decryptedUser?.role === "client" && !isEdit && (
+            {decryptedUser?.employee?.Role === "client" && !isEdit && (
               <div>
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">Attachment</label>
@@ -3581,7 +3584,7 @@ useEffect(() => {
                       control={control}
                       name="Manager"
                       render={({ field }) => (
-                        <Select {...field} options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                        <Select {...field} options={ManagerOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                       )}
                     />
                   </div>
@@ -3591,7 +3594,7 @@ useEffect(() => {
                       control={control}
                       name="Assignee"
                       render={({ field }) => (
-                        <Select {...field} options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                        <Select {...field} options={assigneeOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                       )}
                     />
                   </div>
@@ -3606,7 +3609,7 @@ useEffect(() => {
                       control={control}
                       name="CustomerImpacted"
                       render={({ field }) => (
-                        <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                        <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                       )}
                     />
                   </div>
@@ -3616,7 +3619,7 @@ useEffect(() => {
                       control={control}
                       name="Escalated"
                       render={({ field }) => (
-                        <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.role.toLowerCase() === "client"} />
+                        <Select {...field} options={CusmoterImpactedOptions} isClearable styles={SelectStyles} isDisabled={isEdit && decryptedUser?.employee?.Role.toLowerCase() === "client"} />
                       )}
                     />
                   </div>

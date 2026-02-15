@@ -60,15 +60,15 @@ function Profile() {
 
 
     const { data: propertyDataFromApi } = usePropertyData();
-
+      console.log("decryptedUser?.employee?.PropertyCode", decryptedUser?.employee?.PropertyCode)
     // Use useMemo to prevent unnecessary recalculations
     const filteredPropertySheetData = useMemo(() => {
         return propertyDataFromApi?.data?.filter(
-            (ele) => ele["Property Code"] === decryptedUser?.propertyCode
+            (ele) => ele["Property Code"] === decryptedUser?.employee?.PropertyCode
         );
-    }, [propertyDataFromApi, decryptedUser?.propertyCode]);
+    }, [propertyDataFromApi, decryptedUser?.employee?.PropertyCode]);
 
-
+         console.log("filteredPropertySheetData", filteredPropertySheetData)
 
 const mainSheetId = useMemo(() => {
     if (!filteredPropertySheetData || filteredPropertySheetData.length === 0) return [];
@@ -92,7 +92,7 @@ const mainSheetId = useMemo(() => {
 
     const mainSheetDataForNameWise = useMemo(() => {
         return pgClientData && pgMainSheetData?.data?.length > 0
-            ? pgMainSheetData?.data?.filter((ele) => ele.FullName === decryptedUser.name) : []
+            ? pgMainSheetData?.data?.filter((ele) => ele.FullName === decryptedUser?.employee?.Name) : []
     }, [pgMainSheetData])
 
 

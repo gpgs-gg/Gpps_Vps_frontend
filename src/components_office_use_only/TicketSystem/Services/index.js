@@ -42,15 +42,18 @@ export const useTicketSheetData = ( enabled = true ) => {
 
 
 // ✅ Fetch Employee Details
-const fetchEmployeeDetailsData = async () => {
+const fetchEmployeeDetailsData = async (Role) => {
+  if(Role !== "client"){
   const response = await apiClient.get("/Employees-details");
   return response.data;
+  }
+
 };
 
-export const useEmployeeDetails = () => {
+export const useEmployeeDetails = (Role) => {
   return useQuery({
     queryKey: ["EmployeeDetails"],
-    queryFn: fetchEmployeeDetailsData,
+    queryFn: ()=>fetchEmployeeDetailsData(Role),
   });
 };
 

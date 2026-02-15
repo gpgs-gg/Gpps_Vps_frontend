@@ -34,7 +34,7 @@ const Documents = () => {
     useEffect(() => {
         if (clientDetailsForDocuments?.data) {
             const filtered = clientDetailsForDocuments.data.find(
-                (ele) => ele.Name === decryptedUser.name
+                (ele) => ele.Name === decryptedUser?.employee?.Name
             );
 
             if (filtered) {
@@ -44,7 +44,7 @@ const Documents = () => {
                 });
             }
         }
-    }, [clientDetailsForDocuments, decryptedUser.name]);
+    }, [clientDetailsForDocuments, decryptedUser?.employee?.Name]);
 
 
     const handleFileChange = (type, event) => {
@@ -100,9 +100,9 @@ const Documents = () => {
             formData.append('files', file);
         });
 
-        formData.append('ID', decryptedUser.clientID);
-        formData.append('propertyCode', decryptedUser.propertyCode);
-        formData.append('name', decryptedUser.name);
+        formData.append('ID', decryptedUser?.employee?.ClientID);
+        formData.append('propertyCode', decryptedUser?.employee?.PropertyCode);
+        formData.append('name', decryptedUser?.employee?.Name);
         formData.append(
             'updateField',
             type === 'kyc' ? 'KYCDocuments' : 'PGLegalDocuments'

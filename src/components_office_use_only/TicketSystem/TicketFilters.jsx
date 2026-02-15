@@ -47,7 +47,7 @@ const statusOptions = [
 
 export const TicketFilters = () => {
     const { filters, setFilters, users, filteredTickets, decryptedUser, currentView, myPgTicketsTotal ,input , setInput , setSearchTerm } = useApp();
-    const { data: EmployeeDetails } = useEmployeeDetails();
+    const { data: EmployeeDetails } = useEmployeeDetails(decryptedUser?.employee?.Role);
     const { data: DynamicValuesDetails } = useDynamicDetails()
 
     const handleSearch = (e)=>{
@@ -81,7 +81,7 @@ const DepartmentOptions = [
       ?.filter((prop) => {
         if (!prop.Departments) return false;
 
-        if (decryptedUser?.role?.toLowerCase() === "client") {
+        if (decryptedUser?.employee?.Role?.toLowerCase() === "client") {
           // Only include departments from the allowed list if the user is a client
           return allowedClientDepartments.includes(prop.Departments);
         }
@@ -202,7 +202,7 @@ const DepartmentOptions = [
     const inputClass = 'w-[200px] px-3 py-2 mt-1 border-2 border-orange-200 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400';
 
     return (
-        <div className={`bg-white p-4 rounded-lg shadow ${decryptedUser?.role.toLowerCase() === "client" ? "lg:w-fit" : ""}  mb-6`}>
+        <div className={`bg-white p-4 rounded-lg shadow ${decryptedUser?.employee?.Role.toLowerCase() === "client" ? "lg:w-fit" : ""}  mb-6`}>
 
             <div className=" mt-[-10px] flex justify-between font-bold">
 
@@ -259,7 +259,7 @@ const DepartmentOptions = [
                             )}
                         />
                     </div>
-                    {decryptedUser?.role !== "client" && (
+                    {decryptedUser?.employee?.Role !== "client" && (
                         <>
 
                             <div>

@@ -19,6 +19,7 @@ const BedsAvilable = () => {
   const [showContent, setShowContent] = useState(false);
   const [popup, setPopup] = useState(null);
   const [sortByVacatingDate, setSortByVacatingDate] = useState(false);
+  const [sortByRent, setSortByRent] = useState(false);
 
   const [dynamicFilters, setDynamicFilters] = useState({
     location: [],
@@ -109,7 +110,15 @@ const BedsAvilable = () => {
       const dateA = new Date(a["Client Vacating Date"]);
       const dateB = new Date(b["Client Vacating Date"]);
       return dateA - dateB;
+    })
+    .sort((a, b) => {
+      if (!sortByRent) return 0;
+      const rentA = parseFloat(a["Rent (Rs)"]);
+      const rentB = parseFloat(b["Rent (Rs)"]);
+      return rentA - rentB; // kam rent pehle
     });
+
+
 
   useEffect(() => {
     setFilterTotal(filteredData.length);
@@ -339,7 +348,22 @@ const BedsAvilable = () => {
               />
             </button>
             <label className="text-lg font-medium  text-orange-600">
-              Sort By CVD
+              CVD
+            </label>
+          </div>
+          <div className="flex items-center justify-end mt-5 mb-2 gap-2">
+            <button
+              onClick={() => setSortByRent((prev) => !prev)}
+              className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-all ${sortByRent ? "bg-orange-500" : "bg-gray-300"
+                }`}
+            >
+              <div
+                className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${sortByRent ? "translate-x-6" : "translate-x-0"
+                  }`}
+              />
+            </button>
+            <label className="text-lg font-medium  text-orange-600">
+              RENT
             </label>
           </div>
         </div>

@@ -22,9 +22,9 @@ const Payments = () => {
     // Use useMemo to prevent unnecessary recalculations
     const filteredPropertySheetData = useMemo(() => {
         return propertyDataFromApi?.data?.filter(
-            (ele) => ele["Property Code"] === decryptedUser?.propertyCode
+            (ele) => ele["Property Code"] === decryptedUser?.employee?.PropertyCode
         );
-    }, [propertyDataFromApi, decryptedUser?.propertyCode]);
+    }, [propertyDataFromApi, decryptedUser?.employee?.PropertyCode]);
 
 
 
@@ -49,7 +49,7 @@ const Payments = () => {
     const { data: pgMainSheetData } = usePropertySheetData(mainSheetId);
     const mainSheetDataForNameWise = useMemo(() => {
         return pgMainSheetData?.data?.length > 0
-            ? pgMainSheetData?.data?.filter((ele) => ele.FullName === decryptedUser.name) : []
+            ? pgMainSheetData?.data?.filter((ele) => ele.FullName === decryptedUser?.employee?.Name) : []
     }, [pgMainSheetData])
     useEffect(() => {
         const encrypted = localStorage.getItem('user');

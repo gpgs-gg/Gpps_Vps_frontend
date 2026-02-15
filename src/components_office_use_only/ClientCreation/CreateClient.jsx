@@ -153,12 +153,12 @@
 //             NoticeLD: data.NoticeLD ? new Date(data.NoticeLD).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : "",
 //             ActualVD: data.ActualVD ? new Date(data.ActualVD).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : "",
 //             IsActive: data.IsActive || "Yes",
-//             CreatedByID: filterClientData?.CreatedByID ? filterClientData?.CreatedByID : decryptedUser?.id,
+//             CreatedByID: filterClientData?.CreatedByID ? filterClientData?.CreatedByID : decryptedUser?.employee?.EmployeeID,
 //             CreatedDate: filterClientData?.CreatedDate ? filterClientData?.CreatedDate : new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
 //             // CreatedByName: decryptedUser?.name,
 //             ...(mode !== "Create New Client"
 //                 ? {
-//                     UpdatedByID: decryptedUser?.id,
+//                     UpdatedByID: decryptedUser?.employee?.EmployeeID,
 //                     UpdatedDate: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
 //                 }
 //                 : {}),
@@ -502,25 +502,6 @@ const CreateClient = () => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     const { data: clientDetails } = useClientDetails();
     const { data: propertyDetails } = usePropertyData();
     const [mode, setMode] = useState("Create New Client")
@@ -650,12 +631,12 @@ const CreateClient = () => {
             NoticeLD: data.NoticeLD ? new Date(data.NoticeLD).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : "",
             ActualVD: data.ActualVD ? new Date(data.ActualVD).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : "",
             IsActive: data.IsActive || "Yes",
-            CreatedByID: filterClientData?.CreatedByID ? filterClientData?.CreatedByID : decryptedUser?.id,
+            CreatedByID: filterClientData?.CreatedByID ? filterClientData?.CreatedByID : decryptedUser?.employee?.EmployeeID,
             CreatedDate: filterClientData?.CreatedDate ? filterClientData?.CreatedDate : new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
             // CreatedByName: decryptedUser?.name,
             ...(mode !== "Create New Client"
                 ? {
-                    UpdatedByID: decryptedUser?.id,
+                    UpdatedByID: decryptedUser?.employee?.EmployeeID,
                     UpdatedDate: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
                 }
                 : {}),
@@ -731,7 +712,7 @@ const CreateClient = () => {
     useEffect(() => {
         if (clientDetailsForDocuments?.data) {
             const filtered = clientDetailsForDocuments.data.find(
-                (ele) => ele.ClientID === decryptedUser.name
+                (ele) => ele.ClientID === decryptedUser?.employee?.Name
             );
 
             if (filterClientData) {
@@ -741,7 +722,7 @@ const CreateClient = () => {
                 });
             }
         }
-    }, [filterClientData, decryptedUser.name]);
+    }, [filterClientData, decryptedUser?.employee?.Name]);
 
 
     const handleFileChange = (type, event) => {

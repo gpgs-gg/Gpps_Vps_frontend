@@ -58,11 +58,10 @@ export const AppProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(initialUsers[0]);
     const [currentView, setCurrentView] = useState(null);
     useEffect(() => {
-        if (decryptedUser?.role) {
-            setCurrentView(decryptedUser.role === 'client' ? 'pgpropertydetails' : 'dashboard');
+        if (decryptedUser?.employee?.Role) {
+            setCurrentView(decryptedUser?.employee?.Role === 'client' ? 'pgpropertydetails' : 'dashboard');
         }
     }, [decryptedUser]);
-
 
     // Start with an empty array
     const [tickets, setTickets] = useState([]);
@@ -73,15 +72,15 @@ export const AppProvider = ({ children }) => {
 
             if (currentView === "mypgtickets") {
                 filteredTickets = data.data.filter(
-                    (ele) => ele.PropertyCode === decryptedUser?.propertyCode && ele?.CreatedBy.toLowerCase() === decryptedUser?.role
+                    (ele) => ele.PropertyCode === decryptedUser?.employee?.propertyCode && ele?.CreatedBy.toLowerCase() === decryptedUser?.employee?.Role
                     // &&
                     // ele.CreatedById !== decryptedUser?.clientID,
                 );
 
             } else {
-                if (decryptedUser?.role === "client") {
+                if (decryptedUser?.employee?.Role === "client") {
                     filteredTickets = data.data.filter((ele) => {
-                        return ele.CreatedById === decryptedUser?.clientID;
+                        return ele.CreatedById === decryptedUser?.employee?.ClientID;
                     });
                 }
 

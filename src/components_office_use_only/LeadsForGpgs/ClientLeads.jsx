@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Select from "react-select";
 import { useForm, Controller } from "react-hook-form";
@@ -8,64 +8,72 @@ import { toast } from "react-toastify";
 import { usePostClientDeatails, useUpdateClientDetails } from "./services";
 import LoaderPage from "../NewBooking/LoaderPage";
 import LeadsTable from "./LeadsTable";
-import { useDynamicDetails } from "../TicketSystem/Services";
+import { useDynamicDetails, useEmployeeDetails } from "../TicketSystem/Services";
 import { useApp } from "../TicketSystem/AppProvider";
 import { useNavigate } from "react-router-dom";
 import { sl } from "date-fns/locale";
+import DatePicker from "react-datepicker";
 
 
 // ✅ Validation schema
-const schema = yup.object({
-  /* ================= SINGLE LEAD ================= */
 
-  CallingNo: yup.string().when("$activeLead", {
-    is: "CreateSingleLead",
-    then: (s) => s.required("Calling No is required"),
-    otherwise: (s) => s.notRequired(),
-  }),
 
-  WhatsAppNo: yup.string().when("$activeLead", {
-    is: "CreateSingleLead",
-    then: (s) =>
-      s
-        .required("WhatsApp No is required")
-        .matches(/^[0-9]{10}$/, "Enter 10 digit number"),
-    otherwise: (s) => s.notRequired(),
-  }),
 
-  /* ================= BULK LEAD ================= */
 
-  BulkOptions: yup
-    .mixed()
-    .nullable() // ✅ IMPORTANT
-    .when("$activeLead", {
-      is: "BulkUploadLeads",
-      then: (s) => s.required("Select bulk option"),
-      otherwise: (s) => s.notRequired(),
+
+function ClientLeads({ activeLead, setActiveLead, setActiveTab, modalType, setModalType }) {
+
+  const schema = yup.object().shape({
+    ...(activeLead === "CreateSingleLead" && {
+      CallingNo: yup.string().required("Calling No is required"),
+    }),
+    ...(activeLead === "CreateSingleLead" && {
+      WhatsAppNo: yup.string().required("WhatsApp No is required"),
+    }),
+    ...(activeLead === "CreateSingleLead" && {
+      Assignee: yup.object().nullable().required("Assignee is required"),
+    }),
+    ...(activeLead === "BulkUploadLeads" && {
+      BulkAssignee: yup.object().nullable().required("Assignee is required"),
+    }),
+    ...(activeLead === "BulkUploadLeads" && {
+      BulkCallingNo: yup.string().required("Calling No is required"),
+    }),
+    ...(activeLead === "BulkUploadLeads" && {
+      BulkLeadSource: yup.object().nullable().required("Lead Source is required"),
     }),
 
-  BulkCallingNo: yup.string().when("$activeLead", {
-    is: "BulkUploadLeads",
-    then: (s) =>
-      s
-        .required("Enter bulk data")
-        .test(
-          "has-value",
-          "Bulk data cannot be empty",
-          (v) => !!v && v.trim().length > 0
-        ),
-    otherwise: (s) => s.notRequired(),
-  }),
 
-  Comments: yup.string().nullable(),
-});
+    //  ...(activeLead === "CreateSingleLead" && {
+    //      LeadStatus: yup
+    //   .object()
+    //   .nullable()
+    //   .required("Lead Status is required"),
+    //   }),
+
+    Reason: yup
+      .object()
+      .nullable()
+      .when("LeadStatus", {
+        is: (leadStatus) =>
+          leadStatus?.value === "Not Interested" ||
+          leadStatus?.value === "Follow Up",
+        then: (schema) =>
+          schema.required(
+            "Reason is required when Lead Status is Not Interested or Follow Up"
+          ),
+        otherwise: (schema) => schema.nullable(),
+      }),
+  });
 
 
+  const selectOptionBulkData = [
+    { value: "CallingNo", label: "Calling No" },
+    { value: "ClientName", label: "Client Name" },
+  ];
 
-
-
-function ClientLeads({ activeLead, setActiveLead, setActiveTab }) {
   const { selectedClient, setSelectedClient, decryptedUser } = useApp()
+  const { data: EmployeeDetails } = useEmployeeDetails();
 
   const {
     control,
@@ -76,11 +84,14 @@ function ClientLeads({ activeLead, setActiveLead, setActiveTab }) {
     formState: { errors, isSubmitting },
     reset,
   } = useForm({
-    key: activeLead, 
+    key: activeLead,
     resolver: yupResolver(schema, {
       context: { activeLead },
-        // ✅ THIS IS IMPORTANT
+
+      // ✅ THIS IS IMPORTANT
     }),
+
+
     mode: "onSubmit",       // ❗ required
     reValidateMode: "onChange",
     shouldUnregister: true,
@@ -92,22 +103,44 @@ function ClientLeads({ activeLead, setActiveLead, setActiveTab }) {
       BulkCallingNo: "",
       BulkWhatsAppNo: "",
       LeadSource: null,
-      WhatsAppMsgs: null,
-      PhoneCalls: null,
-      interestedLocation: null,
-      BookingStatus: null,
+      BulkLeadSource: null,
+      BulkAssignee: null,
+      FollowupDate: '',
+      Assignee:null,
+      FieldMember: null, 
+      // PhoneCalls: null,
+      // interestedLocation: null,
+      LeadStatus: null,
       visited: null,
       Comments: "",
-      workLogs: "",
-      BulkOptions: null,
+      WorkLogs: "",
+      BulkOptions: selectOptionBulkData[0],
     },
   });
+
+  const ManagerOptions = useMemo(() => {
+    return EmployeeDetails?.data
+      ?.filter(
+        (emp) =>
+          emp?.Name &&
+          emp?.Department &&
+          emp.Department === "Sales"
+      )
+      .map((emp) => ({
+        value: emp.Name,
+        label: emp.Name,
+      })) || [];
+  }, [EmployeeDetails]);
+
+  const watchedLeadStatus = watch("LeadStatus");
+  const effectiveLeadStatus =
+    watchedLeadStatus?.value === "Not Interested" || watchedLeadStatus?.value === "Follow Up";
+
   useEffect(() => {
     reset({}, { keepErrors: false });
   }, [activeLead, reset]);
 
   // ===================== ✅ API Hooks =====================
-  console.log(1111111111111, errors)
   const { data: dynamicData } = useDynamicDetails();
   const { mutateAsync: createClient } = usePostClientDeatails();
   const { mutateAsync: updateClient } = useUpdateClientDetails();
@@ -120,10 +153,7 @@ function ClientLeads({ activeLead, setActiveLead, setActiveTab }) {
     { value: "Male", label: "Male" },
     { value: "Female", label: "Female" },
   ];
-  const selectOptionBulkData = [
-    { value: "CallingNo", label: "Calling No" },
-    { value: "ClientName", label: "Client Name" },
-  ];
+
 
   const selectOptionLeadSource =
     (Array.from(
@@ -135,9 +165,9 @@ function ClientLeads({ activeLead, setActiveLead, setActiveTab }) {
       new Set(dynamicData?.data?.map((item) => item.Location).filter(Boolean))
     ).map((value) => ({ value, label: value }))) || [];
 
-  const selectOptionWhatsAppCommunication =
+  const selectOptionReason =
     (Array.from(
-      new Set(dynamicData?.data?.map((item) => item.WhatsAppStatus).filter(Boolean))
+      new Set(dynamicData?.data?.map((item) => item.Reason).filter(Boolean))
     ).map((value) => ({ value, label: value }))) || [];
 
   const selectOptionPhoneCallCommunication =
@@ -149,10 +179,16 @@ function ClientLeads({ activeLead, setActiveLead, setActiveTab }) {
     { value: "Done", label: "Done" },
     { value: "NotDone", label: "Not Done" },
   ];
-  const selectOptionBookingStatus = [
-    { value: "Done", label: "Done" },
-    { value: "NotDone", label: "Not Done" },
-  ];
+  // const selectOptionBookingStatus = [
+  //   { value: "Done", label: "Done" },
+  //   { value: "NotDone", label: "Not Done" },
+  // ];
+
+
+  const selectOptionBookingStatus =
+    (Array.from(
+      new Set(dynamicData?.data?.map((item) => item.LeadStatus).filter(Boolean))
+    ).map((value) => ({ value, label: value }))) || [];
 
   const employeeSelectStyles = {
     control: (base, state) => ({
@@ -234,7 +270,7 @@ function ClientLeads({ activeLead, setActiveLead, setActiveTab }) {
   //       WhatsAppCommunication: data?.WhatsAppCommunication?.value || "",
   //       Visited: data?.visited?.value || "",
   //       BookingStatus: data?.BookingStatus?.value || "",
-  //       workLogs: `[${formatLogDate()} - ${decryptedUser.name}]\n ${data.Comments || "Lead Created"}`,
+  //       WorkLogs: `[${formatLogDate()} - ${decryptedUser.name}]\n ${data.Comments || "Lead Created"}`,
   //     };
 
   //     // 2️⃣ Prepare payload (index-wise mapping)
@@ -299,7 +335,7 @@ function ClientLeads({ activeLead, setActiveLead, setActiveTab }) {
 
   //     //   const hasComment = data.Comments && data.Comments.trim();
 
-  //     //   let finalComments = selectedClient.workLogs || "";
+  //     //   let finalComments = selectedClient.WorkLogs || "";
 
   //     //   // ✅ ONLY when communication changed AND comment exists
 
@@ -324,7 +360,7 @@ function ClientLeads({ activeLead, setActiveLead, setActiveTab }) {
   //     //     Visited: data?.visited?.value || "",
   //     //     BookingStatus: data?.BookingStatus?.value || "",
   //     //     LeadNo: selectedClient.LeadNo,
-  //     //     workLogs: finalComments,
+  //     //     WorkLogs: finalComments,
   //     //   };
 
   //     //   await updateClient({ data: updatedData });
@@ -348,7 +384,7 @@ function ClientLeads({ activeLead, setActiveLead, setActiveTab }) {
   //       WhatsAppCommunication: data?.WhatsAppCommunication?.value || "",
   //       Visited: data?.visited?.value || "",
   //       BookingStatus: data?.BookingStatus?.value || "",
-  //       workLogs: `[${formatLogDate()} - ${decryptedUser.name}]\n ${data.Comments || "Lead Created"}`,
+  //       WorkLogs: `[${formatLogDate()} - ${decryptedUser.name}]\n ${data.Comments || "Lead Created"}`,
   //     };
 
   //     const BulkData = {
@@ -364,8 +400,33 @@ function ClientLeads({ activeLead, setActiveLead, setActiveTab }) {
   //     toast.error("Something went wrong!");
   //   }
   // };
- const onSubmit = async (data) => {
-  try {
+  const formatFollowupDate = (date) => {
+    if (!date) return "";
+
+    let parsedDate;
+
+    // ✅ Already Date object
+    if (date instanceof Date) {
+      parsedDate = date;
+    }
+    // ✅ ISO / string date
+    else {
+      parsedDate = new Date(date);
+    }
+
+    // ❌ Invalid date protection
+    if (isNaN(parsedDate)) return "";
+
+    return parsedDate.toLocaleDateString("en-GB", {
+      day: "numeric",   // 1
+      month: "short",   // Jan
+      year: "numeric",  // 2026
+    });
+  };
+
+  const onSubmit = async (data) => {
+
+
     /* ===================== UPDATE ===================== */
     if (selectedClient) {
       /* ---------- 1️⃣ Detect ALL normal field changes ---------- */
@@ -381,27 +442,27 @@ function ClientLeads({ activeLead, setActiveLead, setActiveTab }) {
       const changes = [];
 
       const phoneChange = getChangeText(
-        selectedClient.PhoneCalls,
-        data?.PhoneCalls?.value,
-        "Phone Call"
+        selectedClient.FieldMember,
+        data?.FieldMember?.value,
+        "Field Member"
       );
 
       const whatsappChange = getChangeText(
-        selectedClient.WhatsAppMsgs,
-        data?.WhatsAppMsgs?.value,
-        "WhatsApp"
+        selectedClient.Reason,
+        data?.Reason?.value,
+        "Reason"
       );
 
       const visitedChange = getChangeText(
-        selectedClient.Visited,
-        data?.visited?.value,
-        "Visited"
+        selectedClient.Assignee,
+        data?.Assignee?.value,
+        "Assignee"
       );
 
       const bookingStatusChange = getChangeText(
-        selectedClient.BookingStatus,
-        data?.BookingStatus?.value,
-        "Booking Status"
+        selectedClient.LeadStatus,
+        data?.LeadStatus?.value,
+        "Lead Status"
       );
 
       if (phoneChange) changes.push(phoneChange);
@@ -415,19 +476,36 @@ function ClientLeads({ activeLead, setActiveLead, setActiveTab }) {
         return;
       }
 
-      /* ---------- 4️⃣ Prepare workLogs (ONLY when needed) ---------- */
-      let finalComments = selectedClient.workLogs || "";
-
+      /* ---------- 4️⃣ Prepare WorkLogs (ONLY when needed) ---------- */
+      let finalComments = selectedClient.WorkLogs || "";
+      let log = "";
       if (changes.length || data?.Comments?.trim()) {
-        const log = `[${formatLogDate()} - (${decryptedUser.id}) ${decryptedUser.name}]
-${changes.join(" | ")}
-${data.Comments || ""}`;
+        const comment = data?.Comments?.trim();
+
+        const changeText = changes
+          .map(c => c.trim())   // 👈 removes \n and extra spaces
+          .join("\n");          // 👈 comma separated
+
+        log = `[${formatLogDate()} - (${decryptedUser?.employee?.EmployeeID}) ${decryptedUser?.employee?.Name}]
+${changeText}${comment ? `\n${comment}` : ""}`;
 
         finalComments = finalComments
-          ? `${finalComments}\n${log}`
+          ? `${finalComments}`
           : log;
       }
 
+      // ❌ Nothing changed
+      if (!log && !hasAnyFieldChanged) return;
+
+      /* =========================
+         🔥 NEW LOG TOP, OLD BOTTOM
+      ========================= */
+      const finalWorkLog = log
+        ? `${log}${finalComments ? "\n\n" + finalComments : ""}`
+        : finalComments;
+
+
+      const formattedFollowupDate = formatFollowupDate(data.FollowupDate);
       /* ---------- 5️⃣ Final UPDATE payload ---------- */
       const updatedData = {
         ClientName: data.ClientName,
@@ -436,13 +514,19 @@ ${data.Comments || ""}`;
         Gender: data?.Gender?.value || "",
         Location: data?.Location?.value || "",
         LeadSource: data?.LeadSource?.value || "",
-        PhoneCalls: data?.PhoneCalls?.value || "",
-        WhatsAppMsgs: data?.WhatsAppMsgs?.value || "",
-        Visited: data?.visited?.value || "",
-        BookingStatus: data?.BookingStatus?.value || "",
+        FollowupDate: formattedFollowupDate || "",
+        Assignee: data?.Assignee?.value || "",
+        Reason: data?.Reason?.value,
+        FieldMember: data?.FieldMember?.value || "",
+
+        // PhoneCalls: data?.PhoneCalls?.value || "",
+        // WhatsAppMsgs: data?.WhatsAppMsgs?.value || "",
+        // Visited: data?.visited?.value || "",
+        LeadStatus: data?.LeadStatus?.value || "",
         LeadNo: selectedClient.LeadNo,
-        workLogs: finalComments,
+        WorkLogs: finalWorkLog,
       };
+
 
       await updateClient({ data: updatedData });
 
@@ -473,8 +557,15 @@ ${data.Comments || ""}`;
     if (activeLead === "BulkUploadLeads") {
       const bulkPayload = {
         [data.BulkOptions.value]: data.BulkCallingNo,
-        workLogs: `Bulk Created by[${formatLogDate()} - (${decryptedUser.id}) ${decryptedUser.name}]
-${data.Comments || "Lead Created"}`,
+        Assignee: data?.BulkAssignee?.value || "",
+        LeadSource: data?.BulkLeadSource?.value || "",
+
+        WorkLogs: `[${formatLogDate()} -(${decryptedUser?.employee?.EmployeeID}) ${decryptedUser?.employee?.Name}]
+Bulk Created`,
+        LeadStatus: "New",
+        // PhoneCalls: "Not Done",
+        // WhatsAppMsgs: "Not Done",
+        // visited: "Not Done",
       };
 
       await createClient(bulkPayload);
@@ -490,12 +581,14 @@ ${data.Comments || "Lead Created"}`,
         Gender: data?.Gender?.value || "",
         Location: data?.Location?.value || "",
         LeadSource: data?.LeadSource?.value || "",
-        PhoneCalls: data?.PhoneCalls?.value || "",
-        WhatsAppMsgs: data?.WhatsAppMsgs?.value || "",
-        Visited: data?.visited?.value || "",
-        BookingStatus: data?.BookingStatus?.value || "",
-        workLogs: `Created by[${formatLogDate()} - (${decryptedUser.id}) ${decryptedUser.name}]
-${data.Comments || "Lead Created"}`,
+        Assignee: data?.Assignee?.value || "",
+        FieldMember: data?.FieldMember?.value || "",
+        // PhoneCalls: data?.PhoneCalls?.value || "",
+        // WhatsAppMsgs: data?.WhatsAppMsgs?.value || "",
+        // Visited: data?.visited?.value || "",
+        LeadStatus: data?.LeadStatus?.value || "New",
+        WorkLogs: `[${formatLogDate()} - (${decryptedUser?.employee?.EmployeeID}) ${decryptedUser?.employee?.Name}]
+Created by${data.Comments}`,
       };
 
       await createClient(createdData);
@@ -504,11 +597,8 @@ ${data.Comments || "Lead Created"}`,
 
     reset();
     setActiveTab("leadsList");
-  } catch (error) {
-    console.error(error);
-    toast.error("Something went wrong!");
-  }
-};
+
+  };
 
 
 
@@ -540,44 +630,51 @@ ${data.Comments || "Lead Created"}`,
     };
 
     setValue("Gender", findOption(selectOptionGender, selectedClient.Gender));
+    setValue("FollowupDate", selectedClient.FollowupDate);
+    setValue("Assignee", findOption(ManagerOptions, selectedClient.Assignee));
+    setValue("FieldMember", findOption(ManagerOptions, selectedClient.FieldMember));
     setValue("LeadSource", findOption(selectOptionLeadSource, selectedClient.LeadSource || selectedClient.LeadSourcee));
     setValue("Location", findOption(selectOptioninterestedLocation, selectedClient.Location || selectedClient.Location));
     setValue("visited", findOption(selectOptionYesNo, selectedClient.Visited || selectedClient.visited));
-    setValue("WhatsAppMsgs", findOption(selectOptionWhatsAppCommunication, selectedClient.WhatsAppMsgs));
+    // setValue("WhatsAppMsgs", findOption(selectOptionWhatsAppCommunication, selectedClient.WhatsAppMsgs));
+    setValue("Reason", findOption(selectOptionReason, selectedClient.Reason));
     setValue("PhoneCalls", findOption(selectOptionPhoneCallCommunication, selectedClient.PhoneCalls));
-    setValue("BookingStatus", findOption(selectOptionYesNo, selectedClient.BookingStatus || selectedClient.BookingStatus));
-    setValue("WorkLogs", selectedClient.workLogs || "");
+    setValue("LeadStatus", findOption(selectOptionYesNo, selectedClient.LeadStatus || selectedClient.LeadStatus));
+    setValue("WorkLogs", selectedClient.WorkLogs || "");
   }, [selectedClient, reset, setValue]);
 
-
   const handleCancel = () => {
-    setSelectedClient("")
+    setSelectedClient(null)
     setActiveTab("leadsList")
+    setActiveLead("BulkUploadLeads")
+    reset();
   }
-
 
   //================== Tab Css ============================================== 
   const TabColor = (tab) =>
-    `py-2 px-4 rounded-md text-center cursor-pointer font-semibold text-lg w-96
-${activeLead === tab ? "bg-orange-400 " : "text-gray-50 bg-orange-200 hover:bg-orange-300"}`
+    `py-2 px-4 rounded-md text-center cursor-pointer font-semibold text-lg md:w-96 w-full
+${activeLead === tab ? "bg-orange-500 " : "text-gray-50 bg-orange-400 hover:bg-orange-400"}`
   // =============================================================================================
 
   return (
     <div className="max-w-7xl mx-auto my-5 bg-white shadow-sm">
       <div className="rounded-xl p-2 border-2">
         {/* Buttons to switch activeLead */}
-        <div className="flex justify-center text-xl font-semibold  gap-14 px-3 py-4 rounded-md text-white mb-4">
-          <div
-            className={`${TabColor("BulkUploadLeads")} ${selectedClient ? "opacity-50 cursor-not-allowed pointer-events-none" : ""
-              }`}
-            onClick={() => {
-              if (!selectedClient) {
-                setActiveLead("BulkUploadLeads");
-              }
-            }}
-          >
-            <h2>Bulk Upload Leads</h2>
-          </div>
+        <div className="md:flex md:justify-center grid grid-cols-1 text-xl font-semibold  gap-4 px-3 py-4 rounded-md text-white mb-4">
+          {selectedClient === null && (
+            <div
+              className={`${TabColor("BulkUploadLeads")} ${selectedClient ? "opacity-50 cursor-not-allowed pointer-events-none" : ""
+                }`}
+              onClick={() => {
+                if (!selectedClient) {
+                  setActiveLead("BulkUploadLeads");
+                }
+              }}
+            >
+              <h2>Bulk Upload Leads</h2>
+            </div>
+          )}
+
 
           <div
             className={TabColor("CreateSingleLead")}
@@ -599,22 +696,59 @@ ${activeLead === tab ? "bg-orange-400 " : "text-gray-50 bg-orange-200 hover:bg-o
               <div className="grid grid-cols-1 gap-5">
 
                 {/* ================= BulkOptions (NARROW WIDTH) ================= */}
-                <div className="max-w-[220px]">
-                  <label className="text-sm text-gray-700">Create Bulk Leads</label>
-                  <Controller
-                    name="BulkOptions"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        {...field}
-                        placeholder="Select"
-                        isClearable
-                        styles={employeeSelectStyles}
-                        options={selectOptionBulkData}
-                      />
-                    )}
-                  />
-                  {errors.BulkOptions && <p className="text-red-500 text-sm mt-1">{errors.BulkOptions.message}</p>}
+                <div className="grid md:grid-cols-5 grid-cols-1">
+                  <div className="max-w-[220px]">
+                    <label className="text-sm text-gray-700">Create Bulk Leads</label>
+                    <Controller
+                      name="BulkOptions"
+                      control={control}
+                      defaultValue={selectOptionBulkData[0]}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          placeholder="Select"
+                          isClearable
+                          styles={employeeSelectStyles}
+                          options={selectOptionBulkData}
+                        />
+                      )}
+                    />
+                    {errors.BulkOptions && <p className="text-red-500 text-sm mt-1">{errors.BulkOptions.message}</p>}
+                  </div>
+                  <div className="max-w-[220px]">
+                    <label className="text-sm text-gray-700">Lead Source</label>
+                    <Controller
+                      name="BulkLeadSource"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          placeholder="Select"
+                          isClearable
+                          styles={employeeSelectStyles}
+                          options={selectOptionLeadSource}
+                        />
+                      )}
+                    />
+                    {errors.BulkLeadSource && <p className="text-red-500 text-sm mt-1">{errors.BulkLeadSource.message}</p>}
+                  </div>
+                  <div className="max-w-[220px]">
+                    <label className="text-sm text-gray-700">Assignee</label>
+                    <Controller
+                      name="BulkAssignee"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          placeholder="Select"
+                          isClearable
+                          styles={employeeSelectStyles}
+                          options={ManagerOptions}
+                        />
+                      )}
+                    />
+                    {errors.BulkAssignee && <p className="text-red-500 text-sm mt-1">{errors.BulkAssignee.message}</p>}
+                  </div>
                 </div>
 
                 {/* ================= Calling No  ================= */}
@@ -749,27 +883,83 @@ ${activeLead === tab ? "bg-orange-400 " : "text-gray-50 bg-orange-200 hover:bg-o
                   )}
                 />
               </div>
-
-              {/* Interested Location */}
-              <div>
-                <label className="text-sm text-gray-700">Interested Location</label>
+               <div >
+                <label className="text-sm text-gray-700">Assignee</label>
                 <Controller
-                  name="Location"
+                  name="Assignee"
                   control={control}
                   render={({ field }) => (
                     <Select
                       {...field}
-                      placeholder="Select Location"
+                      placeholder="Select"
                       isClearable
                       styles={employeeSelectStyles}
-                      options={selectOptioninterestedLocation}
+                      options={ManagerOptions}
+                    />
+                  )}
+                />
+                {errors.Assignee && <p className="text-red-500 text-sm mt-1">{errors.Assignee.message}</p>}
+              </div>
+
+               <div >
+                <label className="text-sm text-gray-700">Field Member</label>
+                <Controller
+                  name="FieldMember"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      placeholder="Select"
+                      isClearable
+                      styles={employeeSelectStyles}
+                      options={ManagerOptions}
                     />
                   )}
                 />
               </div>
 
+              {selectedClient && (
+                <div className="">
+                  <label className="text-sm text-gray-700">Followup Date</label>
+                  <div className="w-full">
+                    <Controller
+                      control={control}
+                      name="FollowupDate"
+                      render={({ field }) => (
+                        <DatePicker
+                          selected={field.value}
+                          onChange={(date) => field.onChange(date)}
+                          placeholderText="Select Followup Date"
+                          dateFormat="d MMM yyyy"
+                          isClearable
+                          className="w-full px-3 py-[8px] border outline-none border-orange-400 rounded-md focus:ring-2 focus:ring-orange-300"
+                        />
+                      )}
+                    />
+
+                  </div>
+                </div>
+              )}
+              {/* Interested Location */}
+              {/* <div>
+                <label className="text-sm text-gray-700">FollowupDate</label>
+                <Controller
+                  name="FollowupDate"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      placeholder="Select Followup Date"
+                      isClearable
+                      styles={employeeSelectStyles}
+                      // options={selectOptioninterestedLocation}
+                    />
+                  )}
+                />
+              </div> */}
+
               {/* WhatsApp Communication */}
-              <div>
+              {/* <div>
                 <label className="text-sm text-gray-700">WhatsApp Communication</label>
                 <Controller
                   name="WhatsAppMsgs"
@@ -784,10 +974,10 @@ ${activeLead === tab ? "bg-orange-400 " : "text-gray-50 bg-orange-200 hover:bg-o
                     />
                   )}
                 />
-              </div>
+              </div> */}
 
               {/* Phone Call Communication */}
-              <div>
+              {/* <div>
                 <label className="text-sm text-gray-700">Phone Call Communication</label>
                 <Controller
                   name="PhoneCalls"
@@ -802,10 +992,10 @@ ${activeLead === tab ? "bg-orange-400 " : "text-gray-50 bg-orange-200 hover:bg-o
                     />
                   )}
                 />
-              </div>
+              </div> */}
 
               {/* Visited */}
-              <div>
+              {/* <div>
                 <label className="text-sm text-gray-700">Visited</label>
                 <Controller
                   name="visited"
@@ -820,18 +1010,18 @@ ${activeLead === tab ? "bg-orange-400 " : "text-gray-50 bg-orange-200 hover:bg-o
                     />
                   )}
                 />
-              </div>
+              </div> */}
 
               {/* Booking Status */}
               <div>
-                <label className="text-sm text-gray-700">Booking Status</label>
+                <label className="text-sm text-gray-700">Lead Status</label>
                 <Controller
-                  name="BookingStatus"
+                  name="LeadStatus"
                   control={control}
                   render={({ field }) => (
                     <Select
                       {...field}
-                      placeholder="Booking Status"
+                      placeholder="Lead Status"
                       isClearable
                       styles={employeeSelectStyles}
                       options={selectOptionBookingStatus}
@@ -839,7 +1029,30 @@ ${activeLead === tab ? "bg-orange-400 " : "text-gray-50 bg-orange-200 hover:bg-o
                   )}
                 />
               </div>
+              <div>
+                <label className="text-sm text-gray-700">Reason</label>
 
+                <Controller
+                  name="Reason"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      placeholder="Select Reason"
+                      isClearable
+                      styles={employeeSelectStyles}
+                      options={selectOptionReason}
+                      isDisabled={!effectiveLeadStatus}
+                    />
+                  )}
+                />
+                {errors.Reason && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.Reason.message}
+                  </p>
+                )}
+
+              </div>
               {/* Comments */}
               <div>
                 <label className={`text-sm text-gray-700 ${selectedClient ? "relative after:content-['*'] after:ml-1 after:text-red-500" : ""}`}>Comments</label>
@@ -862,7 +1075,7 @@ ${activeLead === tab ? "bg-orange-400 " : "text-gray-50 bg-orange-200 hover:bg-o
               )}
             </div>
 
-            <div className="flex justify-center items-center">
+            <div className="flex justify-center items-center gap-5">
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -876,7 +1089,7 @@ ${activeLead === tab ? "bg-orange-400 " : "text-gray-50 bg-orange-200 hover:bg-o
                 ) : selectedClient ? "Update" : "Submit"}
               </button>
 
-              <p onClick={handleCancel} className="mt-5 px-4 py-2 rounded-md text-[16px] cursor-pointer text-black">
+              <p onClick={handleCancel} className="mt-5 border px-4 py-2 rounded-md text-[16px] cursor-pointer text-black">
                 Cancel
               </p>
             </div>
