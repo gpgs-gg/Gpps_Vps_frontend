@@ -574,7 +574,7 @@ const AttendanceDetail = () => {
             ) : (
                 <div className="overflow-auto bg-white  shadow-lg rounded-lg border h-[600px] border-gray-200">
                     <table className="min-w-full text-md">
-                        <thead className="bg-orange-300 sticky top-0 text-black">
+                        <thead className="bg-black sticky top-0 text-white">
                             <tr>
                                 {[
                                     'Date', 'Employee ID', 'Employee Name', 'In Time', 'In Selfie',
@@ -677,7 +677,7 @@ const AttendanceDetail = () => {
                     <button
                         onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                         disabled={currentPage === 1}
-                        className={`px-4 py-2  rounded border text-white font-bold ${currentPage === 1 ? "bg-gray-200 text-gray-500" : "bg-orange-300 text-black"}`}
+                        className={`px-4 py-2  rounded border text-white font-bold ${currentPage === 1 ? "bg-gray-200 text-gray-500" : "bg-black text-white"}`}
                     >
                         <i className="fa-solid fa-arrow-left"></i> Previous
                     </button>
@@ -695,7 +695,7 @@ const AttendanceDetail = () => {
                     <button
                         onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
                         disabled={currentPage === totalPages}
-                        className={`px-4 py-2 rounded font-bold text-white border ${currentPage === totalPages ? "bg-gray-200 text-gray-500" : "bg-orange-300 text-black"}`}
+                        className={`px-4 py-2 rounded font-bold text-white border ${currentPage === totalPages ? "bg-gray-200 text-gray-500" : "bg-black text-white"}`}
                     >
                         Next <i className="fa-solid fa-arrow-right"></i>
                     </button>

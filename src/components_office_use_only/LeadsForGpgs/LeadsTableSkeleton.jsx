@@ -15,11 +15,11 @@ export const LeadsTableSkeleton = () => {
       {/* ===== TABLE SKELETON ===== */}
       <div className="overflow-hidden bg-white rounded-lg shadow">
         <table className="min-w-full border">
-          <thead className="bg-orange-200">
+          <thead className="bg-black text-gray-200">
             <tr>
               {Array.from({ length: 12 }).map((_, i) => (
                 <th key={i} className="p-4">
-                  <div className="h-4 bg-orange-300 rounded" />
+                  <div className="h-4 bg-black text-gray-200  rounded" />
                 </th>
               ))}
             </tr>

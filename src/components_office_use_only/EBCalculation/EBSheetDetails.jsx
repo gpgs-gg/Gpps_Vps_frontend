@@ -616,9 +616,9 @@ const mainSheetId = useMemo(() => {
               {/* ================= Admin TABLE ================= */}
               <div className="max-h-[500px] whitespace-nowrap overflow-y-auto">
                 <table className="w-full ">
-                  <thead className="bg-orange-300 sticky top-0 z-20">
+                  <thead className="bg-black text-white sticky top-0 z-20">
                     <tr>
-                      <th className="p-3  bg-orange-300 sticky left-0 border">Client Name</th>
+                      <th className="p-3 bg-black  sticky left-0 border">Client Name</th>
                       <th className="p-3 border">Total Days</th>
                       <th className="p-3 border">Adjusted Free EB</th>
                       <th className="p-3 border">Free Electricity Bill</th>
@@ -639,7 +639,7 @@ const mainSheetId = useMemo(() => {
                     {
                       ebSheetData?.data?.filter((c) => c.ClientName !== "").map((c) => (
                         <tr key={c.ClientID} className="hover:bg-gray-50 text-black">
-                          <td className="p-3 bg-orange-300 sticky left-0 border font-semibold">{c.ClientName}</td>
+                          <td className="p-3 bg-white sticky left-0 border font-semibold">{c.ClientName}</td>
                           <td className="p-3 border flex justify-center items-center font-semibold">{c.TotalDays}</td>
                           <td className="p-3 border text-center">{c.AdjFreeEB}</td>
                           <td className="p-3 border text-center">{c.FreeEB}</td>

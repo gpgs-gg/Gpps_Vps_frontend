@@ -1139,7 +1139,7 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
                 onMouseEnter={() => setOpenFilter(f.key)}
                 onMouseLeave={() => setOpenFilter(null)}
               >
-                <button className="border border-orange-400 px-4 py-1 text-orange-500 rounded-xl bg-white shadow flex items-center gap-2 whitespace-nowrap">
+                <button className="border border-black px-4 py-1 text-black rounded-xl bg-white shadow flex items-center gap-2 whitespace-nowrap">
                   {f.icon}{f.label}
                   {filters[f.key].length > 0 && (
                     <span className="text-sm bg-orange-400 text-white px-2 rounded-full">
@@ -1214,7 +1214,7 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
               className={`px-4 py-1 rounded flex items-center gap-2 transition
     ${isDefaultMode
                   ? "bg-green-500 text-white"
-                  : "bg-orange-400 text-white"}
+                  : "bg-black text-white"}
   `}
             >
               {isDefaultMode && <span>✔</span>}
@@ -1227,7 +1227,7 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
               <button
                 onClick={handleSave}
                 disabled={!hasChanges || saving}
-                className="px-4 py-1 bg-orange-400 text-white rounded"
+                className="px-4 py-1 bg-black text-white rounded"
               >
                 {saving ? "Saving..." : "Save"}
               </button>
@@ -1253,9 +1253,9 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
         {/* ===== TABLE ===== */}
         <div className="overflow-y-auto max-h-[450px] hidden md:block bg-white rounded-lg shadow">
           <table className="min-w-full border">
-            <thead className="bg-orange-300 px-10 sticky top-0 text-center z-20 whitespace-nowrap rounded">
+            <thead className="bg-black text-white px-10 sticky top-0 text-center z-20 whitespace-nowrap rounded">
               <tr>
-                <th className="p-4 sticky left-0 z-20 bg-orange-300 ">
+                <th className="p-4 sticky left-0 z-20 bg-black text-white">
                   <input
                     type="checkbox"
                     className="w-10 scale-150 accent-orange-500"
@@ -1274,12 +1274,12 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
                 </th>
 
                 {/* Lead Id */}
-                <th className="p-4 sticky left-[60px] z-20 bg-orange-300 ">
+                <th className="p-4 sticky left-[60px] z-20 bg-black text-white">
                   Lead Id
                 </th>
 
                 {/* Date */}
-                <th className="px-7 sticky left-[140px] z-20 bg-orange-300 ">
+                <th className="px-7 sticky left-[140px] z-20 bg-black text-white">
                   Date
                 </th>
                 <th className="px-7">Client Name</th>
@@ -1293,7 +1293,7 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
                 <th className="px-7">Comments</th>
                 <th className="rounded-r px-7">WorkLogs</th>
                 <th className="rounded-r px-7">Assignee</th>
-                <th className="px-7 sticky right-0 bg-orange-300 z-50">Action</th>
+                <th className="px-7 sticky right-0 bg-black text-white z-50">Action</th>
 
               </tr>
             </thead>
@@ -1304,7 +1304,7 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
 
                 return (
                   <tr key={client.LeadNo} className="text-center border whitespace-nowrap">
-                    <td className="sticky left-0 z-10 bg-orange-300 ">
+                    <td className="sticky left-0 z-10 bg-gray-100 ">
                       <input
                         type="checkbox"
                         className="w-10 scale-150 accent-orange-500"
@@ -1314,12 +1314,12 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
                     </td>
 
                     {/* Lead Id */}
-                    <td className="sticky left-[60px] bg-orange-300 z-10 ">
+                    <td className="sticky left-[60px] bg-gray-100 z-10 ">
                       {client.LeadNo}
                     </td>
 
                     {/* Date */}
-                    <td className="sticky px-5 left-[140px] z-10 bg-orange-300  ">
+                    <td className="sticky px-5 left-[140px] z-10 bg-gray-100  ">
                       {client.Date}
                     </td>
 
@@ -1495,14 +1495,14 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
           <button
             disabled={currentPage === 1}
             onClick={() => setCurrentPage(p => p - 1)}
-            className="px-4 py-2 bg-orange-400 text-white rounded disabled:opacity-50"
+            className="px-4 py-2 bg-black  text-white rounded disabled:opacity-50"
           >
             <i className="fa-solid fa-arrow-left"></i> Previous
           </button>
           <button
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage(p => p + 1)}
-            className="px-4 py-2 bg-orange-400 text-white rounded disabled:opacity-50"
+            className="px-4 py-2 bg-black text-white rounded disabled:opacity-50"
           >
             Next <i className="fa-solid fa-arrow-right"></i>
           </button>

@@ -46,7 +46,7 @@ const Contact = () => {
 
         {/* Heading */}
         <div className="text-center mb-10">
-          <h2 className="text-4xl text-[#2c4d04] font-bold mb-4"style={{ textShadow: '2px 2px 6px rgba(0, 0, 0, 0.3)' }}>
+          <h2 className="text-4xl text-black font-bold mb-4"style={{ textShadow: '2px 2px 6px rgba(0, 0, 0, 0.0)' }}>
             Connect With Us
           </h2>
         </div>
@@ -62,12 +62,12 @@ const Contact = () => {
               <div className="bg-white backdrop-blur-lg  rounded-xl p-6 text-center ">
                 {salesContacts.map(({ title, phone }, idx) => (
                   <div key={idx}>
-                    <h3 className="text-lg sm:text-xl text-[#3730a3] font-bold mb-3">
+                    <h3 className="text-lg sm:text-xl text-black font-bold mb-3">
                       {title}
                     </h3>
                     <a
                       href={`tel:${phone}`}
-                      className="text-xl sm:text-2xl text-[#3730a3] font-bold hover:text-[#3730a10] transition duration-300 block"
+                      className="text-xl sm:text-2xl text-gray-600 font-bold hover:text-[#3730a10] transition duration-300 block"
                     >
                       <i className="fas fa-phone mr-2"></i>{phone}
                     </a>
@@ -82,12 +82,12 @@ const Contact = () => {
                   key={idx}
                   className="bg-white  backdrop-blur-lg rounded-xl p-6 text-center"
                 >
-                  <h3 className="text-xl sm:text-xl text-[#3730a3] font-bold mb-3">
+                  <h3 className="text-xl sm:text-xl text-black font-bold mb-3">
                     {title}
                   </h3>
                   <a
                     href={`tel:${phone}`}
-                    className="text-xl sm:text-2xl text-[#3730a3] font-bold hover:text-[#3730a10] transition duration-300 block"
+                    className="text-xl sm:text-2xl text-gray-600 font-bold hover:text-[#3730a10] transition duration-300 block"
                   >
                     <i className="fas fa-phone mr-2"></i>{phone}
                   </a>

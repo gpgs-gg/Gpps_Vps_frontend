@@ -154,7 +154,7 @@ const Gallary = () => {
   const currentImages = activeTab === 'male' ? images_of_male_pg : images_of_female_pg;
 
   return (
-    <div className="min-h-screen bg-gray-100 py-16 px-4 sm:px-6 lg:px-12 mt-20">
+    <div className="min-h-screen bg-[#fbfbfb] py-16 px-4 sm:px-6 lg:px-12 mt-20">
       <div className="max-w-7xl mx-auto">
         {/* 🧭 Tabs */}
         <div className="flex justify-center gap-4 mb-5">
@@ -164,7 +164,7 @@ const Gallary = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`px-6 py-2 rounded-sm font-bold text-sm md:text-base  transition-all duration-300 
                 ${activeTab === tab.id
-                  ? 'border-b-8  border-orange-300 text-black '
+                  ? 'border-b-8  border-gray-400 text-black '
                   :' text-gray-700' 
                 }`}
             >

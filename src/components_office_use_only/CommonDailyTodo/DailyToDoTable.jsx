@@ -611,7 +611,7 @@ export default function DailyTodoTable({
         )}
 
         <table className="border-collapse text-sm table-fixed overflow-visible">
-          <thead className="sticky top-0 z-[100] bg-orange-300">
+          <thead className="sticky top-0 z-[100] bg-black text-white">
             <tr>
               {headers.map((head, i) => {
                 const isFilteredColumn =
@@ -625,10 +625,10 @@ export default function DailyTodoTable({
                 return (
                   <th
                     key={i}
-                    className={`border bg-orange-300 ${
+                    className={`border bg-black ${
                       i === 0 || i === 2 ? "" : "px-5"
                     } py-3  font-semibold border-gray-100     ${
-                      i < 3 ? "sticky z-50 bg-orange-300" : ""
+                      i < 3 ? "sticky z-50 bg-black text-white" : ""
                     }      ${
                       !isFilteredColumn && i >= 3 ? "hidden border-none" : ""
                     }`}
@@ -715,9 +715,9 @@ export default function DailyTodoTable({
     ${cIdx === 0 || head === "Freq" ? "text-center" : ""}  
     ${
       activeCell?.row === rIdx && activeCell?.col === head
-        ? "bg-orange-300"
+        ? "bg-white"
         : sticky
-          ? "bg-orange-300"
+          ? "bg-white"
           : ""
     }
     ${!isFilteredColumn && cIdx >= 3 ? "hidden border-none" : ""}

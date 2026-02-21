@@ -157,7 +157,7 @@ function ClientLeads({ activeLead, setActiveLead, setActiveTab, modalType, setMo
 
   const selectOptionLeadSource =
     (Array.from(
-      new Set(dynamicData?.data?.map((item) => item.LeadSourcee).filter(Boolean))
+      new Set(dynamicData?.data?.map((item) => item.LeadSource).filter(Boolean))
     ).map((value) => ({ value, label: value }))) || [];
 
   const selectOptioninterestedLocation =

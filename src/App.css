@@ -1,6 +1,6 @@
 /* 1. Define the custom property for Nunito */
 :root {
-  --font-primary: 'Nunito', sans-serif;
+  --font-primary: "Roboto", "sans-serif";
 }
 
 /* 2. Apply it to the body */
@@ -16,7 +16,7 @@ body {
   /* background: linear-gradient(135deg, #e5e4e341 50%, #edd458 40%); */
   /* background: linear-gradient(135deg, #e5e4e341 50%, #ffc800cd 40%); */
   /* background: linear-gradient(135deg, #e5e4e341 50%, #fedd59 40%); */
-  background: linear-gradient(135deg, #F8F9FB 50%, #fedd59 40%);
+  background: linear-gradient(135deg, white 50%, white 40%);
   /* blinkit color  */
   /* background: linear-gradient(135deg, #e5e4e341 50%, #edcf58 40%);   */
   /* background: linear-gradient(135deg, #e5e4e341 00%, #d6ebcc 40%); */
@@ -31,7 +31,7 @@ body {
   /* background: linear-gradient(135deg, #e5e4e341 50%, #ffc800cd 40%); */
   /* background: linear-gradient(135deg, #fedd59 50% , #e5e4e341 40%);  ulta */
   /* blinkit color  */
-  background: linear-gradient(135deg, #e5e4e341 50%, #fedd59 40%);
+  background: linear-gradient(135deg, #fbfbfb 50%, #fbfbfb 40%);
   /* background: linear-gradient(135deg, #e5e4e341 50%, #edcf58 40%);   */
   /* background: linear-gradient(135deg, #e5e4e341 00%, #d6ebcc 40%); */
   /* background: linear-gradient(to right, #a9dc92 , #368254 );  */
@@ -87,7 +87,7 @@ body {
 
 .ombre-container{
   /* background: linear-gradient(to right, #a9dc92, #14532d);  */
-  background: linear-gradient(to left, #ee9f27, #f6e08a); 
+  background: linear-gradient(to left, black); 
   /* background: linear-gradient(to right, #d6ebcc, #14532d); */
   /* Example: purple to pink */
   /* min-height: 100vh; */
@@ -97,7 +97,4 @@ body {
   /* color: white; */
   /* font-size: 2em; */
   /* background: linear-gradient(60deg, #a9dc92 30%, #14532d 80%); */
-
-
-
 }

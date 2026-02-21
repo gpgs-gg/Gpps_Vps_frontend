@@ -39,6 +39,7 @@ import EBInfo from './components_office_use_only/EBInfo/EBInfo';
 import LeadsNavigation from './components_office_use_only/LeadsForGpgs/LeadsNavigation';
 import PropertyManagement from "./components_office_use_only/Properties_Management/PropertyManagement";
 import TodoBankTransaction from './components_office_use_only/BankTransaction/TodoBankTransaction';
+import Main from './components_office_use_only/ExpanseTodo/Main';
 // import Footer from './components/Footer';
 // import { useAuth } from './context/AuthContext';
 
@@ -384,15 +385,15 @@ function App() {
             </ProtectedRoute>
           }
         />
-{/* 
+
         <Route
-          path="/gpgs-actions/attendance-details"
+          path="/gpgs-actions/expense-management"
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
-              <AttendanceDetail />
+              <Main />
             </ProtectedRoute>
           }
-        /> */}
+        />
 
 
         {

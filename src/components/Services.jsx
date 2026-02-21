@@ -216,15 +216,15 @@ const Services = () => {
   return (
     <>
 
-      <section className='border bg-[#F8F9FB]'>
+      <section className='border bg-[#fbfbfb]'>
 
-        <h1 className="flex items-center justify-center bg-[#F8F9FB] gap-1">
+        <h1 className="flex items-center justify-center bg-[#fbfbfb] gap-1">
           <Link className="underline text-blue-500 cursor-pointer font-bold" to="https://www.google.com/maps/place/Gopal's+Paying+Guest+Services/@19.0347746,73.0228427,17z/data=!4m8!3m7!1s0x3be7c30f479c2543:0x2955da06c91d2d7f!8m2!3d19.0346655!4d73.024013!9m1!1b1!16s%2Fg%2F11rc28lypw?entry=ttu&g_ep=EgoyMDI1MDkxNi4wIKXMDSoASAFQAw%3D%3D" target='_black'>
             Click Here</Link> to check us on
           <img
             src={googlePng}
             alt="Logo"
-            className="h-20 w-auto ml-1 bg-[#F8F9FB]"
+            className="h-20 w-auto ml-1 bg-[#fbfbfb]"
           />
         </h1>
         <div
@@ -297,7 +297,7 @@ const Services = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Heading */}
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#2c4d04] mb-4" style={{ textShadow: '2px 2px 6px rgba(0, 0, 0, 0.3)' }}>Services & Facilities</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-black mb-4" style={{ textShadow: '2px 2px 6px rgba(0, 0, 0, 0.0)' }}>Services & Facilities</h2>
             <p className="text-base sm:text-lg text-gray-600 max-w-4xl mx-auto">
               Smartly designed accommodations with all-inclusive comfort — everything you need, at one price.
             </p>
@@ -306,7 +306,7 @@ const Services = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             {/* Left Side: Carousel & Info */}
             <div>
-              <div className="bg-[#F8F9FB] rounded-xl shadow-lg p-6 ">
+              <div className="bg-[#fbfbfb] rounded-xl shadow-lg p-6 ">
                 {/* Swiper Carousel */}
                 <div className="rounded-lg overflow-hidden">
                   <Swiper
@@ -329,7 +329,7 @@ const Services = () => {
 
                 {/* Info Box */}
                 <div className="bg-white p-6 rounded-lg flex justify-center items-center flex-col gap-2 text-center">
-                  <i className="fas fa-city text-purple-600 text-3xl md:text-4xl mb-4"></i>
+                  <i className="fas fa-city text-black text-3xl md:text-4xl mb-4"></i>
 
                   <p className="font-bold text-gray-900 text-xl md:text-lg">
                     Found The Right Option For You?
@@ -338,7 +338,7 @@ const Services = () => {
                   <div className="text-gray-600 mt-2 text-sm md:text-base w-full flex justify-center">
                     <a
                       href="/contact"
-                      className="group relative py-2 px-8 flex justify-center items-center rounded-full w-full max-w-md mb-2 space-x-2 overflow-hidden border bg-[#297229]"
+                      className="group relative py-2 px-8 flex justify-center items-center rounded-full w-full max-w-md mb-2 space-x-2 overflow-hidden border bg-black"
                     >
                       <span className="text-white text-base sm:text-lg md:text-xl transform animate-zoom">
                         Reserve Your Spot Today
@@ -356,7 +356,7 @@ const Services = () => {
                 {
                   title: "Private Room",
                   subtitle: "Privacy & Personal Space",
-                  price: "₹8,500 - ₹28,000/month",
+                  price: "₹10,000 - ₹28,000/month",
                 },
                 {
                   title: "Double Sharing",
@@ -386,8 +386,8 @@ const Services = () => {
                   </div>
                   <div className="p-6 flex-grow flex flex-col justify-center items-center">
                     <ul className="space-y-3 text-gray-700 text-sm text-center">
-                      <li><i className="fas fa-check text-green-500 mr-2"></i>AC/Non-AC rooms</li>
-                      <li><i className="fas fa-check text-green-500 mr-2"></i>{room.price}</li>
+                      <li><i className="fas fa-check text-black mr-2"></i>AC/Non-AC rooms</li>
+                      <li><i className="fas fa-check text-black mr-2"></i>{room.price}</li>
                     </ul>
                   </div>
                 </div>
@@ -398,7 +398,7 @@ const Services = () => {
         </div>
       </section>
 
-      <section className="py-10 bg-[#F8F9FB]">
+      <section className="py-10 bg-[#fbfbfb]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid bg-white rounded-xl p-2 md:grid-cols-2 gap-12 items-center">
             <div className='  flex flex-col justify-center items-center'>
@@ -468,10 +468,10 @@ const Services = () => {
         </div>
 
 
-        <section id="services" className=" bg-[#F8F9FB] pt-5 ">
+        <section id="services" className=" bg-[#fbfbfb] pt-5 ">
           <div className="max-w-[1220px] bg-white rounded-xl py-5 mx-auto">
             <div className="text-center">
-              <h2 className="text-4xl font-bold text-[#2c4d04]" style={{ textShadow: '2px 2px 6px rgba(0, 0, 0, 0.3)' }}>Additional Information</h2>
+              <h2 className="text-4xl font-bold text-black" style={{ textShadow: '2px 2px 6px rgba(0, 0, 0, 0.0)' }}>Additional Information</h2>
             </div>
 
             <div className="grid md:grid-cols-2 gap-5 items-center">

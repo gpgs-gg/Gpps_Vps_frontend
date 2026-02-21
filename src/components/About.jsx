@@ -38,7 +38,7 @@ const About = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#2c4d04] mb-4" style={{ textShadow: '2px 2px 6px rgba(0, 0, 0, 0.3)' }}>About Us</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-black mb-4" style={{ textShadow: '2px 2px 6px rgba(0, 0, 0, 0.0)' }}>About Us</h2>
         </div>
 
         {/* Content Grid */}
@@ -100,12 +100,12 @@ const About = () => {
             </div>
 
             {/* Floating Badge */}
-            <div className="absolute -top-6 -right-6 bg-[#fedd59] p-4 sm:p-6 rounded-xl shadow-lg text-center w-28 sm:w-32">
-              <p className="text-2xl font-bold text-indigo-900">10+</p>
-              <p className="text-indigo-800 font-semibold text-sm">Years Experience</p>
+            <div className="absolute -top-6 -right-6 bg-gray-200 p-4 sm:p-6 rounded-xl shadow-lg text-center w-28 sm:w-32">
+              <p className="text-2xl font-bold text-black">10+</p>
+              <p className="text-black font-semibold text-sm">Years Experience</p>
             </div>
           </div>
-          <div className="bg-[#F8F9FB] rounded-xl shadow-lg p-6 sm:p-8">
+          <div className="bg-[#fbfbfb] rounded-xl shadow-lg p-6 sm:p-8">
             {/* <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6 flex items-center">
               <i className="fas fa-map-marker-alt text-purple-600 mr-3"></i>Locate us on Map
             </h3> */}
@@ -131,14 +131,14 @@ const About = () => {
             </div>
 
        <div className="bg-white p-6 rounded-lg flex justify-center gap-3 items-center flex-col text-center">
-  <i className="fas fa-city text-purple-600 text-3xl md:text-4xl mb-4"></i>
+  <i className="fas fa-city text-black text-3xl md:text-4xl mb-4"></i>
   <p className="font-bold text-gray-900 text-base md:text-xl">
     Ready To Upgrade Your Living Experience?
   </p>
   <div className="text-gray-600 mt-2 text-sm md:text-base w-full flex justify-center">
     <a
       href="/contact"
-      className="relative py-2 px-8 flex justify-center items-center rounded-full w-full max-w-md mb-8 space-x-2 overflow-hidden border group bg-[#297229]"
+      className="relative py-2 px-8 flex justify-center items-center rounded-full w-full max-w-md mb-8 space-x-2 overflow-hidden border group bg-black"
     >
       <span className="text-white text-base sm:text-lg md:text-xl group relative z-10 transition-transform duration-300 ease-in-out transform group-hover:scale-110">
         Connect With Us Today

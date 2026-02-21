@@ -6740,7 +6740,7 @@ const EBCalculation = () => {
                     </h1>
                     <button
                         onClick={handleBulkSubmit}
-                        className="px-4 py-2 bg-orange-300 font-bold rounded hover:bg-orange-400"
+                        className="px-4 py-2 bg-black text-white font-bold rounded "
                     >
                         {(isCreateEbCalcul || isCreateEbMainSheet) ? (
                             <span className="flex gap-2 justify-center items-center">
@@ -6995,9 +6995,9 @@ const EBCalculation = () => {
                     </h2> */}
 
                     <table className="min-w-max border  text-lg border-gray-400 text-center">
-                        <thead className="bg-orange-300 sticky z-50 top-0 font-bold text-gray-800">
+                        <thead className="bg-black sticky z-40 top-0 font-bold text-white">
                             <tr>
-                                <th className="border text-start px-3 py-2 sticky left-0 bg-orange-300">
+                                <th className="border text-start px-3 py-2  sticky left-0 bg-black">
                                     Client Name &#8595;  Date &#8594;
                                 </th>
 
@@ -7006,18 +7006,18 @@ const EBCalculation = () => {
                                         {d.date.getDate()}
                                     </th>
                                 ))}
-                                <th className="border px-3 py-2 sticky left-0 bg-orange-300">
+                                <th className="border px-3 py-2 sticky left-0 bg-black">
                                     C EB
                                 </th>
 
-                                <th className="border px-3 py-2 sticky left-0 bg-orange-300">
+                                <th className="border px-3 py-2 sticky left-0 bg-black">
                                     AC EB
                                 </th>
 
-                                <th className="border px-3 py-2 sticky left-0 bg-orange-300">
+                                <th className="border px-3 py-2 sticky left-0 bg-black">
                                     Adj EB
                                 </th>
-                                <th className="border px-3 py-2 sticky left-0 bg-orange-300">
+                                <th className="border px-3 py-2 sticky left-0 bg-black">
                                     Total Client EB
                                 </th>
 
@@ -7044,7 +7044,7 @@ const EBCalculation = () => {
                                     return (
                                         <tr key={`${client.ClientID}_${client.RentDOJ}`}>
                                             {/* Client Name */}
-                                            <td className="border px-3 py-2 font-bold sticky left-0 bg-orange-300  text-left z-40">
+                                            <td className="border px-3 py-2 font-bold sticky left-0 bg-white text-left z-20">
                                                 {client.FullName} <sup className='text-[12px] text-gray-500'>{client.ACRoom.toLowerCase() === "yes" ? `ACRoomNo-${client.RoomNo}` : ""}</sup>
                                             </td>
 
@@ -7130,9 +7130,9 @@ const EBCalculation = () => {
                                 })}
                         </tbody>
                         <tfoot>
-                            <tr className="bg-orange-300 font-bold text-center">
+                            <tr className=" font-bold text-center">
 
-                                <td className="border px-2 text-xl sticky left-0  font-bold bg-orange-300  text-left">
+                                <td className="border px-2 text-xl sticky left-0  font-bold bg-white text-left">
                                     {/* Total EB To Be Recovered */}
                                 </td>
                                 {/* Per-date present count */}
@@ -7156,7 +7156,7 @@ const EBCalculation = () => {
                                         .toFixed(0)}
 
                                 </td>
-                                <td className="border px-2 text-xl sticky left-0  font-bold bg-orange-300  text-left">
+                                <td className="border px-2 text-xl sticky left-0  font-bold  text-left">
                                     {/* Total AC EB To Be Recovered */}
                                     {data?.data
                                         ?.filter(ele => ele.FullName && ele.FullName.trim() !== "")
@@ -7169,7 +7169,7 @@ const EBCalculation = () => {
                                             return sumClients + clientTotal;
                                         }, 0)
                                         .toFixed(0)}
-                                </td>    <td className="border px-2 text-xl sticky left-0  font-bold bg-orange-300  text-left">
+                                </td>    <td className="border px-2 text-xl sticky left-0  font-bold  text-left">
                                     {/* Total Adjusted EB To Be Recovered */}
                                     {data?.data
                                         ?.filter(client => client.FullName && client.FullName.trim() !== "")
@@ -7182,7 +7182,7 @@ const EBCalculation = () => {
                                         }, 0)
                                         .toFixed(0)}
                                 </td>
-                                <td className="border px-2 text-xl sticky left-0 font-bold bg-orange-300 text-left">
+                                <td className="border px-2 text-xl sticky left-0 font-bold  text-left">
                                     {data?.data
                                         ?.filter(client => client.FullName && client.FullName.trim() !== "")
                                         .reduce((grandTotal, client) => {
@@ -7210,12 +7210,12 @@ const EBCalculation = () => {
                 {isLoading ? <div><LoaderPage /></div> :
                     <div className='overflow-auto max-h-[600px] border'>
                         <table className="min-w-auto mt-10   border-red-500">
-                            <thead className="bg-orange-300 shadow-sm text-lg font-bold text-gray-700 sticky top-[-1px] ">
+                            <thead className="bg-black shadow-sm text-lg font-bold text-white sticky top-[-1px] ">
                                 <tr>
                                     {/* <th className="border font-bold whitespace-nowrap px-2 py-2 sticky left-0 z-50 bg-orange-300">Client Id</th> */}
-                                    <th className="border border-gray-300 whitespace-nowrap font-bold  px-2 py-2 sticky left-0  z-50 bg-orange-300 text-left">Client Name &#8595;  Date &#8594; </th>
-                                    <th className="border hidden border-gray-300 whitespace-nowrap font-bold  px-2 py-2 sticky left-0 z-30 bg-orange-300 text-left">Vacation SD</th>
-                                    <th className="border hidden border-gray-300 whitespace-nowrap font-bold  px-2 py-2 sticky left-0 z-30 bg-orange-300 text-left">Vacation LD</th>
+                                    <th className="border border-gray-300 whitespace-nowrap font-bold  px-2 py-2 sticky left-0  z-50 bg-black text-left">Client Name &#8595;  Date &#8594; </th>
+                                    <th className="border hidden border-gray-300 whitespace-nowrap font-bold  px-2 py-2 sticky left-0 z-30 bg-black text-left">Vacation SD</th>
+                                    <th className="border hidden border-gray-300 whitespace-nowrap font-bold  px-2 py-2 sticky left-0 z-30 bg-black text-left">Vacation LD</th>
                                     {headerDays.map((d, i) => (
                                         <th
                                             key={i}
@@ -7338,7 +7338,7 @@ const EBCalculation = () => {
 
                                     return (
                                         <tr key={`${ele.ClientID}_${ele.RentDOJ}`} className={`text-lg text-gray-800 text-center `}>
-                                            <td className="border border-gray-300 px-2 sticky left-0 whitespace-nowrap bg-orange-300 font-bold  text-left">
+                                            <td className="border border-gray-300 px-2 sticky left-0 whitespace-nowrap bg-white font-bold  text-left">
                                                 {`${ele.FullName.slice(0, 18)}..`}
                                             </td>
                                             <td className='border-2 hidden p-2'>
@@ -7564,9 +7564,9 @@ const EBCalculation = () => {
                             </tbody>
 
                             <tfoot>
-                                <tr className="bg-orange-300 font-bold text-center">
+                                <tr className=" font-bold text-center">
                                     {/* Client Name column */}
-                                    <td className="border px-2 text-xl sticky left-0  font-bold bg-orange-300  text-left">
+                                    <td className="border px-2 text-xl sticky left-0  font-bold  text-left">
                                         Total Present
                                     </td>
 

@@ -769,7 +769,7 @@ const CheckInOut = () => {
                         ) : (
                             <div className="overflow-auto bg-white shadow-lg rounded-lg border h-[600px] border-gray-200">
                                 <table className="min-w-full text-sm">
-                                    <thead className="bg-orange-300 sticky top-0 text-black">
+                                    <thead className="bg-black sticky top-0 text-white">
                                         <tr>
                                             {["Date", "Employee ID", "Employee Name", "In Time", "In Selfie", "Out Time", "Out Selfie", "Total Hours", , "OverTime", "DeficitHours", "Status"].map(
                                                 (header) => (

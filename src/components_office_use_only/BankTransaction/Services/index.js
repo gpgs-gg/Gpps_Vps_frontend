@@ -6,6 +6,7 @@ const apiClient = axios.create({
   // baseURL: "http://localhost:3000/api", // for Local Developement
 });
 
+//PropertyData
 const fetchPropertyData = async () => {
   const response = await apiClient.get("/properties-data");
   return response.data;
@@ -18,23 +19,8 @@ export const usePropertyData = () => {
   });
 };
 
-//Create
-
-export const addTransaction = async (payload) => {
-  const response = await apiClient.post("/addBank", payload);
-  return response.data;
-};
-
-export const useAddBankTransaction = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: addTransaction,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["BankTransaction"] }),
-  });
-};
 
 //Read
-
 export const getTransaction = async () => {
   const response = await apiClient.get("/getBank");
   return response.data;
@@ -48,9 +34,11 @@ export const useBankTransactionData = () => {
   });
 };
 
-//Update
 
-export const updateTransaction = async (payload) => {
+
+
+//Update
+ const updateTransaction = async (payload) => {
   const response = await apiClient.put("/updateBank", payload);
   return response.data;
 };
@@ -63,17 +51,33 @@ export const useUpdateBankTransaction = () => {
   });
 };
 
-//Delete 
-
-export const deleteTransaction = async ({ index }) => {
-  const response = await apiClient.delete("/deleteBank", { data: { index } });
+//EmployeeData
+const fetchEmployeesDetail = async () => {
+  const response = await apiClient.get("/Employees-details");
   return response.data;
 };
 
-export const useDeleteBankTransaction = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: deleteTransaction,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["BankTransaction"] }),
+// React Query hook to fetch property data
+export const useEmployeesDetails = () => {
+  return useQuery({
+    queryKey: ["employeeDetails"],
+    queryFn: fetchEmployeesDetail,
   });
 };
+
+//Dynamic-Values
+const fetchDropDowlList = async ()=>{
+  const response = await apiClient.get('/dynamic-values')
+  return response.data.data
+}
+
+export const useDropDowlList = ()=>{
+  return useQuery({
+    queryKey:['dynamic-values'],
+    queryFn: fetchDropDowlList,
+     staleTime: Infinity,   
+    cacheTime: Infinity,   
+    refetchOnWindowFocus: false,  
+    refetchOnMount: false,   
+  })
+}

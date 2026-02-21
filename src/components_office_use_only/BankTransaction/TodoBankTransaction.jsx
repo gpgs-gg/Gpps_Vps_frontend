@@ -1,624 +1,1033 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import Select from "react-select"
-import { usePropertyData, useAddBankTransaction, useBankTransactionData, useUpdateBankTransaction, useDeleteBankTransaction } from "./Services/index";
-import React, { memo, useState} from 'react';
+import { usePropertyData, useEmployeesDetails, useDropDowlList, useBankTransactionData, useUpdateBankTransaction } from "./Services/index";
+import React, { useState, useMemo, useEffect } from 'react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { useForm, Controller} from "react-hook-form";
+import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import { useAuth } from '../../context/AuthContext';
+import { SelectStylesfilter } from "../../Config";
+import Dashboard from "./Dashboard";
+import { DashboardSkeleton, FormSkeleton, SearchSkeleton, TableSkeleton } from "./Skeleton";
+import TodoBankForm from "./TodoBankForm";
 
 const schema = yup.object().shape({
   Date: yup.date().typeError("Date is required").required("Date is required"),
   Narration: yup.string().required("Narration is required"),
   ChqRefNo: yup.string().required("Chq./Ref. No. is required"),
   ValueDate: yup.date().typeError("Value Date is required").required("Value Date is required"),
-  //WithdrawalAmt: yup.number().typeError("Withdrawal Amount is required").required("Withdrawal Amount is required"),
-  DepositAmt: yup.number().typeError("Deposit Amount is required").required("Deposit Amount is required"),
-  PropertyExpenseCode: yup.string().required("Property Expense Code is required"),
+  PropertyExpenseCode: yup.string().required("Property / Expense Code is required"),
   ExpenseCategory: yup.string().required("Expense Category is required"),
-  UpdatedBy: yup.string(),
-  UpdatedDate: yup.date(),
-  UpdateStatus: yup.string(),
-  ReviewedBy: yup.string(),
-  ReviewedDate: yup.date(),
-  CommentsByGPGS: yup.string(),
-  //AuditStatus: yup.string(),
-  CommentsByAuditTeam: yup.string(),
+  Status: yup.string().required("Status is required"),
+  Comment: yup.string().when("Status", {
+    is: (val) => val === "RoadBlock" || val === "Re-Open",
+    then: (schema) => schema.required("Comment is required"),
+    otherwise: (schema) => schema.notRequired(),
+  })
 });
-
-function TodoBankTransactionSkeleton({ type = "table", rows = 10, cols = 10 }) {
-
-// ====================== Form Skeleton ======================
-  if (type === "form") {
-    return (
-      <div className="bg-white shadow-sm py-5 rounded-b-lg px-10 max-w-8xl w-full animate-pulse">
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-5">
-          {Array.from({ length: 10 }).map((_, idx) => (
-            <div key={idx} className="h-14 bg-gray-200 rounded-md relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-shimmer"></div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-6 flex justify-center gap-4">
-          <div className="h-10 w-24 bg-gray-300 rounded relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-shimmer"></div>
-          </div>
-          <div className="h-10 w-24 bg-gray-300 rounded relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-shimmer"></div>
-          </div>
-        </div>
-
-        {/* Shimmer Animation */}
-        <style>
-          {`
-            @keyframes shimmer {
-              0% { transform: translateX(-100%); }
-              100% { transform: translateX(100%); }
-            }
-            .animate-shimmer {
-              animation: shimmer 1.2s infinite;
-            }
-          `}
-        </style>
-      </div>
-    );
-  }
-
-  return (
-    <div className="overflow-auto max-h-[calc(100vh-12rem)] border border-gray-200 rounded-lg p-2">
-      <table className="min-w-[1300px] border-collapse text-sm text-left text-gray-700 table-fixed">
-
-        {/* Header Skeleton */}
-        <thead className="sticky top-0 bg-orange-300 z-[100] shadow-md font-bold text-gray-800 text-base">
-          <tr>
-            {Array.from({ length: cols }).map((_, idx) => (
-              <th
-                key={idx}
-                className="px-3 py-3 border-b border-gray-300 bg-gray-300 rounded"
-              >
-                <div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
-              </th>
-            ))}
-          </tr>
-        </thead>
-
-        {/* Body Skeleton */}
-        <tbody className="divide-y divide-gray-200">
-        {Array.from({ length: rows }).map((_, rowIdx) => (
-          <tr key={rowIdx} className="h-[50px]">
-            {Array.from({ length: cols }).map((__, colIdx) => (
-              <td key={colIdx} className="px-3 py-3">
-                <div
-                  className="h-5 w-full bg-gray-200 rounded relative overflow-hidden"
-                  style={{
-                    animationDelay: `${rowIdx * 100 + colIdx * 50}ms`,
-                  }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-shimmer"></div>
-                </div>
-              </td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-      </table>
-
-      {/* Shimmer Animation */}
-      <style>
-        {`
-          @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-          }
-          .animate-shimmer {
-            animation: shimmer 1.2s infinite;
-          }
-        `}
-      </style>
-    </div>
-  );
-};
-
 
 export default function TodoBankTransaction() {
   const { data: propertyDetails, isLoading: propertyLoading } = usePropertyData();
-  const { data: BankTransaction, isLoading: bankLoading } = useBankTransactionData();
+  const { data: employeesDetails } = useEmployeesDetails();
+  const { data: dropdownlist } = useDropDowlList();
 
-  const addTransactionMutation = useAddBankTransaction();
+  const [filters, setFilters] = useState({
+    bankACNo: "",
+    propertyExpenseCode: "",
+    assignee: "",
+    reviewer: "",
+    status: "",
+    fromDate: null,
+    toDate: null,
+    auditor: ""
+  });
+  const [globalSearch, setGlobalSearch] = useState("");
+
+  const { data: BankTransaction, isPending: bankLoading } = useBankTransactionData();
+  const { user, isAuthenticated } = useAuth();
+
   const updateTransactionMutation = useUpdateBankTransaction();
-  const deleteTransactionMutation = useDeleteBankTransaction();
-  const [activeTab, setActiveTab] = useState("LIST"); // LIST | CREATE
-  const [editingIndex, setEditingIndex] = useState(null); // <-- For Update
-
-  const { control, register, handleSubmit, reset, setValue, formState: { errors } } = useForm({
+  const [activeTab, setActiveTab] = useState("DASHBOARD");
+  const [editingRow, setEditingRow] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(null);
+  const [data, setData] = useState([]); // table data
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 10;
+  const { control, register, watch, handleSubmit, reset, setValue, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
   });
 
-  const MemoizedSelect = memo(({ field, options, placeholder, isDisabled, onChange, styles }) => (
-    <Select
-      {...field}
-      value={options?.find((opt) => opt.value === field.value)}
-      isDisabled={isDisabled}
-      options={options}
-      placeholder={placeholder}
-      styles={styles}
-      onChange={(selectedOption) => onChange(selectedOption ? selectedOption.value : "")}
-      isClearable
-      isSearchable
-      menuShouldScrollIntoView={false}
-    />
-  ));
 
-  const employeeSelectStyles = {
-    control: (base, state) => ({
-      ...base,
-      padding: "0.20rem 0.5rem",
-      marginTop: "0.50rem",
-      borderWidth: "1px",
-      borderColor: state.isFocused ? "#fb923c" : "#f97316",
-      borderRadius: "0.375rem",
-      boxShadow: state.isFocused ? "0 0 0 2px rgba(251,146,60,0.5)" : "0 1px 2px rgba(0,0,0,0.05)",
-      backgroundColor: "white",
-      minHeight: "40px",
-      "&:hover": { borderColor: "#fb923c" },
-    }),
-    option: (provided, state) => ({
-      ...provided,
-      color: state.isSelected ? "white" : "#fb923c",
-      backgroundColor: state.isSelected ? "#fb923c" : "white",
-      "&:hover": { backgroundColor: "#fed7aa" },
-    }),
-    menu: (provided) => ({ ...provided, zIndex: 9999 }),
-  };
+
+
 
   const propertyOptions = Array.isArray(propertyDetails?.data)
     ? propertyDetails.data.map((ele) => ({
-        value: ele["Property Code"] || ele.code,
-        label: ele["Property Code"] || ele.code,
+      value: ele["Property Code"] || ele.code,
+      label: ele["Property Code"] || ele.code,
+    }))
+    : [];
+
+  const reviewerOptions = Array.isArray(employeesDetails?.data)
+    ? employeesDetails.data
+      .filter(emp => emp.Department === "Accounts" && emp.Name)
+      .map(emp => ({
+        value: emp.Name,
+        label: emp.Name,
       }))
     : [];
 
-  const inputClass = 'w-full px-3 py-2 mt-1 border border-orange-500 rounded-md shadow focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-orange-400';
+  const expenseCategoryOptions = Array.isArray(dropdownlist)
+    ? [...new Set(dropdownlist?.map(item => item.ExpenseCategory?.trim())
+      .filter(Boolean))].map(value => ({
+        value,
+        label: value,
+      }))
+    : [];
+
+  const StatusOptions = Array.isArray(dropdownlist)
+    ? [...new Set(dropdownlist
+      ?.map(item => item.Status?.trim())
+      .filter(Boolean))].map(value => ({
+        value,
+        label: value,
+      }))
+    : [];
+
+  const AuditorOptions = [
+    { value: "Kamleshwar Kodag", label: "Kamleshwar Kodag" },
+    { value: "Abhishek Gautam", label: "Abhishek Gautam" }
+  ];
+
+
+  const bankACNoOptions = useMemo(() => {
+    if (!BankTransaction?.data) return [];
+
+    const uniqueValues = [
+      ...new Set(
+        BankTransaction.data
+          .map(row => row.BankACNo)
+          .filter(Boolean)
+      )
+    ].reverse();
+
+    return uniqueValues.map((val, index) => ({
+      value: val,
+      label: ` ${val}`
+    }));
+
+  }, [BankTransaction?.data]);
+
+  //FILTER
+  const filteredData = useMemo(() => {
+    if (!BankTransaction?.data) return [];
+
+    const filtered = BankTransaction.data.filter(row => {
+
+      const parseRowDate = (dateStr) => {
+        if (!dateStr) return null;
+
+        const [day, month, year] = dateStr.split("/");
+
+        const fullYear =
+          Number(year) < 50 ? 2000 + Number(year) : 1900 + Number(year);
+
+        return new Date(fullYear, Number(month) - 1, Number(day));
+      };
+
+      const rowDate = parseRowDate(row.Date);
+
+      // Normalize filter dates
+      const fromDate = filters.fromDate
+        ? new Date(new Date(filters.fromDate).setHours(0, 0, 0, 0))
+        : null;
+
+      const toDate = filters.toDate
+        ? new Date(new Date(filters.toDate).setHours(23, 59, 59, 999))
+        : null;
+
+      const matchesDate =
+        (!fromDate || (rowDate && rowDate >= fromDate)) &&
+        (!toDate || (rowDate && rowDate <= toDate));
+
+      // Filter logic
+      const matchesFilters =
+        (!filters.bankACNo || row.BankACNo === filters.bankACNo) &&
+        (!filters.propertyExpenseCode || row.PropertyExpenseCode === filters.propertyExpenseCode) &&
+        (!filters.assignee || row.Assignee === filters.assignee) &&
+        (!filters.reviewer || row.Reviewer === filters.reviewer) &&
+        (!filters.status || row.Status === filters.status) &&
+        (!filters.auditor || row.Auditor === filters.auditor);
+
+      const matchesDeposit = !filters.DepositAmt || Number(row["DepositAmt."]) > 0;
+      const matchesWithdrawal = !filters.WithdrawalAmt || Number(row["WithdrawalAmt."]) > 0;
+
+      // Global search
+      const search = globalSearch.toLowerCase();
+      const matchesSearch =
+        search === "" ||
+        Object.values(row).some(val => String(val).toLowerCase().includes(search));
+
+      return matchesFilters && matchesSearch && matchesDate && matchesDeposit && matchesWithdrawal;
+    });
+
+    return [...filtered];
+  }, [BankTransaction?.data, filters, globalSearch]);
+
+  const selectedStatus = watch("Status");
+
+  useEffect(() => {
+    if (isAuthenticated && user?.employee?.Name) {
+      //console.log("Logged-in User Name:", user.name);
+      //setValue("UpdatedBy", user.name); //auto-fill
+    }
+  }, [user, isAuthenticated, setValue]);
+
+
 
   // ===================== onSubmit =====================
-  const onSubmit = async (data) => {
-    const toastId = toast.loading("Saving data...");
 
-    const payload = {
-        Date: data.Date ? data.Date.toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' }) : "",
+  const onSubmit = async (data) => {
+
+    // ✅ Date normalize helper
+    const normalizeDate = (value) => {
+      if (!value) return "";
+
+      const dateObj = new Date(value);
+      if (isNaN(dateObj)) return "";
+
+      return dateObj.toISOString().split("T")[0];
+    };
+
+    try {
+      let previousRow = null;
+      let existingWorklogs = "";
+
+
+      if (editingRow && BankTransaction?.data) {
+        previousRow = BankTransaction.data.find(row =>
+          row.Narration === editingRow.Narration &&
+          row["Chq.No./Ref.No."] === editingRow["Chq.No./Ref.No."]
+
+        );
+
+        existingWorklogs = previousRow?.Worklogs || "";
+      }
+
+      const payload = {
+        Date: data.Date ? data.Date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", }) : "",
         Narration: data.Narration || "",
-        "Chq.No./Ref.No.": data.ChqRefNo || "", 
-        ValueDate: data.ValueDate ? data.ValueDate.toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' }) : "",
+        "Chq.No./Ref.No.": data.ChqRefNo || "",
+        ValueDate: data.ValueDate ? data.ValueDate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", }) : "",
         "WithdrawalAmt.": data.WithdrawalAmt || "",
         "DepositAmt.": data.DepositAmt || "",
         PropertyExpenseCode: data.PropertyExpenseCode || "",
         ExpenseCategory: data.ExpenseCategory || "",
-        UpdatedBy: data.UpdatedBy || "",
-        UpdatedDate: data.UpdatedDate ? data.UpdatedDate.toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' }) : "",
-        UpdateStatus: data.UpdateStatus || "",
-        ReviewedBy: data.ReviewedBy || "",
-        ReviewedDate: data.ReviewedDate ? data.ReviewedDate.toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' }) : "",
-        CommentsByGPGS: data.CommentsByGPGS || "",
-        AuditStatus: data.AuditStatus || "",
-        CommentsByAuditTeam: data.CommentsByAuditTeam || "",
-        };
+        Assignee: data.Assignee || user?.employee?.Name || "",
+        StatusForEdit: data.Status || "",
+        // Reviewer: data.Status === "Review Done" || data.Status === "Re-Open" ? user?.employee?.Name : data.Reviewer || "",
+        // Auditor: data.Status === "Closed" || data.Status === "Re-Open" ? user?.employee?.Name : data.Auditor || "",
+        Reviewer: data.Status === "Review Done" ? user?.employee?.Name : data.Reviewer || "",
+        Auditor: data.Status === "Closed" ? user?.employee?.Name : data.Auditor || "",
+        Worklogs: data.Worklogs || existingWorklogs,
+      };
 
-    try {
-      if (editingIndex !== null) {
-        await updateTransactionMutation.mutateAsync({ ...payload, index: editingIndex });
-        toast.dismiss(); 
+      const fieldNameMap = {
+        PropertyExpenseCode: "Property / Expense Code",
+        ExpenseCategory: "Expense Category",
+        StatusForEdit: "Status",
+      };
+
+      /* ================== WORKLOG LOGIC START ================== */
+
+      if (editingRow && previousRow) {
+        const previousRow = BankTransaction.data.find(row =>
+          row.Narration === payload.Narration &&
+          row["Chq.No./Ref.No."] === payload["Chq.No./Ref.No."]
+        );
+        const now = new Date();
+
+        const formattedDate = now.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+
+        const formattedTime = now.toLocaleTimeString("en-IN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+
+        const header = `[${formattedDate}, ${formattedTime} - (${user?.employee?.EmployeeID}) ${user?.employee?.Name || ""
+          }]`;
+
+        const changedFields = [];
+        const ignoreFields = ["Worklogs"];
+
+        Object.keys(payload).forEach((key) => {
+          if (ignoreFields.includes(key)) return;
+
+          let oldValue = previousRow?.[key] ?? "";
+          let newValue = payload[key] ?? "";
+
+          // 🔥 Special handling for StatusForEdit
+          if (key === "StatusForEdit") {
+            oldValue = previousRow?.StatusForEdit
+              ? previousRow.StatusForEdit
+              : previousRow?.StatusForView || "Open";
+
+            newValue = payload.StatusForEdit || "Open";
+          }
+
+
+          if (["Date", "ValueDate"].includes(key)) {
+            oldValue = normalizeDate(oldValue);
+            newValue = normalizeDate(newValue);
+          } else {
+            oldValue = oldValue.toString().trim();
+            newValue = newValue.toString().trim();
+          }
+
+          const displayKey = fieldNameMap[key] || key;
+
+          if (oldValue !== newValue) {
+            changedFields.push(
+              `${displayKey} changed from ${oldValue || "N/A"} to ${newValue || "N/A"}`
+            );
+
+          }
+        });
+        /* ================== CHANGE LOG ================== */
+
+        let newBlock = "";
+
+        const comment = data.Comment?.trim();
+
+        if (changedFields.length > 0) {
+
+          newBlock = `${header}\n${changedFields.join("\n")}`;
+          if (comment) {
+            newBlock += `\n${comment}`;
+          }
+        } else if (comment) {
+          newBlock = `${header}\n${comment}`;
+        }
+
+        /* ================== FINAL MERGE ================== */
+        if (newBlock) {
+          payload["Worklogs"] = existingWorklogs
+            ? newBlock + "\n\n" + existingWorklogs
+            : newBlock;
+        }
+      }
+      /* ================== WORKLOG LOGIC END ================== */
+
+      if (editingRow) {
+
+        await updateTransactionMutation.mutateAsync({
+          ...payload,
+          Narration: data.Narration,
+          "Chq.No./Ref.No.": data.ChqRefNo,
+        });
+
+        toast.dismiss();
         toast.success("Updated successfully");
-      } else {
-        await addTransactionMutation.mutateAsync(payload);
-        toast.dismiss(); 
-        toast.success("Created successfully");
       }
 
-      reset();
-      setEditingIndex(null);
-      setActiveTab("LIST"); // redirect to list after submit
+      // reset();
+      setEditingRow(null);
+      // setActiveTab("LIST");
     } catch (err) {
       console.error(err);
       toast.dismiss();
       toast.error("Something went wrong!");
-    } 
+    }
   };
 
+
   const handleEdit = (row, index) => {
-    setEditingIndex(index);
+    setCurrentIndex(index);
+    setEditingRow({ ...row }); // spread important
+
     setActiveTab("CREATE");
     window.scrollTo({ top: 0, behavior: "smooth" });
 
-    //mapping
-    setValue("Date", row.Date ? new Date(row.Date) : null);
-    setValue("Narration", row.Narration || "");
-    setValue("ChqRefNo", row["Chq.No./Ref.No."] || "");
-    setValue("ValueDate", row.ValueDate ? new Date(row.ValueDate) : null);
-    setValue("WithdrawalAmt", row["WithdrawalAmt."] || "");
-    setValue("DepositAmt", row["DepositAmt."] || "");
-    setValue("PropertyExpenseCode", row.PropertyExpenseCode || "");
-    setValue("ExpenseCategory", row.ExpenseCategory || "");
-    setValue("UpdatedBy", row.UpdatedBy || "");
-    setValue("UpdatedDate", row.UpdatedDate ? new Date(row.UpdatedDate) : null);
-    setValue("UpdateStatus", row.UpdateStatus || "");
-    setValue("ReviewedBy", row.ReviewedBy || "");
-    setValue("ReviewedDate", row.ReviewedDate ? new Date(row.ReviewedDate) : null);
-    setValue("CommentsByGPGS", row.CommentsByGPGS || "");
-    setValue("AuditStatus", row.AuditStatus || "");
-    setValue("CommentsByAuditTeam", row.CommentsByAuditTeam || "");
+    reset({
+      Date: row.Date ? new Date(row.Date) : null,
+      Narration: row.Narration || "",
+      ChqRefNo: row["Chq.No./Ref.No."] || "",
+      ValueDate: row.ValueDate ? new Date(row.ValueDate) : null,
+      WithdrawalAmt: row["WithdrawalAmt."] || "",
+      DepositAmt: row["DepositAmt."] || "",
+      PropertyExpenseCode: row.PropertyExpenseCode || "",
+      ExpenseCategory: row.ExpenseCategory || "",
+      Assignee: row.Assignee || "",
+      StatusForView: row.StatusForView || "",
+      Reviewer: row.Reviewer || "",
+      Auditor: row.Auditor || "",
+      Worklogs: row.Worklogs || "",
+    });
+
+  };
+
+  const goToNext = () => {
+    if (currentIndex < filteredData.length - 1) {
+      const nextIndex = currentIndex + 1;
+      handleEdit(filteredData[nextIndex], nextIndex);
+    }
+  };
+
+  const goToPrevious = () => {
+    if (currentIndex > 0) {
+      const prevIndex = currentIndex - 1;
+      handleEdit(filteredData[prevIndex], prevIndex);
+    }
+  };
+  /* ================= TABLE COLUMN WIDTHS ================= */
+  const SR_NO_WIDTH = 70;
+  const DATE_COL_WIDTH = 140;
+  const DEFAULT_COL_WIDTH = 160;
+  const ACTION_COL_WIDTH = 100;
+
+  const getColumnWidth = (key) => {
+    if (key === "index") return SR_NO_WIDTH;
+    if (key === "Date") return DATE_COL_WIDTH;
+    return DEFAULT_COL_WIDTH;
+  };
+
+  const CellWithTooltip = ({ value, disableTooltip = false }) => {
+    const [show, setShow] = useState(false);
+
+    if (disableTooltip) {
+      return (
+        <div className="truncate overflow-hidden text-ellipsis">
+          {value ?? "-"}
+        </div>
+      );
+    }
+
+    const isWorklog =
+      typeof value === "string" && value.includes("[");
+
+    const previewLine =
+      isWorklog
+        ? value.split("\n").filter(Boolean)[0]
+        : value;
+
+    return (
+      <div
+        className="relative w-full"
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+      >
+
+        {/* ===== TABLE PREVIEW (NO STYLE CHANGE) ===== */}
+        <div className="truncate overflow-hidden text-ellipsis">
+          {previewLine ?? "-"}
+        </div>
+
+        {/* ===== WORKLOG TOOLTIP ===== */}
+        {show && isWorklog && (
+          <div
+            className="absolute right-10 mr-5 z-[9999]
+          bg-white border border-gray-300 rounded-lg shadow-xl
+          p-3 max-w-[450px] max-h-[350px] overflow-auto"
+            style={{
+              width: "max-content",
+              minWidth: "280px",
+              top: "95%",
+              transform: "translateY(0%)"
+            }}
+          >
+            {value.split("\n").map((line, i) => {
+              const isHeader = line.startsWith("[");
+              const isEmpty = line.trim() === "";
+
+              if (isEmpty) {
+                return <div key={i} style={{ height: "12px" }} />;
+              }
+
+              return (
+                <div
+                  key={i}
+                  style={{
+                    fontWeight: isHeader ? "normal" : "600",
+                    color: isHeader ? "#374151" : "#000",
+                    fontSize: "13px",
+                  }}
+                >
+                  {line}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ===== NORMAL TOOLTIP FOR OTHER COLUMNS ===== */}
+        {show && !isWorklog && (
+          <div
+            className="absolute left-10 ml-3 top-5 z-[9999] bg-white border border-gray-300 rounded-lg shadow-xl p-3 text-xs break-words max-w-[400px] max-h-[400px] overflow-auto"
+            style={{ width: 'max-content', minWidth: '150px' }}
+          >
+            <pre className="whitespace-pre-wrap">{value ?? "-"}</pre>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const paginatedData = useMemo(() => {
+    const startIdx = (currentPage - 1) * rowsPerPage;
+    return filteredData.slice(startIdx, startIdx + rowsPerPage);
+  }, [filteredData, currentPage]);
+
+  const totalPages = Math.ceil((filteredData.length || 0) / rowsPerPage);
+
+  const TABLE_COLUMNS = [
+    { key: "index", label: "Sr.No." },
+    { key: "Date", label: "Date" },
+    { key: "Narration", label: "Narration" },
+    { key: "Chq.No./Ref.No.", label: "Chq. No./Ref. No." },
+    { key: "WithdrawalAmt.", label: "Withdrawal Amt." },
+    { key: "DepositAmt.", label: "Deposit Amt." },
+    { key: "PropertyExpenseCode", label: "Property / Expense Code" },
+    { key: "ExpenseCategory", label: "Expense Category" },
+    { key: "Assignee", label: "Assignee" },
+    { key: "StatusForView", label: "Status" },
+    { key: "Reviewer", label: "Reviewer" },
+    { key: "Auditor", label: "Auditor" },
+    { key: "Worklogs", label: "Worklogs" },
+    { key: "ValueDate", label: "Value Date" },
+
+  ];
+
+  const formatDate = (dateStr) => {
+    if (!dateStr || dateStr === "-") return "-";
+
+    const parts = dateStr.split("/");
+    if (parts.length !== 3) return dateStr;
+
+    let [day, month, year] = parts;
+
+    // 2-digit year handle (26 → 2026)
+    if (year.length === 2) {
+      year = `20${year}`;
+    }
+
+    const dateObj = new Date(year, month - 1, day);
+
+    return dateObj.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
   };
 
 
-  const handleDelete = async (index) => {
-  if (!window.confirm("Are you sure you want to delete this row?")) return;
-  
-  const toastId = toast.loading("Deleting data...");
-  try {
-    await deleteTransactionMutation.mutateAsync({ index }); 
-    toast.dismiss();
-    toast.success("Data deleted successfully");
-  } catch (err) {
-    console.error(err);
-    toast.dismiss();
-    toast.error("Delete failed!");
-  }
-};
-
-
-/* ================= TABLE COLUMN WIDTHS ================= */
-const SR_NO_WIDTH = 70;
-const DATE_COL_WIDTH = 140;
-const DEFAULT_COL_WIDTH = 160;
-const ACTION_COL_WIDTH = 100;
-
-const getColumnWidth = (key) => {
-  if (key === "index") return SR_NO_WIDTH;
-  if (key === "Date") return DATE_COL_WIDTH;
-  return DEFAULT_COL_WIDTH;
-};
-
-const CellWithTooltip = ({ value }) => {
-  const [show, setShow] = useState(false);
-
   return (
-    <div
-      className="relative w-full"
-      onMouseEnter={() => setShow(true)}
-      onMouseLeave={() => setShow(false)}
-    >
-      <div className="truncate overflow-hidden text-ellipsis cursor-pointer">
-        {value ?? "-"}
-      </div>
 
-      {show && (
-        <div className="absolute left-full ml-2 top-0 z-[9999] w-[300px] bg-white border border-gray-300 rounded-lg shadow-xl p-3 text-xs break-words">
-          <pre className="whitespace-pre-wrap">{value ?? "-"}</pre>
+    <div className='min-h-screen w-auto bg-gray-50 pt-24'>
+
+      {/* ================= TOP TABS ================= */}
+      <nav className="px-0 sm:px-0 shadow-sm">
+        <div className="bg-white rounded-t-lg  px-2 pt-2 flex items-center relative gap-6">
+
+          {/* Left buttons */}
+          <div className="flex gap-6">
+            <button
+              onClick={() => {
+                setActiveTab("DASHBOARD");
+                setEditingRow(null);
+                reset();
+              }}
+              className={`flex items-center space-x-2 px-3 py-2 text-md sm:text-lg font-medium rounded-md sm:rounded-t-lg border-b-2 transition-colors
+      ${activeTab === "DASHBOARD"
+                  ? "text-orange-600 border-orange-600 bg-orange-50"
+                  : "text-black border-transparent hover:text-gray-900 hover:border-gray-300"}`}
+            >
+              <i className="fas fa-tachometer-alt"></i>
+              <span>Dashboard</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab("LIST");
+                setEditingRow(null);
+                reset();
+              }}
+              className={`flex items-center space-x-2 px-3 py-2 text-md sm:text-lg font-medium rounded-md sm:rounded-t-lg border-b-2 transition-colors
+      ${activeTab === "LIST" ? "text-orange-600 border-orange-600 bg-orange-50"
+                  : "text-black border-transparent hover:text-gray-900 hover:border-gray-300"}`}
+            >
+              <i className="fas fa-ticket-alt"></i>
+              <span>All Info</span>
+            </button>
+          </div>
+
+          {/* Center heading */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 font-bold text-xl text-gray-800">
+            Bank Transaction
+          </div>
+
+          {/* Right buttons */}
+          {editingRow && (
+            <button
+              className={`flex items-center space-x-2 px-3 py-2 text-md sm:text-lg font-medium rounded-md sm:rounded-t-lg border-b-2 transition-colors
+      ${activeTab === "CREATE"
+                  ? "text-orange-600 border-orange-600 bg-orange-50"
+                  : "text-black border-transparent hover:text-gray-900 hover:border-gray-300"}`}
+            >
+              <i className="fas fa-edit"></i>
+              <span>Update Transaction Info</span>
+            </button>
+          )}
+
         </div>
-      )}
-    </div>
-  );
-};
+      </nav>
 
-
-  return (
-    
-    <div className='h-screen w-screen bg-[#E5E7EB] flex flex-col py-24 overflow-hidden'>
-
-    {/* ================= TOP TABS ================= */}
-      <div className="bg-white rounded-t-lg border-b px-2 pt-2 flex gap-4">
-        <button
-          onClick={() => setActiveTab("LIST")}
-          className={`flex items-center gap-2 px-4 py-2 font-medium rounded-t-md border-b-2
-            ${activeTab === "LIST" ? "text-orange-600 border-orange-600 bg-orange-50" : "border-transparent hover:text-gray-700"}`}
-        >
-          <i className="fas fa-ticket-alt"></i>
-          <span>All Info</span>
-        </button>
-
-        <button
-          onClick={() => { reset(); setEditingIndex(null); setActiveTab("CREATE"); }}
-          className={`flex items-center gap-2 px-4 py-2 font-medium rounded-t-md border-b-2
-            ${activeTab === "CREATE" ? "text-orange-600 border-orange-600 bg-orange-50" : "border-transparent hover:text-gray-700"}`}
-        >
-          <i className="fas fa-plus-circle"></i>
-          <span>{editingIndex !== null ? "Edit Bank Info" : "Create New"}</span>
-        </button>
-      </div>
-
-
-      {/* ================= CREATE FORM ================= */}
-
-      {activeTab === "CREATE" && (
-        (propertyLoading ) ? (
-          <TodoBankTransactionSkeleton type="form" />
+      {/* ================= DASHBOARD ================= */}
+      {activeTab === "DASHBOARD" && (
+        (bankLoading) ? (
+          <div className="p-6 bg-white">
+            <DashboardSkeleton />
+          </div>
         ) : (
-          <form className="bg-white shadow-sm py-5 rounded-b-lg px-10 max-w-8xl w-full" onSubmit={handleSubmit(onSubmit)}>
-            {/* Form Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-5">
-              {/* Date */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Date <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              name="Date"
-              control={control}
-              defaultValue={null}
-              render={({ field }) => (
-                <DatePicker
-                  selected={field.value}
-                  onChange={(date) => field.onChange(date)}
-                  dateFormat="d MMM yyyy"
-                  placeholderText="dd mm yyyy"
-                  className={inputClass}
-                  wrapperClassName="w-full"
-                  isClearable
-                />
-              )}
-            />
-            {errors.Date && <p className="text-red-500 text-sm">{errors.Date.message}</p>}
+          <div className="p-6 bg-white">
+            <Dashboard data={BankTransaction?.data || []} />
           </div>
-
-          {/* Narration */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Narration <span className="text-red-500">*</span></label>
-            <input type="text" {...register("Narration")} className={inputClass} placeholder='Naration'/>
-            {errors.Narration && <p className="text-red-500 text-sm">{errors.Narration.message}</p>}
-          </div>
-
-          {/* Chq/Ref No */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Chq./Ref. No. <span className="text-red-500">*</span></label>
-            <input type="number" {...register("ChqRefNo")} className={inputClass} placeholder='Chq./Ref. No.'/>
-            {errors.ChqRefNo && <p className="text-red-500 text-sm">{errors.ChqRefNo.message}</p>}
-          </div>
-
-          {/* Value Date */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Value Date <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              name="ValueDate"
-              control={control}
-              defaultValue={null}
-              render={({ field }) => (
-                <DatePicker
-                  selected={field.value}
-                  onChange={(date) => field.onChange(date)}
-                  dateFormat="d MMM yyyy"
-                  placeholderText="dd mm yyyy"
-                  className={inputClass}
-                  wrapperClassName="w-full"
-                  isClearable
-                />
-              )}
-            />
-            {errors.ValueDate && <p className="text-red-500 text-sm">{errors.ValueDate.message}</p>}
-          </div>
-
-          {/* Withdrawal Amount */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Withdrawal Amount </label>
-            <input type="number" step="0.0001" {...register("WithdrawalAmt")} className={inputClass} placeholder='Withdrawal Amount'/>
-            {/* {errors.WithdrawalAmt && <p className="text-red-500 text-sm">{errors.WithdrawalAmt.message}</p>} */}
-          </div>
-
-          {/* Deposit Amount */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Deposit Amount <span className="text-red-500">*</span></label>
-            <input type="number" step="0.0001" {...register("DepositAmt")} className={inputClass} placeholder='Deposit Amount'/>
-            {errors.DepositAmt && <p className="text-red-500 text-sm">{errors.DepositAmt.message}</p>}
-          </div>
-
-          {/* Property Expense Code */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Property Expense Code <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              name="PropertyExpenseCode"
-              control={control}
-              defaultValue={null}
-              render={({ field }) => (
-                <MemoizedSelect
-                  field={field}
-                  options={propertyOptions}
-                  placeholder="Search & Select"
-                  styles={employeeSelectStyles}
-                  onChange={field.onChange}
-                  
-                />
-              )}
-            />
-            {errors.PropertyExpenseCode && <p className="text-red-500 text-sm">{errors.PropertyExpenseCode.message}</p>}
-          </div>
-
-          {/* Expense Category */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Expense Category <span className="text-red-500">*</span></label>
-            <input type="text" {...register("ExpenseCategory")} className={inputClass} placeholder='Expense Category'/>
-            {errors.ExpenseCategory && <p className="text-red-500 text-sm">{errors.ExpenseCategory.message}</p>}
-          </div>
-
-          {/* Fields */}
-
-          {[
-            { name: "UpdatedBy", label: "Updated By" },
-            { name: "UpdatedDate", label: "Updated Date" },
-            { name: "UpdateStatus", label: "Update Status" },
-            { name: "ReviewedBy", label: "Reviewed By" },
-            { name: "ReviewedDate", label: "Reviewed Date" },
-            { name: "CommentsByGPGS", label: "Comments By GPGS" },
-            { name: "AuditStatus", label: "Audit Status" },
-            { name: "CommentsByAuditTeam", label: "Comments By Audit Team" },
-            ].map((field) => (
-            <div key={field.name}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                {field.label}{["CommentsByGPGS","CommentsByAuditTeam", "AuditStatus"].includes(field.name) ? "" : ( <span className="text-red-500">*</span> )}
-                </label>
-
-                <Controller
-                name={field.name}
-                control={control}
-                defaultValue={
-                    field.name.includes("Date") ? null : "" 
-                }
-                render={({ field: controllerField }) => {
-                    if (field.name.toLowerCase().includes("comments")) {
-                    // Textarea for Comments fields
-                    return (
-                        <textarea
-                        {...controllerField}
-                        rows={4}
-                        placeholder={`Enter ${field.label}`}
-                        className="w-full h-[50px] border border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-300 rounded-md px-3 py-2"
-                        />
-                    );
-                    } else if (field.name.includes("Date")) {
-                    // DatePicker for Date fields
-                    return (
-                        <DatePicker
-                        selected={controllerField.value}
-                        onChange={(date) => controllerField.onChange(date)}
-                        dateFormat="d MMM yyyy"
-                        placeholderText="dd mm yyyy"
-                        className={inputClass}
-                        wrapperClassName="w-full"
-                        isClearable
-                        />
-                    );
-                    } else {
-                    // Normal text input
-                    return <input type="text" {...controllerField} className={inputClass} placeholder={` ${field.label} `} />;
-                    }
-                }}
-                />
-
-                {errors[field.name] && (
-                <p className="text-red-500 text-sm mt-1">
-                    {errors[field.name]?.message}
-                </p>
-                )}
-            </div>
-            ))}
-            </div>
-
-            {/* Submit & Cancel */}
-
-            <div className="mt-6 flex justify-center gap-4">
-              <button type="submit" className="px-6 py-2 bg-orange-300 hover:bg-orange-400 rounded font-semibold">
-                {editingIndex !== null ? "Update" : "Submit"}
-              </button>
-              <button type="button" onClick={() => { reset(); setActiveTab("LIST"); setEditingIndex(null); }} className="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded font-semibold">
-                Cancel
-              </button>
-            </div>
-          </form>
         )
       )}
 
-      <div className="bg-white shadow-sm px-2 pt-2 rounded-b-lg">
-        {/* ================= Bank Transition TABLE SHOW ================= */}
-        {activeTab === "LIST" && (
-          bankLoading ? (
-            <TodoBankTransactionSkeleton type="table" />
-          ) : BankTransaction?.data?.length > 0 ? (
-            <div className="overflow-auto max-h-[calc(100vh-12rem)] border border-gray-200 rounded-lg">
-              <table className="min-w-[1200px] border-collapse text-sm text-left text-gray-700 table-fixed">
-                <thead className="sticky top-0 bg-orange-300 z-[100] shadow-md font-bold text-gray-800 text-base">
-              <tr>
-                {Object.keys(BankTransaction.data[0]).map((key) => (
-                  <th
-                    key={key}
-                    className={`px-3 py-3 text-left border-b font-bold border-gray-300 whitespace-nowrap
-                      ${key === "index" ? "sticky z-40 bg-orange-300" : ""}
-                      ${key === "Date" ? "sticky z-40 bg-orange-300" : ""}
-                    `}
-                    style={{
-                      width: getColumnWidth(key),
-                      left:
-                        key === "index"
-                          ? 0
-                          : key === "Date"
-                          ? SR_NO_WIDTH
-                          : undefined,
-                    }}
-                  >
-                    {key === "index" ? "Sr.No" : key}
-                  </th>
-                ))}
-
-                <th
-                  className="px-4 py-3 font-bold text-black sticky right-0 z-[120] bg-orange-300"
-                  style={{ width: ACTION_COL_WIDTH }}
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-gray-200 text-[15px]">
-              {BankTransaction.data.map((row, idx) => (
-                <tr key={idx} className="hover:bg-gray-100">
-                  {Object.keys(BankTransaction.data[0]).map((key) => (
-                    <td
-                      key={key}
-                      className={`px-3 py-3 whitespace-nowrap
-                        ${key === "index" ? "sticky bg-orange-300 z-20 font-bold" : ""}
-                        ${key === "Date" ? "sticky bg-orange-300 z-20 font-bold" : ""}
-                      `}
-                      style={{
-                        width: getColumnWidth(key),
-                        maxWidth: getColumnWidth(key),
-                        left:
-                          key === "index"
-                            ? 0
-                            : key === "Date"
-                            ? SR_NO_WIDTH
-                            : undefined,
-                      }}
-                    >
-                      <CellWithTooltip
-                        value={key === "index" ? idx + 1 : row[key]}
-                      />
-                    </td>
-                  ))}
-
-                  {/* Action Column */}
-                  <td
-                    className="px-2 py-2 sticky right-0 bg-white z-[60]"
-                    style={{ width: ACTION_COL_WIDTH }}
-                  >
-                    <div className="flex justify-center gap-2">
-                      <button
-                        onClick={() => handleEdit(row, idx)}
-                        className="text-orange-500 hover:text-orange-700"
-                        title="Edit"
-                      >
-                        <i className="fas fa-edit"></i>
-                      </button>
-                      <button
-                        onClick={() => handleDelete(idx)}
-                        className="text-orange-500 hover:text-orange-700"
-                        title="Delete"
-                      >
-                        {/* <i className="fa-solid fa-trash"></i> */}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-              </table>
-            </div>
+      {/* ================= CREATE FORM ================= */}
+      <div className='bg-white'>
+        {activeTab === "CREATE" && (
+          (propertyLoading) ? (
+            <FormSkeleton />
           ) : (
-            <p className="text-center py-10 text-gray-500">No data available</p>
+            <TodoBankForm
+              control={control}
+              register={register}
+              errors={errors}
+              handleSubmit={handleSubmit}
+              watch={watch}
+              setValue={setValue}
+              reset={reset}
+              editingRow={editingRow}
+              propertyOptions={propertyOptions}
+              expenseCategoryOptions={expenseCategoryOptions}
+              StatusOptions={StatusOptions}
+              reviewerOptions={reviewerOptions}
+              AuditorOptions={AuditorOptions}
+              updateTransactionMutation={updateTransactionMutation}
+              selectedStatus={selectedStatus}
+              onSubmit={onSubmit}
+              setActiveTab={setActiveTab}
+              setEditingRow={setEditingRow}
+              goToNext={goToNext}
+              goToPrevious={goToPrevious}
+              currentIndex={currentIndex}
+              totalLength={filteredData.length}
+              data={BankTransaction?.data}
+
+            />
           )
         )}
-        
+      </div>
+
+      {/* ================= FILTER PANEL ================= */}
+      {activeTab === "LIST" && (
+        (bankLoading) ? (
+          <SearchSkeleton />
+        ) : (
+          <div className="px-2 py-2 bg-white">
+            <div className="bg-white rounded-lg shadow mb-1">
+
+              {/* HEADER */}
+              <div className="flex justify-end md:px-2 gap-5 mr-5 items-center">
+                
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    className='w-4 h-4 accent-orange-500'
+                    checked={filters.DepositAmt}
+                    onChange={(e) => setFilters(prev => ({ ...prev, DepositAmt: e.target.checked, WithdrawalAmt: false }))}
+                  />
+                  <label className='text-lg font-semibold'>Deposits</label>
+                  <input
+                    type="radio"
+                    className='w-4 h-4 accent-orange-500'
+                    checked={filters.WithdrawalAmt}
+                    onChange={(e) => setFilters(prev => ({ ...prev, WithdrawalAmt: e.target.checked, DepositAmt: false }))}
+                  />
+                  <label className='text-lg font-semibold'>Withdrawals</label>
+                </div>
+
+
+
+                {Object.values(filters).some(val => val) && (
+                  <button
+                    onClick={() => {
+                      setFilters({
+                        bankACNo: "",
+                        propertyExpenseCode: "",
+                        assignee: "",
+                        fromDate: null,
+                        toDate: null,
+                        DepositAmt: false,
+                        WithdrawalAmt: false, 
+                      });
+                      setCurrentPage(1);
+                    }}
+                    className="text-orange-600 hover:text-orange-800 font-bold text-lg underline"
+                  >
+                    Clear All Filters
+                  </button>
+                )}
+              </div>
+
+
+              {/* FILTER ROW */}
+              <div className="w-full md:px-2 overflow-x-auto">
+                <div className="flex gap-4 pt-2 pb-2">
+
+                  {/* GLOBAL SEARCH */}
+                  <div>
+                    <label className="block text-md font-medium text-gray-800">
+                      Search
+                    </label>
+                    <input
+                      type="text"
+                      value={globalSearch}
+                      onChange={(e) => {
+                        setGlobalSearch(e.target.value);
+                        setCurrentPage(1); // reset page on search
+                      }}
+                      placeholder="Search"
+                      className="w-[200px] p-2 border-2 border-orange-300 rounded-md
+                      focus:outline-none focus:ring-1 focus:ring-orange-300 focus:border-orange-300  mt-1"
+                    />
+                  </div>
+
+                  {/* FROM DATE */}
+                  <div className="flex flex-col w-[200px]">
+                    <label className="block text-md font-medium text-gray-800">
+                      From Date
+                    </label>
+
+                    <DatePicker
+                      selected={filters.fromDate}
+                      onChange={(date) => {
+                        setFilters(prev => ({
+                          ...prev,
+                          fromDate: date
+                        }));
+                        setCurrentPage(1);
+                      }}
+                      dateFormat="d MMM yyyy"
+                      placeholderText="From Date"
+                      className="w-[200px] p-2 border-2 border-orange-300 rounded-md
+                      focus:outline-none focus:ring-1 focus:ring-orange-300 focus:border-orange-300  mt-1"
+                      wrapperClassName="w-full"
+                      popperPlacement="bottom-start"
+                      popperClassName="!z-[99999]"
+                      isClearable
+                    />
+                  </div>
+
+
+                  {/* TO DATE */}
+                  <div className="flex flex-col w-[200px]">
+                    <label className="block text-md font-medium text-gray-1000">
+                      To Date
+                    </label>
+
+                    <DatePicker
+                      selected={filters.toDate}
+                      onChange={(date) => {
+                        setFilters(prev => ({
+                          ...prev,
+                          toDate: date
+                        }));
+                        setCurrentPage(1);
+                      }}
+                      dateFormat="d MMM yyyy"
+                      placeholderText="To Date"
+                      className="w-[200px] p-2 border-2 border-orange-300 rounded-md
+                                      focus:outline-none focus:ring-1 focus:ring-orange-300 focus:border-orange-300 mt-1"
+                      wrapperClassName="w-full"
+                      popperPlacement="bottom-start"
+                      popperClassName="!z-[99999]"
+                      isClearable
+                    />
+                  </div>
+
+                  {/* SEARCH ACCOUNT */}
+                  <div className="flex flex-col w-[200px]">
+                    <label className="block text-md font-medium text-gray-800">
+                      Select Bank Account
+                    </label>
+
+                    <Select
+                      value={
+                        filters.bankACNo
+                          ? bankACNoOptions.find(opt => opt.value === filters.bankACNo)
+                          : null
+                      }
+                      options={bankACNoOptions}
+                      placeholder="Account"
+                      onChange={(selected) => {
+                        setFilters(prev => ({
+                          ...prev,
+                          bankACNo: selected?.value || ""
+                        }));
+                        setCurrentPage(1);
+                      }}
+                      styles={SelectStylesfilter}
+                      isClearable
+                      menuPortalTarget={document.body}
+                      menuPosition="fixed"
+                    />
+                  </div>
+
+                  {/* PROPERTY */}
+                  <div className="flex flex-col w-[200px]">
+                    <label className="block text-md font-medium text-gray-800">
+                      Property / Expense Code
+                    </label>
+
+                    <Select
+                      value={filters.propertyExpenseCode ? propertyOptions.find(opt => opt.value === filters.propertyExpenseCode) : null}
+                      options={propertyOptions}
+                      placeholder="Property"
+                      onChange={(selected) => {
+                        setFilters(prev => ({
+                          ...prev,
+                          propertyExpenseCode: selected?.value || ""
+                        }));
+                        setCurrentPage(1);
+                      }}
+                      styles={SelectStylesfilter}
+                      isClearable
+                      menuPortalTarget={document.body}
+                      menuPosition="fixed"
+                    />
+                  </div>
+
+                  {/* Status */}
+                  <div className="flex flex-col w-[200px]">
+                    <label className="block text-md font-medium text-gray-800">
+                      Status
+                    </label>
+
+                    <Select
+                      value={filters.status ? StatusOptions.find(opt => opt.value === filters.status) : null}
+                      options={StatusOptions}
+                      placeholder="Status"
+                      onChange={(selected) => {
+                        setFilters(prev => ({
+                          ...prev,
+                          status: selected?.value || ""
+                        }));
+                        setCurrentPage(1);
+                      }}
+                      styles={SelectStylesfilter}
+                      isClearable
+                      menuPortalTarget={document.body}
+                      menuPosition="fixed"
+                    />
+                  </div>
+
+                  {/* ASSIGNEE */}
+                  <div className="flex flex-col w-[200px]">
+                    <label className="block text-md font-medium text-gray-800">
+                      Assignee
+                    </label>
+
+                    <Select
+                      value={filters.assignee ? reviewerOptions.find(opt => opt.value === filters.assignee) : null}
+                      options={reviewerOptions}
+                      placeholder="Assignee"
+                      onChange={(selected) => {
+                        setFilters(prev => ({
+                          ...prev,
+                          assignee: selected?.value || ""
+                        }));
+                        setCurrentPage(1);
+                      }}
+                      styles={SelectStylesfilter}
+                      isClearable
+                      menuPortalTarget={document.body}
+                      menuPosition="fixed"
+                    />
+                  </div>
+                  {/* Reviewer */}
+                  <div className="flex flex-col w-[200px]">
+                    <label className="block text-md font-medium text-gray-800">
+                      Reviewer
+                    </label>
+
+                    <Select
+                      value={filters.reviewer ? reviewerOptions.find(opt => opt.value === filters.reviewer) : null}
+                      options={reviewerOptions}
+                      placeholder="Reviewer"
+                      onChange={(selected) => {
+                        setFilters(prev => ({
+                          ...prev,
+                          reviewer: selected?.value || ""
+                        }));
+                        setCurrentPage(1);
+                      }}
+                      styles={SelectStylesfilter}
+                      isClearable
+                      menuPortalTarget={document.body}
+                      menuPosition="fixed"
+                    />
+                  </div>
+
+                  {/* Auditor */}
+                  <div className="flex flex-col w-[200px]">
+                    <label className="block text-md font-medium text-gray-800">
+                      Auditor
+                    </label>
+
+                    <Select
+                      value={filters.auditor ? AuditorOptions.find(opt => opt.value === filters.auditor) : null}
+                      options={AuditorOptions}
+                      placeholder="Auditor"
+                      onChange={(selected) => {
+                        setFilters(prev => ({
+                          ...prev,
+                          auditor: selected?.value || ""
+                        }));
+                        setCurrentPage(1);
+                      }}
+                      styles={SelectStylesfilter}
+                      isClearable
+                      menuPortalTarget={document.body}
+                      menuPosition="fixed"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      )}
+
+      {/* ================= Table View ================= */}
+      <div className="bg-white shadow-sm px-2 pt-0 rounded-b-lg">
+        <div className='overflow-x-auto'>
+          {activeTab === "LIST" && (
+            (bankLoading) ? (
+              <TableSkeleton />
+            ) : paginatedData.length > 0 ? (
+              <>
+                <div className="max-h-[52vh] overflow-auto border border-gray-200 rounded-lg">
+
+                  <table className="min-w-full border-collapse text-sm text-left text-gray-700 table-fixed">
+                    <thead className="sticky top-0 text-white bg-black z-[30] shadow-md  ">
+                      <tr>
+                        {TABLE_COLUMNS.map((col) => (
+                          <th key={col.key}
+                            className={`px-3 py-3 text-left text-lg whitespace-nowrap
+                          ${col.key === "index" ? "sticky z-20 text-white bg-black" : ""} 
+                          ${col.key === "Date" ? "sticky z-20 text-white bg-black" : ""}`}
+                            style={{
+                              width: getColumnWidth(col.key),
+                              left: col.key === "index" ? 0 : col.key === "Date" ? SR_NO_WIDTH : undefined
+                            }}
+                          >
+                            {col.key === "index" ? "Sr.No" : col.label}
+                          </th>
+                        ))}
+                        <th className="px-4 py-3 sticky right-0 z-[30] text-white bg-black"
+                          style={{ width: ACTION_COL_WIDTH }}>Actions</th>
+
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 text-[15px]">
+                      {paginatedData.map((row, idx) => (
+                        <tr key={idx} className="hover:bg-[#F8F9FB]">
+                          {TABLE_COLUMNS.map((col) => (
+                            <td
+                              key={col.key}
+                              className={`px-3 py-3 whitespace-nowrap 
+                              ${col.key === "index" ? "sticky bg-white  z-20 " : ""} 
+                              ${col.key === "Date" ? "sticky bg-white z-20 " : ""}`}
+                              style={{
+                                width: getColumnWidth(col.key),
+                                maxWidth: getColumnWidth(col.key),
+                                left:
+                                  col.key === "index"
+                                    ? 0
+                                    : col.key === "Date"
+                                      ? SR_NO_WIDTH
+                                      : undefined,
+                              }}
+                            >
+                              {col.key === "Narration" || col.key === "Worklogs" ? (
+                                <CellWithTooltip
+                                  value={row[col.key] || "-"}
+                                />
+                              ) : (
+                                <div className="truncate overflow-hidden text-ellipsis">
+                                  {col.key === "index"
+                                    ? (currentPage - 1) * rowsPerPage + idx + 1
+                                    : col.key === "Date"
+                                      ? formatDate(row[col.key])
+                                      : row[col.key] || "-"}
+                                </div>
+                              )}
+                            </td>
+                          ))}
+
+                          <td className="px-2 py-2 sticky right-0 bg-white z-[20]" style={{ width: ACTION_COL_WIDTH }}>
+                            <div className="flex justify-center gap-2">
+                              <button onClick={() => handleEdit(row, filteredData.indexOf(row))}
+                                className="text-orange-500 hover:text-orange-700" title="Edit"><i className="fas fa-edit"></i>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* ================= PAGINATION ================= */}
+                <div className="flex justify-center items-center gap-5 pt-2 pb-2">
+                  {/* Page Info */}
+                  <span className="text-sm text-gray-700">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                    className="px-3 py-1 bg-black text-white rounded disabled:opacity-50 hover:bg-orange-500 transition-colors"
+                  ><i className="fa-solid fa-arrow-left"></i> {" "}
+                    Previous
+                  </button>
+
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                    className="px-3 py-1 bg-black text-white rounded disabled:opacity-50 hover:bg-orange-500 transition-colors"
+                  >
+                    Next <i className="fa-solid fa-arrow-right"></i>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="px-6 pb-8 text-center text-gray-500 lg:mt-20 font-semibold flex items-center justify-center">
+                No records found for selected filters
+              </div>
+            )
+          )}
+        </div>
       </div>
     </div>
   );

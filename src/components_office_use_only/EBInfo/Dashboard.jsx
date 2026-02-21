@@ -19,7 +19,7 @@ const Dashboard = ({ data = [], isPending }) => {
     const totalRecords = data.length;
 
     const calculated = data.filter(
-      (r) => r.EBCalnStatus?.toLowerCase() === "calculated",
+      (r) => r.EBCalnStatus?.toLowerCase() === "approved",
     ).length;
 
     const pendingCalculation = data.filter(

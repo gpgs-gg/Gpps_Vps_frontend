@@ -12,8 +12,8 @@
   z-index: -1;
   background: repeating-linear-gradient(
     120deg,
-    #297229 0%,
-    #025002 40%
+    black 0%,
+    rgb(61, 59, 59) 40%
   );
   background-size: 200% 200%;
   animation: policeFlow 1.13s linear infinite;

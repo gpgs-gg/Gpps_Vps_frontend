@@ -99,11 +99,11 @@ export const HousekeepingSkelton = () => {
       {/* TABLE SKELETON */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {/* TABLE HEADER */}
-        <div className="flex bg-orange-200 px-4 py-3">
+        <div className="flex bg-black px-4 py-3">
           {Array.from({ length: 10 }).map((_, i) => (
             <div
               key={i}
-              className="h-6 bg-orange-300 rounded mx-2"
+              className="h-6 bg-gray-300 rounded mx-2"
               style={{ width: i === 0 ? 80 : 150 }}
             />
           ))}

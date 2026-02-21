@@ -109,10 +109,10 @@ const Header = () => {
                   <div className="text-sm font-semibold text-gray-800">{decryptedUser?.employee?.Name?.substring(0, 12) + "..."}</div>
                   {/* <div className="text-xs text-gray-500">({decryptedUser.role})</div> */}
                 </div>
-                <div className="w-9 h-9 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold">
+                <div className="w-9 h-9 bg-black rounded-full flex items-center justify-center text-white font-bold">
                   {decryptedUser?.employee?.Name?.split(' ').map(n => n[0]).join('')}
                 </div>
-                <button onClick={handleLogout} className="text-sm text-gray-700 hover:text-indigo-600">Logout</button>
+                <button onClick={handleLogout} className="text-sm text-gray-600 hover:text-black">Logout</button>
               </div>
             )}
           </nav>

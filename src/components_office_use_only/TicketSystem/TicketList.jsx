@@ -659,10 +659,10 @@ export const TicketList = () => {
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-orange-300 sticky top-0 z-30">
+              <thead className="bg-black text-white sticky top-0 z-30">
                 <tr>
                   {/* Selection Checkbox Header */}
-                  <th className="px-6 py-3 text-left font-bold text-black text-lg sticky left-0 z-40 bg-orange-300">
+                  <th className="px-6 py-3 text-left font-bold text-white text-lg sticky left-0 z-40 bg-black">
                     <input
                       type="checkbox"
                       checked={selectedTickets.size === paginatedTickets.length && paginatedTickets.length > 0}
@@ -674,14 +674,14 @@ export const TicketList = () => {
                   {headers.map(({ label, key }) => (
                     <th
                       key={label}
-                      className={`px-6 py-3 text-left font-bold text-black text-lg whitespace-nowrap ${key === "TicketID" ? "sticky left-8 z-40 bg-orange-300" : ""
+                      className={`px-6 py-3 text-left font-bold text-white text-lg whitespace-nowrap ${key === "TicketID" ? "sticky left-8 z-40 bg-black" : ""
                         }`}
                       title={label}
                     >
                       {label.substring(0, 20)}
                     </th>
                   ))}
-                  <th className="px-6 py-3 text-left text-black font-bold text-lg sticky right-0 bg-orange-300 z-30 max-w-[150px]" title="Actions">
+                  <th className="px-6 py-3 text-left text-white font-bold text-lg sticky right-0 bg-black z-30 max-w-[150px]" title="Actions">
                     Actions
                   </th>
                 </tr>
@@ -716,14 +716,14 @@ export const TicketList = () => {
         <button
           disabled={currentPage === 1}
           onClick={goToPrevious}
-          className="px-4 py-2 bg-orange-400 text-white rounded disabled:opacity-50"
+          className="px-4 py-2 bg-black text-white  rounded disabled:opacity-50"
         >
           <i className="fa-solid fa-arrow-left"></i> Previous
         </button>
         <button
           disabled={currentPage === totalPages}
           onClick={goToNext}
-          className="px-4 py-2 bg-orange-400 text-white rounded disabled:opacity-50"
+          className="px-4 py-2 bg-black text-white rounded disabled:opacity-50"
         >
           Next <i className="fa-solid fa-arrow-right"></i>
         </button>

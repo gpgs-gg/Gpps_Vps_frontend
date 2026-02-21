@@ -391,15 +391,15 @@ const BedsAvilable = () => {
             )}
             <div className="overflow-auto max-h-screen  border border-gray-200">
               <table className="min-w-[1000px] w-full text-sm text-left text-gray-700">
-                <thead className="sticky top-0 bg-orange-300 z-10 shadow-md font-bold text-gray-800 text-base">
+                <thead className="sticky top-0 bg-black z-10 shadow-md font-bold text-white text-base">
                   <tr>
                     {Object.keys(filteredData[0] || {}).map((key, idx) => (
                       <th
                         key={key}
                         className={`px-2 py-2 border-b font-bold border-gray-300 whitespace-nowrap  ${idx === 0
-                          ? "sticky left-0 z-20 bg-orange-300"
+                          ? "sticky left-0 z-20 bg-black"
                           : idx === 1
-                            ? "sticky left-[30px] z-20 bg-orange-300 "
+                            ? "sticky left-[30px] z-20 bg-black"
                             : ""
                           }`}
                       >
@@ -418,9 +418,9 @@ const BedsAvilable = () => {
                         <td
                           key={idx}
                           className={`px-2 py-2 text-[15px] align-top whitespace-nowrap ${idx === 0
-                            ? "sticky left-0  font-bold bg-orange-300"
+                            ? "sticky left-0  font-bold bg-gray-100"
                             : idx === 1
-                              ? "sticky left-[30px] font-bold bg-orange-300"
+                              ? "sticky left-[30px] font-bold bg-gray-100"
                               : ""
                             }`}
                         // style={{ minWidth: "100px" }}

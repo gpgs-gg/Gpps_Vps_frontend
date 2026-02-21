@@ -22,7 +22,7 @@ const Home = () => {
 
           {/* Left side: content */}
           <div className="flex-1 w-full">
-            <h1 className="text-2xl sm:text-2xl md:text-4xl font-bold text-green-900 mb-4 leading-snug"
+            <h1 className="text-2xl sm:text-2xl md:text-4xl font-bold text-black mb-4 leading-snug"
             // style={{ textShadow: '2px 2px 8px rgba(0, 0, 0, 0.5)' }}
             >
               Our goal is to make you feel at home
@@ -31,10 +31,10 @@ const Home = () => {
             </h1>
             <p
               className="text-xl sm:text-xl md:text-2xl text-[#191715] mb-6 opacity-90"
-              style={{ textShadow: '2px 2px 8px rgba(0, 0, 0, 0.5)' }}
+              style={{ textShadow: '2px 2px 8px rgba(0, 0, 0, 0.0)' }}
             >
               <ReactTyped
-                strings={["Enjoy Luxurious Stay at Best Price"]}
+                strings={["Luxurious Stay at Best Price"]}
                 typeSpeed={20}
                 backSpeed={20}
                 loop
@@ -59,21 +59,21 @@ const Home = () => {
             </Link>
 
             <div className="flex flex-wrap gap-4 justify-start">
-              <div className="bg-white text-[#3730a3] px-6 py-3 rounded-lg font-semibold text-center w-full sm:w-auto">
+              <div className="bg-white text-black px-6 py-3 rounded-lg font-semibold text-center w-full sm:w-auto">
                 <h1 className="text-xl">
                   <CountUp end={10} duration={2} />+
                 </h1>
                 <p>Years Experience</p>
               </div>
 
-              <div className="bg-white text-[#3730a3] px-6 py-3 rounded-lg font-semibold text-center w-full sm:w-auto">
+              <div className="bg-white text-black px-6 py-3 rounded-lg font-semibold text-center w-full sm:w-auto">
                 <h1 className="text-xl">
                   <CountUp end={4} duration={2.5} separator="," />k+
                 </h1>
                 <p>Customers</p>
               </div>
 
-              <div className="bg-white text-[#3730a3] px-6 py-3 rounded-lg font-semibold text-center w-full sm:w-auto">
+              <div className="bg-white text-black px-6 py-3 rounded-lg font-semibold text-center w-full sm:w-auto">
                 <h1 className="text-xl">
                   <CountUp end={500} duration={2} separator="," />+
                 </h1>
