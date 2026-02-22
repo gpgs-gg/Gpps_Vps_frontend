@@ -19,10 +19,10 @@ const Dashboard = ({ data = [] }) => {
 
     const total = data.length;
 
-    const open = data.filter(r => r.Status === "Open").length;
-    const wip = data.filter(r => r.Status === "WIP").length;
-    const updated = data.filter(r => r.Status === "Updated").length;
-    const reviewDone = data.filter(r => r.Status === "Review Done").length;
+    const open = data.filter(r => r.StatusForView?.toLowerCase() === "open").length;
+    const wip = data.filter(r => r.StatusForView?.toLowerCase() === "wip").length;
+    const updated = data.filter(r => r.StatusForView?.toLowerCase() === "updated").length;
+    const reviewDone = data.filter(r => r.StatusForView?.toLowerCase() === "review done").length;
 
     return {
       total,
@@ -43,7 +43,7 @@ const Dashboard = ({ data = [] }) => {
           Bank Transaction Dashboard
         </h2>
         <p className="text-gray-500 text-sm">
-          Overview based on Status
+          Overview based on StatusForView
         </p>
       </div> */}
 

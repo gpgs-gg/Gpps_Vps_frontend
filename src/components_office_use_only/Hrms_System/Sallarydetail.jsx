@@ -2876,7 +2876,7 @@ const handlePopUp = (existingValue, empId, type) => {
               <th className="border font-bold whitespace-nowrap px-2 py-2 sticky left-0 z-50 bg-black">EmpID</th>
               <th className="border border-gray-300 whitespace-nowrap font-bold  px-2 py-2 sticky left-20 z-50 bg-black  text-left">Employee's Name</th>
               {[...Array(31)].map((_, i) => (
-                <th key={i} className="border border-gray-300 px-1 py-1 w-6">
+                <th key={i} className="border border-gray-300 px-2 py-2 w-6">
                   {i + 1}
                 </th>
               ))}
@@ -2933,8 +2933,8 @@ const handlePopUp = (existingValue, empId, type) => {
                   className={`text-lg text-gray-800 text-center ${i % 2 === 0 ? "bg-gray-50" : "bg-white"
                     } hover:bg-yellow-50`}
                 >
-                  <td className="border font-bold border-gray-300 px-2 py-1 sticky left-0 bg-white z-30">{emp.id}</td>
-                  <td className="border whitespace-nowrap border-gray-300 px-2 py-1 sticky left-20 font-bold bg-white z-30 text-left ">
+                  <td className="border font-bold border-gray-300 px-2 py-1 sticky left-0 bg-gray-100 z-30">{emp.id}</td>
+                  <td className="border whitespace-nowrap border-gray-300 px-2 py-1 sticky left-20 font-bold bg-gray-100 z-30 text-left ">
                     {emp.name}
                   </td>
 

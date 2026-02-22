@@ -1022,7 +1022,7 @@ const CellWithTooltip = ({ value, fullValue, colIndex, columnKey }) => {
                         <tbody className=" divide-y divide-gray-200 text-[16px]">
                           {paginatedData.map((row, idx) => (
                             <tr key={idx} className="hover:bg-[#F8F9FB]">
-                              <td className="sticky left-0 z-10 bg-white ">
+                              <td className="sticky left-0 z-10 bg-gray-100">
                                 <input
                                   type="checkbox"
                                   className="w-10 scale-150 accent-orange-500"
@@ -1038,7 +1038,7 @@ const CellWithTooltip = ({ value, fullValue, colIndex, columnKey }) => {
                                 <td
                                   className={`
                               px-3 py-4 whitespace-normal 
-                              ${colIndex < 2 ? "sticky bg-white z-20" : ""}
+                              ${colIndex < 2 ? "sticky bg-gray-100 z-20" : ""}
                               
                               ${colIndex === 0 ? "text-center " : ""}
                             `}

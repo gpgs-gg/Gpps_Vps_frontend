@@ -7,12 +7,12 @@ export const SalarySkeletonTable = () => {
   return (
     <tr className="text-center">
       {/* EmpID */}
-      <td className="border px-2 py-2 sticky left-0 bg-orange-200 z-30">
+      <td className="border px-2 py-2 sticky left-0 bg-gray-200 z-30">
         <SkeletonCell width="w-12" />
       </td>
 
       {/* Name */}
-      <td className="border px-2 py-2 sticky left-20 bg-orange-200 z-30">
+      <td className="border px-2 py-2 sticky left-20 bg-gray-200 z-30">
         <SkeletonCell width="w-40" />
       </td>
 
@@ -84,7 +84,7 @@ export const SalarySkeletonTable = () => {
   return (
     <div className="overflow-auto max-h-[510px] rounded-lg">
       <table className="min-w-full border-collapse">
-        <thead className="bg-orange-300 sticky top-0 z-40">
+        <thead className="bg-black sticky top-0 z-40">
           <tr>
             <th className="border px-2 py-2">EmpID</th>
             <th className="border px-2 py-2">Employee</th>

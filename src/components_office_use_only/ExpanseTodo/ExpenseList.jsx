@@ -253,14 +253,14 @@ function ExpenseList() {
             const row = rows[i];
             const category = row.Category;
             const vehicleNo = row.VehicleNo;
-
+            const SrNo = row.SrNo;
             if (
                 vehicleRequiredCategories.includes(category) &&
                 !vehicleNo?.trim()
             ) {
                 toast.dismiss();
                 toast.error(
-                    `Vehicle No is required for ${category} category`,
+                    `Vehicle number is required for Sr. No. ${SrNo} in the ${category} category.`,
                     { toastId: "vehicle-required" }
                 );
                 return;

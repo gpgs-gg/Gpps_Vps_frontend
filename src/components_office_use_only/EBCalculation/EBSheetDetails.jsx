@@ -639,7 +639,7 @@ const mainSheetId = useMemo(() => {
                     {
                       ebSheetData?.data?.filter((c) => c.ClientName !== "").map((c) => (
                         <tr key={c.ClientID} className="hover:bg-gray-50 text-black">
-                          <td className="p-3 bg-white sticky left-0 border font-semibold">{c.ClientName}</td>
+                          <td className="p-3 bg-gray-100 sticky left-0 border font-semibold">{c.ClientName}</td>
                           <td className="p-3 border flex justify-center items-center font-semibold">{c.TotalDays}</td>
                           <td className="p-3 border text-center">{c.AdjFreeEB}</td>
                           <td className="p-3 border text-center">{c.FreeEB}</td>

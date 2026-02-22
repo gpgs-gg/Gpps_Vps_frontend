@@ -715,9 +715,9 @@ export default function DailyTodoTable({
     ${cIdx === 0 || head === "Freq" ? "text-center" : ""}  
     ${
       activeCell?.row === rIdx && activeCell?.col === head
-        ? "bg-white"
+        ? "bg-gray-100"
         : sticky
-          ? "bg-white"
+          ? "bg-gray-100"
           : ""
     }
     ${!isFilteredColumn && cIdx >= 3 ? "hidden border-none" : ""}
