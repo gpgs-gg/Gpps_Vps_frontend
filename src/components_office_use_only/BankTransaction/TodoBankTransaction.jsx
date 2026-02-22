@@ -15,14 +15,14 @@ import { DashboardSkeleton, FormSkeleton, SearchSkeleton, TableSkeleton } from "
 import TodoBankForm from "./TodoBankForm";
 
 const schema = yup.object().shape({
-  Date: yup.date().typeError("Date is required").required("Date is required"),
+  // Date: yup.date().typeError("Date is required").required("Date is required"),
   Narration: yup.string().required("Narration is required"),
   ChqRefNo: yup.string().required("Chq./Ref. No. is required"),
-  ValueDate: yup.date().typeError("Value Date is required").required("Value Date is required"),
+  // ValueDate: yup.date().typeError("Value Date is required").required("Value Date is required"),
   PropertyExpenseCode: yup.string().required("Property / Expense Code is required"),
   ExpenseCategory: yup.string().required("Expense Category is required"),
-  Status: yup.string().required("Status is required"),
-  Comment: yup.string().when("Status", {
+  StatusForView: yup.string().required("StatusForView is required"),
+  Comment: yup.string().when("StatusForView", {
     is: (val) => val === "RoadBlock" || val === "Re-Open",
     then: (schema) => schema.required("Comment is required"),
     otherwise: (schema) => schema.notRequired(),
@@ -49,7 +49,7 @@ export default function TodoBankTransaction() {
   const { data: BankTransaction, isPending: bankLoading } = useBankTransactionData();
   const { user, isAuthenticated } = useAuth();
 
-  const updateTransactionMutation = useUpdateBankTransaction();
+  const { mutate: updateBankData, isPending: isUpdatingData } = useUpdateBankTransaction();
   const [activeTab, setActiveTab] = useState("DASHBOARD");
   const [editingRow, setEditingRow] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(null);
@@ -59,7 +59,6 @@ export default function TodoBankTransaction() {
   const { control, register, watch, handleSubmit, reset, setValue, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
   });
-
 
 
 
@@ -218,20 +217,20 @@ export default function TodoBankTransaction() {
       }
 
       const payload = {
-        Date: data.Date ? data.Date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", }) : "",
+        Date: data?.Date,
         Narration: data.Narration || "",
         "Chq.No./Ref.No.": data.ChqRefNo || "",
-        ValueDate: data.ValueDate ? data.ValueDate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", }) : "",
+        ValueDate: data?.ValueDate,
         "WithdrawalAmt.": data.WithdrawalAmt || "",
         "DepositAmt.": data.DepositAmt || "",
         PropertyExpenseCode: data.PropertyExpenseCode || "",
         ExpenseCategory: data.ExpenseCategory || "",
         Assignee: data.Assignee || user?.employee?.Name || "",
-        StatusForEdit: data.Status || "",
+        StatusForEdit: data.StatusForView || "",
         // Reviewer: data.Status === "Review Done" || data.Status === "Re-Open" ? user?.employee?.Name : data.Reviewer || "",
         // Auditor: data.Status === "Closed" || data.Status === "Re-Open" ? user?.employee?.Name : data.Auditor || "",
-        Reviewer: data.Status === "Review Done" ? user?.employee?.Name : data.Reviewer || "",
-        Auditor: data.Status === "Closed" ? user?.employee?.Name : data.Auditor || "",
+        Reviewer: data.StatusForView === "Review Done" ? user?.employee?.Name : data.Reviewer || "",
+        Auditor: data.StatusForView === "Closed" ? user?.employee?.Name : data.Auditor || "",
         Worklogs: data.Worklogs || existingWorklogs,
       };
 
@@ -326,26 +325,40 @@ export default function TodoBankTransaction() {
       }
       /* ================== WORKLOG LOGIC END ================== */
 
-      if (editingRow) {
+      updateBankData({
+        ...payload,
+        Narration: data.Narration,
+        "Chq.No./Ref.No.": data.ChqRefNo,
+      }, {
+        onSuccess: () => {
 
-        await updateTransactionMutation.mutateAsync({
-          ...payload,
-          Narration: data.Narration,
-          "Chq.No./Ref.No.": data.ChqRefNo,
-        });
+          toast.dismiss();
+          toast.success("Bank Transaction Updated successfully");
+          // reset();
+          setValue("Comment", "");
+          setEditingRow(null);
+          // setActiveTab("LIST");
 
-        toast.dismiss();
-        toast.success("Updated successfully");
-      }
+        },
+      });
 
-      // reset();
-      setEditingRow(null);
-      // setActiveTab("LIST");
     } catch (err) {
       console.error(err);
       toast.dismiss();
       toast.error("Something went wrong!");
     }
+  };
+
+
+
+
+  const parseDBDate = (dateStr) => {
+    if (!dateStr) return null;
+
+    const [dd, mm, yy] = dateStr.split("/");
+    const year = Number(yy) < 50 ? `20${yy}` : `19${yy}`;
+
+    return new Date(`${year}-${mm}-${dd}`);
   };
 
 
@@ -357,10 +370,10 @@ export default function TodoBankTransaction() {
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     reset({
-      Date: row.Date ? new Date(row.Date) : null,
+      Date: row.Date ? parseDBDate(row.Date) : null,
       Narration: row.Narration || "",
       ChqRefNo: row["Chq.No./Ref.No."] || "",
-      ValueDate: row.ValueDate ? new Date(row.ValueDate) : null,
+      ValueDate: row.ValueDate ? parseDBDate(row.ValueDate) : null,
       WithdrawalAmt: row["WithdrawalAmt."] || "",
       DepositAmt: row["DepositAmt."] || "",
       PropertyExpenseCode: row.PropertyExpenseCode || "",
@@ -605,7 +618,7 @@ export default function TodoBankTransaction() {
       {/* ================= CREATE FORM ================= */}
       <div className='bg-white'>
         {activeTab === "CREATE" && (
-          (propertyLoading) ? (
+          (false) ? (
             <FormSkeleton />
           ) : (
             <TodoBankForm
@@ -622,7 +635,7 @@ export default function TodoBankTransaction() {
               StatusOptions={StatusOptions}
               reviewerOptions={reviewerOptions}
               AuditorOptions={AuditorOptions}
-              updateTransactionMutation={updateTransactionMutation}
+              updateBankData={updateBankData}
               selectedStatus={selectedStatus}
               onSubmit={onSubmit}
               setActiveTab={setActiveTab}
@@ -632,6 +645,8 @@ export default function TodoBankTransaction() {
               currentIndex={currentIndex}
               totalLength={filteredData.length}
               data={BankTransaction?.data}
+              isUpdatingData={isUpdatingData}
+              user={user}
 
             />
           )
@@ -648,7 +663,7 @@ export default function TodoBankTransaction() {
 
               {/* HEADER */}
               <div className="flex justify-end md:px-2 gap-5 mr-5 items-center">
-                
+
                 <div className="flex items-center gap-2">
                   <input
                     type="radio"
@@ -678,7 +693,7 @@ export default function TodoBankTransaction() {
                         fromDate: null,
                         toDate: null,
                         DepositAmt: false,
-                        WithdrawalAmt: false, 
+                        WithdrawalAmt: false,
                       });
                       setCurrentPage(1);
                     }}

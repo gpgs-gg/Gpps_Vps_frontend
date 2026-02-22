@@ -16,7 +16,7 @@ const TodoBankForm = ({
   StatusOptions,
   reviewerOptions,
   AuditorOptions,
-  updateTransactionMutation,
+  isUpdatingData,
   selectedStatus,
   onSubmit,
   reset,
@@ -26,7 +26,7 @@ const TodoBankForm = ({
   goToPrevious,
   currentIndex,
   totalLength,
-  data
+  data 
 }) => {
 
   const MemoizedSelect = memo(({ field, options, placeholder, isDisabled, onChange, styles }) => (
@@ -78,34 +78,46 @@ const TodoBankForm = ({
     if (editingRow) {
       reset(editingRow);
     }
-  }, [editingRow, reset ,data]);
+  }, [editingRow, reset, data]);
+
+  const parseDBDate = (dateStr) => {
+    if (!dateStr) return null;
+
+    const [dd, mm, yy] = dateStr.split("/");
+    const year = Number(yy) < 50 ? `20${yy}` : `19${yy}`;
+
+    return new Date(`${year}-${mm}-${dd}`);
+  };
+
+
+
 
   return (
     <div className="overflow-auto border border-gray-200 rounded-lg">
-            <div className="flex justify-end items-center p-2 gap-5 pr-5">
-              <span className="text-sm text-gray-700">
-                Sr. No.{currentIndex+1}
-              </span>
-              <button
-                onClick={goToPrevious}
-                disabled={currentIndex === 0}
-                className="px-3 py-1 bg-orange-400 text-white rounded disabled:opacity-50 hover:bg-orange-500 transition-colors"
-              ><i className="fa-solid fa-arrow-left"></i> {" "}
-                Previous
-              </button>
+      <div className="flex justify-end items-center p-2 gap-5 pr-5">
+        <span className="text-sm text-gray-700">
+          Sr. No.{currentIndex + 1}
+        </span>
+        <button
+          onClick={goToPrevious}
+          disabled={currentIndex === 0}
+          className="px-3 py-1 bg-orange-400 text-white rounded disabled:opacity-50 hover:bg-orange-500 transition-colors"
+        ><i className="fa-solid fa-arrow-left"></i> {" "}
+          Previous
+        </button>
 
-              <button
-                 onClick={goToNext}
-              disabled={currentIndex === totalLength - 1}
-                className="px-3 py-1 bg-orange-400 text-white rounded disabled:opacity-50 hover:bg-orange-500 transition-colors"
-              >
-                Next <i className="fa-solid fa-arrow-right"></i>
-              </button>
-            </div>
+        <button
+          onClick={goToNext}
+          disabled={currentIndex === totalLength - 1}
+          className="px-3 py-1 bg-orange-400 text-white rounded disabled:opacity-50 hover:bg-orange-500 transition-colors"
+        >
+          Next <i className="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
 
-          
 
-          
+
+
       <form className="bg-white shadow-sm py-5 rounded-b-lg px-10 max-w-8xl w-full" onSubmit={handleSubmit(onSubmit)}>
         {/* Form Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-5">
@@ -117,10 +129,14 @@ const TodoBankForm = ({
             <Controller
               name="Date"
               control={control}
-              defaultValue=""
+              defaultValue={null}
               render={({ field }) => (
                 <DatePicker
-                  selected={field.value}
+                  selected={
+                    typeof field.value === "string"
+                      ? parseDBDate(field.value)
+                      : field.value
+                  }
                   onChange={(date) => field.onChange(date)}
                   dateFormat="d MMM yyyy"
                   placeholderText="dd mm yyyy"
@@ -220,7 +236,7 @@ const TodoBankForm = ({
                 />
               )}
             />
-            {errors.Status && <p className="text-red-500 text-sm">{errors.Status.message}</p>}
+            {errors.StatusForView && <p className="text-red-500 text-sm">{errors.StatusForView.message}</p>}
           </div>
 
           {/* Chq/Ref No */}
@@ -238,10 +254,14 @@ const TodoBankForm = ({
             <Controller
               name="ValueDate"
               control={control}
-              defaultValue=""
+              defaultValue={null}
               render={({ field }) => (
                 <DatePicker
-                  selected={field.value}
+                  selected={
+                    typeof field.value === "string"
+                      ? parseDBDate(field.value)
+                      : field.value
+                  }
                   onChange={(date) => field.onChange(date)}
                   dateFormat="d MMM yyyy"
                   placeholderText="dd mm yyyy"
@@ -388,14 +408,14 @@ const TodoBankForm = ({
           <div className="  flex  items-center gap-4 col-span-1 ">
             <button
               type="submit"
-              disabled={updateTransactionMutation.isPending}
+              disabled={isUpdatingData}
               className={`px-6 h-10 rounded font-semibold flex items-center justify-center gap-2
-                  ${updateTransactionMutation.isPending
+                  ${isUpdatingData
                   ? "bg-orange-300 cursor-not-allowed"
                   : "bg-orange-500 hover:bg-orange-600 text-white"
                 }`}
             >
-              {updateTransactionMutation.isPending ? (
+              {isUpdatingData ? (
                 <>
                   <LoaderPage />
                   <span>Updating...</span>
@@ -405,14 +425,14 @@ const TodoBankForm = ({
               )}
             </button>
 
-            <button type="button" disabled={updateTransactionMutation.isPending} onClick={() => { reset(); setActiveTab("LIST"); setEditingRow(null); }} className="px-6 py-2 h-10 bg-gray-200 hover:bg-gray-300 rounded font-semibold">
+            <button type="button"  onClick={() => { reset(); setActiveTab("LIST"); setEditingRow(null); }} className="px-6 py-2 h-10 bg-gray-200 hover:bg-gray-300 rounded font-semibold">
               Cancel
             </button>
           </div>
-      
+
         </div>
       </form>
-        
+
     </div>
   );
 };
