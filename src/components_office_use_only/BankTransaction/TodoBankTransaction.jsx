@@ -39,7 +39,7 @@ export default function TodoBankTransaction() {
     propertyExpenseCode: "",
     assignee: "",
     reviewer: "",
-    status: "",
+    StatusForView: "",
     fromDate: null,
     toDate: null,
     auditor: ""
@@ -158,7 +158,7 @@ export default function TodoBankTransaction() {
         (!filters.propertyExpenseCode || row.PropertyExpenseCode === filters.propertyExpenseCode) &&
         (!filters.assignee || row.Assignee === filters.assignee) &&
         (!filters.reviewer || row.Reviewer === filters.reviewer) &&
-        (!filters.status || row.Status === filters.status) &&
+        (!filters.status || row.StatusForView === filters.status) &&
         (!filters.auditor || row.Auditor === filters.auditor);
 
       const matchesDeposit = !filters.DepositAmt || Number(row["DepositAmt."]) > 0;
@@ -839,7 +839,7 @@ export default function TodoBankTransaction() {
                     </label>
 
                     <Select
-                      value={filters.status ? StatusOptions.find(opt => opt.value === filters.status) : null}
+                      value={filters.status ? StatusOptions.find(opt => opt.value === filters.StatusForView) : null}
                       options={StatusOptions}
                       placeholder="Status"
                       onChange={(selected) => {
@@ -941,16 +941,16 @@ export default function TodoBankTransaction() {
               <TableSkeleton />
             ) : paginatedData.length > 0 ? (
               <>
-                <div className="max-h-[52vh] overflow-auto border border-gray-200 rounded-lg">
+                <div className="max-h-[52vh] overflow-auto border border-gray-200">
 
                   <table className="min-w-full border-collapse text-sm text-left text-gray-700 table-fixed">
                     <thead className="sticky top-0 text-white bg-black z-[30] shadow-md  ">
                       <tr>
                         {TABLE_COLUMNS.map((col) => (
                           <th key={col.key}
-                            className={`px-3 py-3 text-left text-lg whitespace-nowrap
-                          ${col.key === "index" ? "sticky z-20 text-white bg-black" : ""} 
-                          ${col.key === "Date" ? "sticky z-20 text-white bg-black" : ""}`}
+                            className={`px-3 py-3 text-left text-md whitespace-nowrap border border-gray-300
+                          ${col.key === "index" ? "sticky z-20 text-white border border-gray-100 bg-black" : ""} 
+                          ${col.key === "Date" ? "sticky z-20 text-white border border-gray-100 bg-black" : ""}`}
                             style={{
                               width: getColumnWidth(col.key),
                               left: col.key === "index" ? 0 : col.key === "Date" ? SR_NO_WIDTH : undefined

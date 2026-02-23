@@ -3,6 +3,7 @@ import {
   useLeadsDetails,
   useUpdateClientDetails,
 } from "./services";
+import { addDays, startOfDay } from "date-fns";
 import { useDynamicDetails, useEmployeeDetails } from "../TicketSystem/Services";
 import LoaderPage from "../NewBooking/LoaderPage";
 import { toast } from "react-toastify";
@@ -74,8 +75,8 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
     Assignee: [],
     FollowupDate: [],
     Reason: [],
-    search: [], 
-    FieldMember : [],
+    search: [],
+    FieldMember: [],
     LeadSource: []
   });
 
@@ -178,12 +179,12 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
   ).map((v) => ({ value: v, label: v })) || [];
   const filterConfig = [
     { key: "Assignee", label: "Assignee", options: ManagerOptions, },
-        { key: "FieldMember", label: "Field Member", options: ManagerOptions, },
+    { key: "FieldMember", label: "Field Member", options: ManagerOptions, },
     // { key: "PhoneCalls", label: "Phone Call", options: phoneCallOptions, icon: <PiPhoneCallFill /> },
     // { key: "Visited", label: "Visited", options: visitedOptions, icon: <MdLocationOn /> },
     { key: "LeadSource", label: "Lead Source", options: visitedOptions },
     { key: "LeadStatus", label: "Lead Status", options: bookingStatusOptions },
-      { key: "Reason", label: "Reason", options: ReasonOptions, },
+    { key: "Reason", label: "Reason", options: ReasonOptions, },
 
   ];
 
@@ -227,9 +228,9 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
       (filters.Visited.length === 0 || filters.Visited.includes(c.Visited)) &&
       (filters.PhoneCalls.length === 0 || filters.PhoneCalls.includes(c.PhoneCalls)) &&
       (filters.Assignee.length === 0 || filters.Assignee.includes(c.Assignee)) &&
-    (filters.Reason.length === 0 || filters.Reason.includes(c.Reason)) &&
-    (filters.FieldMember.length === 0 || filters.FieldMember.includes(c.FieldMember)) &&
-    (filters.LeadSource.length === 0 || filters.LeadSource.includes(c.LeadSource));
+      (filters.Reason.length === 0 || filters.Reason.includes(c.Reason)) &&
+      (filters.FieldMember.length === 0 || filters.FieldMember.includes(c.FieldMember)) &&
+      (filters.LeadSource.length === 0 || filters.LeadSource.includes(c.LeadSource));
 
     /* 📅 DATE FLAGS */
     const isDateRangeSelected = !!(dateRange.from || dateRange.to);
@@ -526,7 +527,7 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
   //     }
   //   };
 
- const handleSave = async () => {
+  const handleSave = async () => {
     setSaving(true);
 
     try {
@@ -538,27 +539,6 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
          - FollowupDate NOT required
       ========================= */
 
-      for (let i = 0; i < editedRows.length; i++) {
-        const edited = editedRows[i] || {};
-        const original = rows[i] || {};
-
-        const leadStatus = edited.LeadStatus ?? original.LeadStatus;
-        const reason = edited.Reason ?? original.Reason;
-
-        if (
-          (leadStatus === "Not Interested" ||
-            leadStatus === "Follow Up") &&
-          !reason?.trim()
-        ) {
-          toast.dismiss();
-          toast.error(
-            `Reason is required when Lead Status is ${leadStatus}`,
-            { toastId: "reason-required" }
-          );
-          setSaving(false);
-          return;
-        }
-      }
 
       /* =========================
          🔵 STEP 2: BUILD PAYLOAD
@@ -659,6 +639,60 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
         return;
       }
 
+
+for (const row of payload) {
+  const {
+    LeadNo,
+    LeadStatus,
+    Reason,
+    FollowupDate
+  } = row;
+
+  console.log(
+    "Validating Payload LeadNo:",
+    LeadNo,
+    LeadStatus,
+    Reason,
+    FollowupDate
+  );
+
+  // 🔴 LeadStatus empty not allowed
+  if (!LeadStatus?.trim()) {
+    toast.dismiss();
+    toast.error(
+      `Lead Status is required (LeadNo: ${LeadNo})`,
+      { toastId: `leadstatus-${LeadNo}` }
+    );
+    setSaving(false);
+    return;
+  }
+
+  // 🔴 Reason validation
+  if (
+    (LeadStatus === "Not Interested" ||
+      LeadStatus === "Follow Up") &&
+    !Reason?.trim()
+  ) {
+    toast.dismiss();
+    toast.error(
+      `Reason is required when Lead Status is ${LeadStatus} (LeadNo: ${LeadNo})`,
+      { toastId: `reason-${LeadNo}` }
+    );
+    setSaving(false);
+    return;
+  }
+
+  // 🔴 Follow-up date validation
+  if (LeadStatus === "Follow Up" && !FollowupDate) {
+    toast.dismiss();
+    toast.error(
+      `Follow-up Date is required when Lead Status is Follow Up (LeadNo: ${LeadNo})`,
+      { toastId: `followup-${LeadNo}` }
+    );
+    setSaving(false);
+    return;
+  }
+}
       /* =========================
          🟢 STEP 4: API CALL
       ========================= */
@@ -911,6 +945,8 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
             className="w-full text-center bg-transparent outline-none  "
             shouldFocusOnRender
             isClearable
+              minDate={addDays(startOfDay(new Date()), 1)}
+
             /* 🔥 IMPORTANT FIX */
             /* 🔥 MAIN FIX */
             popperPlacement="bottom-start"
@@ -1222,7 +1258,7 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
             </button>
 
 
-          
+
             <div >
               <button
                 onClick={handleSave}
@@ -1234,13 +1270,13 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
             </div>
           </div>
           {selectedLeadNos.length > 0 && (
-              <button
-                onClick={() => setShowTransferModal(true)}
-                className="px-4 py-1 bg-orange-400 text-white rounded ml-3"
-              >
-                Transfer ({selectedLeadNos.length}) <i className="fa-solid fa-arrow-right"></i>
-              </button>
-            )}
+            <button
+              onClick={() => setShowTransferModal(true)}
+              className="px-4 py-1 bg-orange-400 text-white rounded ml-3"
+            >
+              Transfer ({selectedLeadNos.length}) <i className="fa-solid fa-arrow-right"></i>
+            </button>
+          )}
 
           <div className="text-end px-5">
             Total:{" "}

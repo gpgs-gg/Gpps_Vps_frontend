@@ -583,6 +583,7 @@ Bulk Created`,
         LeadSource: data?.LeadSource?.value || "",
         Assignee: data?.Assignee?.value || "",
         FieldMember: data?.FieldMember?.value || "",
+        FollowupDate: formatFollowupDate(data.FollowupDate) || "",
         // PhoneCalls: data?.PhoneCalls?.value || "",
         // WhatsAppMsgs: data?.WhatsAppMsgs?.value || "",
         // Visited: data?.visited?.value || "",
@@ -918,7 +919,7 @@ ${activeLead === tab ? "bg-orange-500 " : "text-gray-50 bg-orange-400 hover:bg-o
                 />
               </div>
 
-              {selectedClient && (
+              {/* {selectedClient && ( */}
                 <div className="">
                   <label className="text-sm text-gray-700">Followup Date</label>
                   <div className="w-full">
@@ -939,7 +940,7 @@ ${activeLead === tab ? "bg-orange-500 " : "text-gray-50 bg-orange-400 hover:bg-o
 
                   </div>
                 </div>
-              )}
+              {/* )} */}
               {/* Interested Location */}
               {/* <div>
                 <label className="text-sm text-gray-700">FollowupDate</label>
