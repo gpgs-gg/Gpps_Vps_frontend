@@ -648,41 +648,29 @@ for (const row of payload) {
     FollowupDate
   } = row;
 
-  console.log(
-    "Validating Payload LeadNo:",
-    LeadNo,
-    LeadStatus,
-    Reason,
-    FollowupDate
-  );
+  // // 🔴 LeadStatus required
+  // if (!LeadStatus?.trim()) {
+  //   toast.dismiss();
+  //   toast.error(
+  //     `Lead Status is required (LeadNo: ${LeadNo})`,
+  //     { toastId: `leadstatus-${LeadNo}` }
+  //   );
+  //   setSaving(false);
+  //   return;
+  // }
 
-  // 🔴 LeadStatus empty not allowed
-  if (!LeadStatus?.trim()) {
+  // 🔴 Reason required for ANY LeadStatus
+  if (LeadStatus?.trim() && !Reason?.trim()) {
     toast.dismiss();
     toast.error(
-      `Lead Status is required (LeadNo: ${LeadNo})`,
-      { toastId: `leadstatus-${LeadNo}` }
-    );
-    setSaving(false);
-    return;
-  }
-
-  // 🔴 Reason validation
-  if (
-    (LeadStatus === "Not Interested" ||
-      LeadStatus === "Follow Up") &&
-    !Reason?.trim()
-  ) {
-    toast.dismiss();
-    toast.error(
-      `Reason is required when Lead Status is ${LeadStatus} (LeadNo: ${LeadNo})`,
+      `Reason is required when Lead Status is selected (LeadNo: ${LeadNo})`,
       { toastId: `reason-${LeadNo}` }
     );
     setSaving(false);
     return;
   }
 
-  // 🔴 Follow-up date validation
+  // 🔴 Follow-up Date ONLY for Follow Up
   if (LeadStatus === "Follow Up" && !FollowupDate) {
     toast.dismiss();
     toast.error(
@@ -692,8 +680,7 @@ for (const row of payload) {
     setSaving(false);
     return;
   }
-}
-      /* =========================
+} /* =========================
          🟢 STEP 4: API CALL
       ========================= */
 
@@ -871,7 +858,7 @@ for (const row of payload) {
           <Select
             autoFocus
             isClearable
-            isDisabled={isReasonDisabled}   // ✅ CORRECT
+            // isDisabled={isReasonDisabled}   // ✅ CORRECT
             value={options.find(o => o.value === value) || null}
             options={options}
             styles={employeeSelectStyles}
@@ -927,7 +914,7 @@ for (const row of payload) {
             }}
 
             onChange={(selected) => {
-              if (isReasonDisabled) return;
+              // if (isReasonDisabled) return;
               handleCellEdit(rowIndex, field, selected?.value || "");
             }}
           />
@@ -1175,7 +1162,7 @@ for (const row of payload) {
                 onMouseEnter={() => setOpenFilter(f.key)}
                 onMouseLeave={() => setOpenFilter(null)}
               >
-                <button className="border border-black px-4 py-1 text-black rounded-xl bg-white shadow flex items-center gap-2 whitespace-nowrap">
+                <button className="bg-white border border-orange-400 px-4 py-1 text-orange-400 rounded-xl shadow flex items-center gap-2 whitespace-nowrap">
                   {f.icon}{f.label}
                   {filters[f.key].length > 0 && (
                     <span className="text-sm bg-orange-400 text-white px-2 rounded-full">
@@ -1412,7 +1399,7 @@ for (const row of payload) {
                       {client.Assignee?.slice(0, 8)}
                     </td>
 
-                    <td className="flex justify-center items-center gap-5 sticky h-16  bg-white ">
+                    <td className="flex justify-center items-center gap-5 sticky right-0  h-16  bg-gray-100">
                       <button
                         onClick={() => handleEdit(client)}
                         className="text-red-500 flex text-md items-center justify-center"

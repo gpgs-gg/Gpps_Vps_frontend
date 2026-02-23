@@ -40,6 +40,19 @@ export const useAddBooking = () => {
 
 
 
+// GET request to fetch property data
+const fetchNewBookingData = async () => {
+  const response = await apiClient.get("/get-new-booking");
+  return response.data;
+};
+
+// React Query hook to fetch property data
+export const useNewBookingData = () => {
+  return useQuery({
+    queryKey: ["new-booking"],
+    queryFn: fetchNewBookingData,
+  });
+};
 
 
 

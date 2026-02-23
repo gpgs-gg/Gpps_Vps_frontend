@@ -40,6 +40,7 @@ import LeadsNavigation from './components_office_use_only/LeadsForGpgs/LeadsNavi
 import PropertyManagement from "./components_office_use_only/Properties_Management/PropertyManagement";
 import TodoBankTransaction from './components_office_use_only/BankTransaction/TodoBankTransaction';
 import Main from './components_office_use_only/ExpanseTodo/Main';
+import NewBookingTable from './components_office_use_only/NewBooking/NewBookingTable';
 // import Footer from './components/Footer';
 // import { useAuth } from './context/AuthContext';
 
@@ -391,6 +392,15 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
               <Main />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/gpgs-actions/new-booking-list"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+              <NewBookingTable />
             </ProtectedRoute>
           }
         />

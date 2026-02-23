@@ -274,10 +274,10 @@ const stats = [
   { title: "Total Leads", value: finalLeads.length, accent: "border-blue-500 whitespace-nowrap" },
   { title: "Booking Done", value: finalLeads.filter(l => l.LeadStatus === "Booked").length, accent: "border-green-500 whitespace-nowrap" },
   { title: "Follow Up", value: finalLeads.filter(l => l.LeadStatus === "Follow Up").length, accent: "border-red-500 whitespace-nowrap" },
-  { title: "Calling Not Done", value: finalLeads.filter(l => l.PhoneCalls === "Not Done").length, accent: "border-red-500 whitespace-nowrap" },
+  { title: "Ringing", value: finalLeads.filter(l => l.LeadStatus === "Ringing").length, accent: "border-red-500 whitespace-nowrap" },
   { title: "Visited Not Done", value: finalLeads.filter(l => l.Visited === "No").length, accent: "border-red-500 whitespace-nowrap" },
-  { title: "Intrested But Depalyed", value: finalLeads.filter(l => l.LeadStatus === "Intrested but Delayed ").length, accent: "border-yellow-500 whitespace-nowrap" },
-  { title: "Not Interested", value: finalLeads.filter(l => l.LeadStatus === "Not Interested").length, accent: "border-cyan-500" },
+  // { title: "Intrested But Depalyed", value: finalLeads.filter(l => l.LeadStatus === "Intrested but Delayed ").length, accent: "border-yellow-500 whitespace-nowrap" },
+  { title: "Lost", value: finalLeads.filter(l => l.LeadStatus === "Lost").length, accent: "border-cyan-500" },
 ];
 // const last7DaysLeads = leadsDetails?.filter((lead) => {
 //   if (!lead?.Date) return false;
