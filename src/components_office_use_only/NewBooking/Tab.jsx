@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { useApp } from "../TicketSystem/AppProvider";
+// import { useApp } from "../TicketSystem/AppProvider";
 import Navigation from "./Navigation";
 import { useNewBookingData } from "./services";
 
 function Tab() {
   const [activeTab, setActiveTab] = useState("Dashboard");
-  const { setSelectedClient } = useApp(null);
   const [editingClient, setEditingClient] = useState(null);
+  
   const { data: NewBookingSheetData, isPending: isNewBookingPending } = useNewBookingData();
 
   const tabClass = (tab) =>
@@ -48,10 +48,18 @@ function Tab() {
           </button>
 
           <button
+            className={tabClass("Tab5")}
+            onClick={() => setActiveTab("Tab5")}
+          >
+            <span>
+              <i className="fas fa-plus"></i> New Booking
+            </span>
+          </button>
+          <button
             className={activeTab === "Tab4" ? tabClass("Tab4") : tabClass("Tab2")}
             onClick={() => {
               setActiveTab("Tab2");
-              setSelectedClient(null);
+              setEditingClient(null);
             }}
           >
             <span>
@@ -64,16 +72,19 @@ function Tab() {
 
           <button
             className={tabClass("Tab3")}
-            onClick={() => setActiveTab("Tab3")}
+            onClick={() => {setActiveTab("Tab3");
+              setEditingClient(null)
+            }}
           >
             <span>
-              <i className="fas fa-user-plus"></i> Move to PG Client List
+              <i className="fas fa-user"></i> Move to PG Client List
             </span>
           </button>
+
         </div>
       </div>
       <Navigation NewBookingSheetData={NewBookingSheetData} activeTab={activeTab} setActiveTab={setActiveTab} setEditingClient={setEditingClient} editingClient={editingClient}
-        isNewBookingPending={isNewBookingPending}
+        isNewBookingPending={isNewBookingPending} 
       />
 
     </>

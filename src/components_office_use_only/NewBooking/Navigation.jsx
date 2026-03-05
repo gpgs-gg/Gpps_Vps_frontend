@@ -1,12 +1,12 @@
 
 import Dashboard from './Dashboard';
+import NewBooking from './NewBooking';
 import NewBookingForm from './NewBookingForm';
 import NewBookingTable from './NewBookingTable';
 import Tab from './Tab';
 // import Leads from './Leads';
 
-function Navigation({activeTab, setActiveTab , setEditingClient, editingClient , NewBookingSheetData , isNewBookingPending}) {
-
+function Navigation({activeTab, setActiveTab , setEditingClient, editingClient , NewBookingSheetData , isNewBookingPending }) {
     switch(activeTab) {
        case "Dashboard":
     // code block
@@ -19,12 +19,14 @@ function Navigation({activeTab, setActiveTab , setEditingClient, editingClient ,
    return <NewBookingTable activeTab={activeTab}  setActiveTab={setActiveTab} setEditingClient={setEditingClient} editingClient={editingClient} NewBookingSheetData = {NewBookingSheetData}/>;
   case "Tab4":
    return <NewBookingForm activeTab={activeTab}  setActiveTab={setActiveTab} editingClient={editingClient} NewBookingSheetData = {NewBookingSheetData}/>;
+     case "Tab5":
+   return <NewBooking activeTab={activeTab}  setActiveTab={setActiveTab} editingClient={editingClient} NewBookingSheetData = {NewBookingSheetData} setEditingClient = {setEditingClient}/>;
   default:
     // code block
 }
   return (
     <div className=" max-h-[800px] border border-green-500 bg-[#F8F9FB]">
-      <Tab activeTab={activeTab} setActiveTab={setActiveTab} NewBookingSheetData = {NewBookingSheetData}/>
+      <Tab activeTab={activeTab} setActiveTab={setActiveTab} NewBookingSheetData = {NewBookingSheetData} />
     </div>
   )
 }

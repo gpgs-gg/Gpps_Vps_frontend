@@ -470,12 +470,11 @@ function NewBookingTable({ activeTab, setActiveTab, setEditingClient, NewBooking
 
   const generateWhatsappMessage = (c) => {
 
-    const hasTemp = c.TempPropCode && c.TempPropCode.trim() !== "";
-    const hasPerm = c.PermPropCode && c.PermPropCode.trim() !== "";
+    const hasTemp = c.TempPropCode?.trim();
+    const hasPerm = c.PermPropCode?.trim();
 
     const permRentExists = Number(c.PermBedRentAmt) > 0;
 
-    // Join Date priority
     const joinDate = c.PermBedDOJ || c.TempBedDOJ;
 
     const isValidHike =
@@ -483,14 +482,12 @@ function NewBookingTable({ activeTab, setActiveTab, setEditingClient, NewBooking
       joinDate &&
       new Date(c.UpcomingRentHikeDt) > new Date(joinDate);
 
-    let message =
-      `Payment Details For ${c.ClientFullName}  ( Contact No : ${c.WhatsAppNo} )
-
-`;
+    let message = `Payment Details For ${c.ClientFullName} (Contact No: ${c.WhatsAppNo})\n\n`;
 
     /* ================= TEMP ================= */
     if (hasTemp) {
-      message += `Temporary PG Facility Code: ${c.TempPropCode}
+      message +=
+        `Temporary PG Facility Code: ${c.TempPropCode}
 Room No.: ${c.TempRoomNo || "NA"}
 Bed No.: ${c.TempBedNo || "NA"}
 AC Room: ${c.TempACRoom || "NA"}
@@ -498,12 +495,14 @@ Start Date: ${c.TempBedDOJ || "NA"}
 Last Date: ${c.TempBedLDt || "NA"}
 Temporary Bed Rent Amount: ₹${c.TempBedRentAmt || 0}
 (This rent is from ${c.TempBedDOJ || "NA"} to ${c.TempBedLDt || "NA"}, monthly fixed rent is ₹${c.TempBedMonthlyFixRent || 0})
+
 `;
     }
 
     /* ================= PERMANENT ================= */
     if (hasPerm) {
-      message += `Permanent PG Facility Code: ${c.PermPropCode}
+      message +=
+        `Permanent PG Facility Code: ${c.PermPropCode}
 Room No.: ${c.PermRoomNo || "NA"}
 Bed No.: ${c.PermBedNo || "NA"}
 AC Room: ${c.PermACRoom || "NA"}
@@ -514,51 +513,61 @@ Permanent Bed Rent Amount: ₹${c.PermBedRentAmt || 0}
 Permanent Bed Deposit Amount: ₹${c.PermBedDepositAmt || 0}
 `;
     }
+
     /* ================= COMMON ================= */
     const rentNote = permRentExists
-      ? "( Please Note : Permanent Bed Rent is included )"
-      : "( Please Note : Rent amount is NOT included )";
-    message += `Processing Fees: ₹${c.ProcessingFeesAmt || 0}
-Total Amount to be paid: ₹${c.TotalAmt || 0}  ${rentNote}
+      ? "( Please Note: Permanent Bed Rent is included )"
+      : "( Please Note: Rent amount is NOT included )";
+    message +=
+      `Processing Fees: ₹${c.ProcessingFeesAmt || 0}
+Total Amount to be paid: ₹${c.TotalAmt || 0} ${rentNote}
 
 📌 The booking is confirmed only after full amount ₹${c.TotalAmt || 0} is received by us.
-📌 Payment is not refundable if you cancel the booking for any reason. Please read the agreement file sent to your WhatsApp and contact us if you have any concerns.
+📌 Payment is not refundable if you cancel the booking for any reason. Please read the
+     agreement file sent to your WhatsApp and contact us if you have any concerns.
 
 `;
 
-    /* ================= RENT HIKE (BOTTOM) ================= */
+    /* ================= RENT HIKE ================= */
+
     if (isValidHike) {
-      message += `📌 Upcoming Rent Hike Details — Date: ${c.UpcomingRentHikeDt} | Amount: ₹${c.UpcomingRentHikeAmt || 0}
+      message +=
+        `📌 Upcoming Rent Hike Details — Date: ${c.UpcomingRentHikeDt} | Amount: ₹${c.UpcomingRentHikeAmt || 0}
 
 `;
     }
 
-    /* ================= FOOTER ================= */
+    /* ================= FOOTER (FIXED) ================= */
 
-    message += `Gopal's Paying Guest Services
+    message +=
+      `Gopal's Paying Guest Services
 (Customer Care No: 8928191814 | Service Hours: 10AM to 7PM)
-
 Note: This is a system-generated message and does not require a signature.`;
 
-    return message;
+    /* ===== FINAL CLEAN (VERY IMPORTANT) ===== */
+
+    return message
+      .replace(/\u200B/g, "") // remove zero-width chars
+      .replace(/\r/g, "")
+      .normalize("NFC")
+      .trim();
   };
 
   const handleMsgRegenerate = (client) => {
-    const msg = generateWhatsappMessage(client);
-
-    setSelectedClient(client);
-    setWhatsAppMsg(msg);
-    setShowMsgPopup(true);
+    setEditingClient(client);
+    setActiveTab("Tab5");
   };
+
   const sendToWhatsapp = () => {
     if (!selectedClient?.WhatsAppNo) return;
 
     const phone = selectedClient.WhatsAppNo.replace(/\D/g, "");
     const encodedMsg = encodeURIComponent(whatsAppMsg);
 
-    const url = `https://wa.me/91${phone}?text=${encodedMsg}`;
-
-    window.open(url, "_blank");
+    window.open(
+      `https://api.whatsapp.com/send?phone=91${phone}&text=${encodedMsg}`,
+      "_blank"
+    );
 
     setShowMsgPopup(false);
   };
@@ -632,7 +641,7 @@ Note: This is a system-generated message and does not require a signature.`;
         <table className="min-w-full border border-blue-500">
           <thead className="bg-black text-center text-white sticky top-0 z-20 whitespace-nowrap">
             <tr>
-              <th className="p-4 sticky left-[0px] z-20 bg-black border text-white">Sr No</th>
+              <th className="p-4 sticky left-[0px] z-20 bg-black border text-white">Booking Id</th>
               <th className="p-4 sticky left-[60px] z-20 bg-black border text-white">Client Full Name</th>
               <th className="px-4 border">Date</th>
               <th className="px-4 border">WhatsApp No</th>
@@ -647,7 +656,7 @@ Note: This is a system-generated message and does not require a signature.`;
               <th className="px-4 border">Temp AC Room</th>
               <th className="px-4 border">Temp Bed DOJ</th>
               <th className="px-4 border">Temp Bed LDt</th>
-              <th className="px-4 border">Temp Bed Rent Amtt</th>
+              <th className="px-4 border">Temp Bed Rent Amt</th>
               <th className="px-4 border">Temp Bed Rent Comnt</th>
               <th className="px-4 border">Temp Bed Monthly Fix Rent</th>
               <th className="px-4 border">Perm Prop Code</th>
@@ -693,7 +702,7 @@ Note: This is a system-generated message and does not require a signature.`;
               const displayIndex = actualIndex + 1;
 
               return (
-                <tr key={actualIndex} className="text-center border">
+                <tr key={actualIndex} className="text-center border ">
                   <td className="sticky left-[0px] bg-gray-100 z-10">
                     {client.NewBookingId || displayIndex}
                   </td>
@@ -854,7 +863,10 @@ Note: This is a system-generated message and does not require a signature.`;
                           className="text-orange-500 text-lg rounded transition"
                           onClick={() => handleMsgRegenerate(client)}
                         >
-                          <i className="fa fa-paper-plane" aria-hidden="true"></i>
+                          <i
+                            className="fa fa-paper-plane"
+                            style={{ transform: "scaleX(-1)" }}
+                          ></i>
                         </button>
                       </>
                     )}
@@ -925,8 +937,9 @@ Note: This is a system-generated message and does not require a signature.`;
 
             <textarea
               value={whatsAppMsg}
+              disabled
               onChange={(e) => setWhatsAppMsg(e.target.value)}
-              className="w-full h-72 border rounded p-3 text-sm"
+              className="w-full h-96 border outline-none  rounded p-3 text-sm"
             />
 
             <div className="flex justify-end gap-3 mt-4">
@@ -942,7 +955,7 @@ Note: This is a system-generated message and does not require a signature.`;
                 onClick={sendToWhatsapp}
                 className="px-4 py-2 bg-green-500 text-white rounded"
               >
-               <i class="fa-brands fa-whatsapp"></i> Send
+                <i class="fa-brands fa-whatsapp"></i> Send
               </button>
 
             </div>

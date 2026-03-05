@@ -196,11 +196,11 @@ const Gpgsaction = () => {
                   <Link to="/gpgs-actions/beds-avilable" className={subBtnClasses}>
                     🛏️ Bed Status
                   </Link>
-                  <Link to="/gpgs-actions/new-booking" className={subBtnClasses}>
+                  {/* <Link to="/gpgs-actions/new-booking" className={subBtnClasses}>
                     ➕ New Booking
-                  </Link>
+                  </Link> */}
                   <Link to="/gpgs-actions/new-booking-list" className={subBtnClasses}>
-                    📋 New Booking List
+                    📋 New Booking 
                   </Link>
                   <Link to="/gpgs-actions/client-list" className={subBtnClasses}>
                     📋PG Client List
@@ -233,7 +233,7 @@ const Gpgsaction = () => {
                     View Calculated EBs
                   </Link>
                     <Link to="/gpgs-actions/new-booking-list" className={subBtnClasses}>
-                    📋 New Booking List
+                    📋 New Booking 
                   </Link>
                     <Link to="/gpgs-actions/client-list" className={subBtnClasses}>
                     📋 PG Client List

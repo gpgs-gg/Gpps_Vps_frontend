@@ -51,7 +51,7 @@ const PropertyFormSection = memo(({
   employeeSelectStyles,
   MONTH_SHORT_NAMES
 }) => {
-  const inputClass = 'w-full px-3 py-2 mt-1 border-2 border-orange-200 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400';
+  const inputClass = 'w-full px-3 py-2 mt-1 border border-orange-500 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400';
 
   const renderError = (field) =>
     errors[field] && <p className="text-red-500 text-sm mt-1">{errors[field]?.message}</p>;
@@ -196,7 +196,7 @@ const PropertyFormSection = memo(({
                     dateFormat="MMM yyyy"
                     showMonthYearPicker
                     placeholderText="Select month"
-                    className=" border-2 focus:ring-1 w-32 focus:ring-orange-300 px-3 py-2 border-orange-300 outline-none rounded-md"
+                    className=" border focus:ring-1 w-32 focus:ring-orange-300 px-3 py-2 border-orange-500 outline-none rounded-md"
                   />
                 );
               }}
@@ -239,7 +239,7 @@ const PropertyFormSection = memo(({
         </div>
       )}
 
-      
+
       {activeTab == "temporary" && (
         <div className='lg:grid grid-cols-3'>
           <div>
@@ -318,7 +318,7 @@ const PropertyFormSection = memo(({
             {renderError(`${titlePrefix}PropCode`)}
 
           </div>
-          
+
         </div>
       )}
 
@@ -571,10 +571,6 @@ const PropertyFormSection = memo(({
       )}
 
 
-
-
-
-
       {/* Comments */}
       <div>
         <label>Comments</label>
@@ -589,7 +585,7 @@ const PropertyFormSection = memo(({
   );
 });
 
-const NewBooking = () => {
+const NewBooking = ({ editingClient, setEditingClient }) => {
   const [showPermanent, setShowPermanent] = useState(true);
   const [showtemporary, setShowtemporary] = useState(false);
   const [activeTab, setActiveTab] = useState('permanent');
@@ -602,7 +598,6 @@ const NewBooking = () => {
   const [permanentPropertyFilledChecked, setPermanentPropertyFilledChecked] = useState()
   const [applyPermBedRent, setApplyPermBedRent] = useState(true);
   const decryptedUserRef = useRef(null);
-             console.log("decryptedUserRef", decryptedUserRef)
   useEffect(() => {
     const encrypted = localStorage.getItem("user");
     const decrypted = decryptUser(encrypted);
@@ -649,11 +644,11 @@ const NewBooking = () => {
       .matches(/^[0-9]{10}$/, 'Enter valid 10-digit contact number'),
 
     // Permanent
-    PermPropCode: yup.string().when('$showPermanent', {
-      is: true,
-      then: schema => schema.required('Property code is required'),
-      otherwise: schema => schema,
-    }),
+    // PermPropCode: yup.string().when('$showPermanent', {
+    //   is: true,
+    //   then: schema => schema.required('Property code is required'),
+    //   otherwise: schema => schema,
+    // }),
     PermBedNo: yup.string().when('$showPermanent', {
       is: true,
       then: schema => schema.required('Bed number is required'),
@@ -681,11 +676,12 @@ const NewBooking = () => {
     // }),
 
     // temporary
-    TempPropCode: yup.string().when('$showtemporary', {
-      is: true,
-      then: schema => schema.required('Property code is required'),
-      otherwise: schema => schema,
-    }),
+    // TempPropCode: yup.string().when('$showtemporary', {
+    //   is: true,
+    //   then: schema => schema.required('Property code is required'),
+    //   otherwise: schema => schema,
+    // }),
+
     TempBedNo: yup.string().when('$showtemporary', {
       is: true,
       then: schema => schema.required('Bed number is required'),
@@ -747,8 +743,8 @@ const NewBooking = () => {
   const { mutate: submitBooking, isPending, isSuccess } = useAddBooking();
   const { data: propertyList, isLoading: isPropertyLoading } = usePropertyData();
   const { data: EmployeeDetails } = useEmployeeDetails();
-  const { data: singleSheetData, isLoading: isPropertySheetData } = usePropertySheetData(selectedSheetId , selectedPerm);
-  const { data: singleTempSheetData, isLoading: isTempPropertySheetData } = useTempPropertySheetData(selectedTempSheetId ,selectedTemp);
+  const { data: singleSheetData, isLoading: isPropertySheetData } = usePropertySheetData(selectedSheetId, selectedPerm);
+  const { data: singleTempSheetData, isLoading: isTempPropertySheetData } = useTempPropertySheetData(selectedTempSheetId, selectedTemp);
 
   const formData = watch();
 
@@ -765,7 +761,125 @@ const NewBooking = () => {
     setPermanentPropertyFilledChecked(permCount)
   }, [formData]);
 
+  const convertToInputDate = (dateStr) => {
+    if (!dateStr) return "";
 
+    const date = new Date(dateStr);
+    if (isNaN(date)) return "";
+
+    return date.toISOString().split("T")[0];
+  };
+
+
+  useEffect(() => {
+    if (!editingClient) return;
+
+    // Set client fields
+    setValue('ClientFullName', editingClient.ClientFullName || '');
+    setValue('WhatsAppNo', editingClient.WhatsAppNo || '');
+    setValue('CallingNo', editingClient.CallingNo || '');
+    setValue('EmgyCont1FullName', editingClient.EmgyCont1FullName || '');
+    setValue('EmgyCont1No', editingClient.EmgyCont1No || '');
+    setValue('EmgyCont2FullName', editingClient.EmgyCont2FullName || '');
+    setValue('EmgyCont2No', editingClient.EmgyCont2No || '');
+    setValue('EmailId', editingClient.EmailId || '');
+    setValue('AskForBAOrFA', editingClient.AskForBAOrFA?.trim() || '');
+
+    // Check for permanent fields
+    const hasPerm = editingClient.PermPropCode || editingClient.PermBedNo || editingClient.PermRoomNo;
+    if (hasPerm) {
+      setShowPermanent(true);
+      // Set permanent fields
+      setValue('PermPropCode', editingClient.PermPropCode || '');
+      setValue('PermBedNo', editingClient.PermBedNo || '');
+      setValue('PermRoomNo', editingClient.PermRoomNo || '');
+      setValue('PermACRoom', editingClient.PermACRoom || '');
+      setValue('PermBedMonthlyFixRent', editingClient.PermBedMonthlyFixRent || '');
+      setValue('PermBedDepositAmt', editingClient.PermBedDepositAmt || '');
+      setValue('PermBedDOJ', convertToInputDate(editingClient.PermBedDOJ) || '');
+      setValue('PermBedLDt', convertToInputDate(editingClient.PermBedLDt) || '');
+      setValue('PermBedRentAmt', editingClient.PermBedRentAmt || '');
+      setValue('PermUpcomingRentHikeDt', editingClient.PermUpcomingRentHikeDt || '');
+      setValue('PermUpcomingRentHikeAmt', editingClient.PermUpcomingRentHikeAmt || '');
+      setValue('PermComments', editingClient.PermComments || '');
+      // Set selectedBedNumber state
+      if (editingClient.PermBedNo) {
+        setSelectedBedNumber(editingClient.PermBedNo);
+      }
+      // For property code, we need to find matching option in propertyList later
+      // We'll handle in another useEffect that depends on propertyList
+    }
+
+    // Check for temp fields
+    const hasTemp = editingClient.TempPropCode || editingClient.TempBedNo || editingClient.TempRoomNo;
+    if (hasTemp) {
+      setShowtemporary(true);
+      setValue('TempPropCode', editingClient.TempPropCode || '');
+      setValue('TempBedNo', editingClient.TempBedNo || '');
+      setValue('TempRoomNo', editingClient.TempRoomNo || '');
+      setValue('TempACRoom', editingClient.TempACRoom || '');
+      setValue('TempBedMonthlyFixRent', editingClient.TempBedMonthlyFixRent || '');
+      setValue('TempBedDepositAmt', editingClient.TempBedDepositAmt || '');
+      setValue('TempBedDOJ', convertToInputDate(editingClient.TempBedDOJ) || '');
+      setValue('TempBedLDt', convertToInputDate(editingClient.TempBedLDt) || '');
+      setValue('TempBedRentAmt', editingClient.TempBedRentAmt || '');
+      setValue('TempUpcomingRentHikeDt', editingClient.TempUpcomingRentHikeDt || '');
+      setValue('TempUpcomingRentHikeAmt', editingClient.TempUpcomingRentHikeAmt || '');
+      setValue('TempComments', editingClient.TempComments || '');
+      if (editingClient.TempBedNo) {
+        settempSelectedBedNumber(editingClient.TempBedNo);
+      }
+    }
+
+    // Set active tab: prefer permanent if both
+    if (hasPerm) setActiveTab('permanent');
+    else if (hasTemp) setActiveTab('temporary');
+
+    // Set processing fees
+    setValue('ProcessingFeesAmt', editingClient.ProcessingFeesAmt || '');
+
+    // Set month pickers from DOJ dates
+    if (editingClient.PermBedDOJ) {
+      const date = new Date(editingClient.PermBedDOJ);
+      if (!isNaN(date)) {
+        const month = MONTH_SHORT_NAMES[date.getMonth()];
+        const year = date.getFullYear();
+        setValue('selectedPermMonth', `${month}${year}`);
+      }
+    }
+    if (editingClient.TempBedDOJ) {
+      const date = new Date(editingClient.TempBedDOJ);
+      if (!isNaN(date)) {
+        const month = MONTH_SHORT_NAMES[date.getMonth()];
+        const year = date.getFullYear();
+        setValue('selectedTempMonth', `${month}${year}`);
+      }
+    }
+  }, [editingClient, setValue]);
+
+  useEffect(() => {
+    if (!editingClient || !propertyList?.data) return;
+
+    // For permanent property code
+    if (editingClient.PermPropCode) {
+      const permOption = propertyList.data.find(item => item["Property Code"] === editingClient.PermPropCode);
+      if (permOption) {
+        const compositeValue = `${permOption["PG Main  Sheet ID"]},${permOption["Bed Count"]},${permOption["Property Code"]}`;
+        setValue('PermPropCode', { value: compositeValue, label: permOption["Property Code"] });
+        setSelctedSheetId(compositeValue);
+      }
+    }
+
+    // For temp property code
+    if (editingClient.TempPropCode) {
+      const tempOption = propertyList.data.find(item => item["Property Code"] === editingClient.TempPropCode);
+      if (tempOption) {
+        const compositeValue = `${tempOption["PG Main  Sheet ID"]},${tempOption["Bed Count"]},${tempOption["Property Code"]}`;
+        setValue('TempPropCode', { value: compositeValue, label: tempOption["Property Code"] });
+        setSelctedTempSheetId(compositeValue);
+      }
+    }
+  }, [editingClient, propertyList, setValue]);
 
 
   // Memoized handlers to prevent recreation on each render
@@ -800,7 +914,7 @@ const NewBooking = () => {
   const handlePropertyCodeChange = useCallback((e, titlePrefix) => {
 
     const value = `${e.target.value}`;
- 
+
 
     setSelctedSheetId(value);
     setValue(`${titlePrefix}PropCode`, value);
@@ -837,56 +951,56 @@ const NewBooking = () => {
 
 
 
-// Handle bed number change — only updates state
-const handleBedNoChange = useCallback((e) => {
-  const selectedBedNo = e.target.value;
-  setSelectedBedNumber(selectedBedNo);
-  // settempSelectedBedNumber(selectedBedNo);
-}, []);
+  // Handle bed number change — only updates state
+  const handleBedNoChange = useCallback((e) => {
+    const selectedBedNo = e.target.value;
+    setSelectedBedNumber(selectedBedNo);
+    // settempSelectedBedNumber(selectedBedNo);
+  }, []);
 
-// useEffect to update form values whenever selectedBedNumber changes
-useEffect(() => {
-  if (!selectedBedNumber) return;
-  const matchedRow = singleSheetData?.data?.find(
-    (row) => row["BedNo"]?.trim() === selectedBedNumber
-  );
+  // useEffect to update form values whenever selectedBedNumber changes
+  useEffect(() => {
+    if (!selectedBedNumber) return;
+    const matchedRow = singleSheetData?.data?.find(
+      (row) => row["BedNo"]?.trim() === selectedBedNumber
+    );
 
-  if (matchedRow) {
-    const acNonAc = matchedRow["ACRoom"]?.trim() || "";
-    const rentAmt = matchedRow["MFR"] || "";
-   
-    setValue(`PermACRoom`, acNonAc);
-    setValue(`PermBedNo`, selectedBedNumber);
-    setValue(`PermBedMonthlyFixRent`, rentAmt);
-    setValue(`PermBedDepositAmt`, matchedRow["DA"]?.trim() || "");
-    setValue(`PermUpcomingRentHikeDt`, matchedRow["URHD"]?.trim() || "");
-    setValue(`PermUpcomingRentHikeAmt`, matchedRow["URHA"]?.trim() || "");
-    setValue(`PermRoomNo`, matchedRow["RoomNo"]?.trim() || "");
-  } else {
-    // reset values if no match
-    setValue(`PermAcRoom`, "");
-    setValue(`PermBedRentAmt`, "");
-    setValue(`PermroomNo`, "");
-    setValue(`PermroomAcNonAc`, "");
-    setValue(`PermBedMonthlyFixRent`, "");
-    setValue(`PermBedDepositAmt`, "");
-    setValue(`PermUpcomingRentHikeAmt`, "");
-    setValue(`PermrevisionAmount`, "");
-    setValue(`PermRoomNo`, "");
-    setValue(`PermBedNo`, selectedBedNumber);
-  }
-}, [selectedBedNumber, singleSheetData, setValue]);
+    if (matchedRow) {
+      const acNonAc = matchedRow["ACRoom"]?.trim() || "";
+      const rentAmt = matchedRow["MFR"] || "";
+
+      setValue(`PermACRoom`, acNonAc);
+      setValue(`PermBedNo`, selectedBedNumber);
+      setValue(`PermBedMonthlyFixRent`, rentAmt);
+      setValue(`PermBedDepositAmt`, matchedRow["DA"]?.trim() || "");
+      setValue(`PermUpcomingRentHikeDt`, matchedRow["URHD"]?.trim() || "");
+      setValue(`PermUpcomingRentHikeAmt`, matchedRow["URHA"]?.trim() || "");
+      setValue(`PermRoomNo`, matchedRow["RoomNo"]?.trim() || "");
+    } else {
+      // reset values if no match
+      setValue(`PermAcRoom`, "");
+      setValue(`PermBedRentAmt`, "");
+      setValue(`PermroomNo`, "");
+      setValue(`PermroomAcNonAc`, "");
+      setValue(`PermBedMonthlyFixRent`, "");
+      setValue(`PermBedDepositAmt`, "");
+      setValue(`PermUpcomingRentHikeAmt`, "");
+      setValue(`PermrevisionAmount`, "");
+      setValue(`PermRoomNo`, "");
+      setValue(`PermBedNo`, selectedBedNumber);
+    }
+  }, [selectedBedNumber, singleSheetData, setValue]);
 
 
   const handleTempBedNoChange = useCallback((e, titlePrefix) => {
     const selectedTempBedNo = e.target.value;
     // setSelectedBedNumber(selectedBedNo);
-    settempSelectedBedNumber(selectedTempBedNo) 
-  },[])
+    settempSelectedBedNumber(selectedTempBedNo)
+  }, [])
 
-  useEffect(()=>{
-      if (!tempSelectedBedNumber) return;
-  const matchedRow = singleTempSheetData?.data?.find(
+  useEffect(() => {
+    if (!tempSelectedBedNumber) return;
+    const matchedRow = singleTempSheetData?.data?.find(
       (row) => row["BedNo"]?.trim() === tempSelectedBedNumber
     );
 
@@ -913,8 +1027,8 @@ useEffect(() => {
       setValue(`TempRoomNo`, "");
       setValue(`TempBedNo`, tempSelectedBedNumber);
     }
-  },[tempSelectedBedNumber, singleTempSheetData, setValue])
-  
+  }, [tempSelectedBedNumber, singleTempSheetData, setValue])
+
 
 
   const handlePermanentCheckbox = useCallback((checked) => {
@@ -968,24 +1082,25 @@ useEffect(() => {
       ID: decryptedUserRef?.current?.employee?.EmployeeID,
       EmployeeName: decryptedUserRef?.current?.employee?.Name,
       ClientFullName: data.ClientFullName,
+      NewBookingId: editingClient?.NewBookingId,
       WhatsAppNo: data.WhatsAppNo,
       CallingNo: data.CallingNo,
       EmgyCont1FullName: data.EmgyCont1FullName,
       EmgyCont1No: data.EmgyCont1No,
       EmgyCont2FullName: data.EmgyCont2FullName,
       EmgyCont2No: data.EmgyCont2No,
-      AskForBAOrFA: data.AskForBAOrFA,
+      AskForBAOrFA: data.AskForBAOrFA?.trim(),
       EmailId: data.EmailId,
       ProcessingFeesAmt: data.ProcessingFeesAmt,
       UpcomingRentHikeDt: data.PermUpcomingRentHikeDt,
       UpcomingRentHikeAmt: data.PermUpcomingRentHikeAmt,
       TotalAmt: TotalAmt,
       BookingAmt:
-        data.AskForBAOrFA === "Full_Amount "
+        data.AskForBAOrFA?.trim() === "Full_Amount "
           ? TotalAmt
           : Number(data.PermBedMonthlyFixRent),
       BalanceAmt:
-        data.AskForBAOrFA === "Full_Amount "
+        data.AskForBAOrFA?.trim() === "Full_Amount "
           ? 0
           : TotalAmt - Number(data.PermBedMonthlyFixRent),
     };
@@ -998,7 +1113,7 @@ useEffect(() => {
         .filter((key) => key.startsWith("Perm"))
         .forEach((key) => {
           if (key === "PermPropCode" && data[key]) {
-            const parts = data[key].split(",");
+            const parts = String(data[key]?.value || data[key] || "").split(",");
             filteredData[key] = parts[2] || "";
           } else if (dateFields.includes(key) && data[key]) {
             const date = new Date(data[key]);
@@ -1020,7 +1135,7 @@ useEffect(() => {
         .filter((key) => key.startsWith("Temp"))
         .forEach((key) => {
           if (key === "TempPropCode" && data[key]) {
-            const parts = data[key].split(",");
+            const parts = String(data[key]?.value || data[key] || "").split(",");
             filteredData[key] = parts[2] || "";
           } else if (dateFields.includes(key) && data[key]) {
             const date = new Date(data[key]);
@@ -1108,7 +1223,7 @@ useEffect(() => {
     });
   }, [submitBooking, formPreviewData, reset]);
 
-  const inputClass = 'w-full px-3 py-2 mt-1 border-2 border-orange-200 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400';
+  const inputClass = 'w-full px-3 py-2 mt-1 border border-orange-500 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400';
 
   const renderError = (field) =>
     errors[field] && <p className="text-red-500 text-sm mt-1">{errors[field]?.message}</p>;
@@ -1123,9 +1238,9 @@ useEffect(() => {
       paddingLeft: "0.75rem",
       paddingRight: "0.50rem",
       marginTop: "0.30rem",
-      borderWidth: "2px",
+      borderWidth: "1px",
       borderStyle: "solid",
-      borderColor: state.isFocused ? "#fb923c" : "#fdba74",
+      borderColor: state.isFocused ? "#f97316" : "#f97316",
       borderRadius: "0.375rem",
       boxShadow: state.isFocused
         ? "0 0 0 2px rgba(251,146,60,0.5)"
@@ -1148,11 +1263,11 @@ useEffect(() => {
 
   return (
     <div className="max-w-8xl mx-auto bg-[#F8F9FB] min-h-screen">
-      <div className="bg-[#F8F9FB] shadow-lg rounded-xl  p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-10 mt-20">
+      <div className="bg-[#F8F9FB] shadow-lg rounded-xl ">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
           {/* === CLIENT DETAILS === */}
           <section className="bg-white border border-gray-200 rounded-lg p-2 shadow-sm">
-            <h3 className="text-xl font-semibold mb-4 border-b pb-2 bg-orange-300 text-black p-2 rounded-sm">Client Details</h3>
+            <h3 className="text-xl font-semibold mb-4 border-b pb-2 bg-black text-white p-2 rounded-sm">Client Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {[
                 { name: 'ClientFullName', label: 'Full Name' },
@@ -1178,14 +1293,14 @@ useEffect(() => {
               ))}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">AskFor ₹</label>
+                <label className="block text-sm font-medium  text-gray-700 after:content-['*'] after:ml-1 after:text-red-500">AskFor ₹</label>
                 <Controller
                   name="AskForBAOrFA"
                   control={control}
                   defaultValue={null}
                   render={({ field }) => {
                     const options = AskFor?.map((ele) => ({
-                      value: `${ele.value} `,
+                      value: `${ele.value}`,
                       label: `${ele.label}`,
                     }));
 
@@ -1211,7 +1326,7 @@ useEffect(() => {
             {/* Permanent Property Card */}
             <label
               className={`group cursor-pointer flex items-center gap-4 w-full sm:w-80 p-4 border rounded-xl transition-all duration-300 shadow-sm
-      ${showPermanent ? ' border-orange-200 ring-2 ring-orange-200' : 'bg-white hover:shadow-lg'}`}
+      ${showPermanent ? ' border border-orange-500 ring-orange-200' : 'bg-white hover:shadow-lg'}`}
             >
               <input
                 type="checkbox"
@@ -1230,7 +1345,7 @@ useEffect(() => {
 
             <label
               className={`group cursor-pointer flex items-center gap-4 w-full sm:w-80 p-4 border rounded-xl transition-all duration-300 shadow-sm
-      ${showtemporary ? ' border-orange-200 ring-2 ring-orange-200' : 'bg-white hover:shadow-lg'}`}
+      ${showtemporary ? ' border border-orange-500 ring-orange-200' : 'bg-white hover:shadow-lg'}`}
             >
               <input
                 type="checkbox"
@@ -1251,7 +1366,7 @@ useEffect(() => {
                 {showPermanent && (
                   <button
                     type="button"
-                    className={`px-4 text-[20px] md:text-[20px] py-2 ${activeTab === 'permanent' ? 'bg-orange-300 text-black rounded-t-lg' : ''
+                    className={`px-4 text-[20px] md:text-[20px] py-2 ${activeTab === 'permanent' ? 'bg-black text-white rounded-t-lg' : ''
                       }`}
                     onClick={() => setActiveTab('permanent')}
                   >
@@ -1261,7 +1376,7 @@ useEffect(() => {
                 {showtemporary && (
                   <button
                     type="button"
-                    className={`px-4 text-[20px] py-2 ${activeTab === 'temporary' ? 'bg-orange-300 text-black rounded-t-lg' : ''
+                    className={`px-4 text-[20px] py-2 ${activeTab === 'temporary' ? 'bg-black text-white rounded-t-lg' : ''
                       }`}
                     onClick={() => setActiveTab('temporary')}
                   >
@@ -1317,10 +1432,20 @@ useEffect(() => {
           <div className='flex px-2 justify-center'>
             <button
               type="submit"
-              className="px-5 py-2 text-lg bg-orange-300 text-black rounded-lg hover:bg-orange-400 transition-all shadow-md"
+              className="px-5 py-2  mb-10 text-lg bg-gray-900 text-white rounded-lg hover:bg-black  transition-all shadow-md"
             >
               Submit Booking
             </button>
+
+            {/* <button
+            type='button'
+              onClick={() => {
+                setEditingClient(null);
+              }}
+              className="px-5 py-2 text-lg bg-gray-900 text-white rounded-lg hover:bg-black  transition-all shadow-md"
+            >
+              Cancel
+            </button> */}
           </div>
 
         </form>
