@@ -50,20 +50,34 @@ function ClientLeads({ activeLead, setActiveLead, setActiveTab, modalType, setMo
     //   .nullable()
     //   .required("Lead Status is required"),
     //   }),
+Reason: yup
+  .object()
+  .nullable()
+  .test(
+    "reason-required",
+    "Reason is required when Lead Status is selected",
+    function (value) {
+      const { LeadStatus } = this.parent;
 
-    Reason: yup
-      .object()
-      .nullable()
-      .when("LeadStatus", {
-        is: (leadStatus) =>
-          leadStatus?.value === "Not Interested" ||
-          leadStatus?.value === "Follow Up",
-        then: (schema) =>
-          schema.required(
-            "Reason is required when Lead Status is Not Interested or Follow Up"
-          ),
-        otherwise: (schema) => schema.nullable(),
-      }),
+      // Agar LeadStatus Booked ya New nahi hai
+      if (
+        LeadStatus?.value !== "Booked" &&
+        LeadStatus?.value !== "New" &&
+        LeadStatus?.value !== undefined
+      ) {
+        // Check object properly
+        if (!value || !value.value || !value.value.trim()) {
+          return this.createError({
+            message: `Reason is required when Lead Status is ${LeadStatus?.value}`,
+          });
+        }
+      }
+
+      return true;
+    }
+  ),
+
+  
   });
 
 
@@ -132,9 +146,7 @@ function ClientLeads({ activeLead, setActiveLead, setActiveTab, modalType, setMo
       })) || [];
   }, [EmployeeDetails]);
 
-  const watchedLeadStatus = watch("LeadStatus");
-  const effectiveLeadStatus =
-    watchedLeadStatus?.value === "Not Interested" || watchedLeadStatus?.value === "Follow Up";
+
 
   useEffect(() => {
     reset({}, { keepErrors: false });
@@ -1043,7 +1055,7 @@ ${activeLead === tab ? "bg-orange-500 " : "text-gray-50 bg-orange-400 hover:bg-o
                       isClearable
                       styles={employeeSelectStyles}
                       options={selectOptionReason}
-                      isDisabled={!effectiveLeadStatus}
+                      // isDisabled={!effectiveLeadStatus}
                     />
                   )}
                 />

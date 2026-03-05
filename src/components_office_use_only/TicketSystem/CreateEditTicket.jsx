@@ -1917,7 +1917,6 @@ export const CreateEditTicket = ({ isEdit = false }) => {
   const [previews, setPreviews] = useState([]);
   const [decryptedUser, setDecryptedUser] = useState(null);
   const [activePreview, setActivePreview] = useState(null);
-
   const isImage = (name) => /\.(jpg|jpeg|png|gif|webp)$/i.test(name);
   const isVideo = (name) => /\.(mp4|webm|avi|mov|mkv)$/i.test(name);
 

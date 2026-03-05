@@ -41,6 +41,9 @@ import PropertyManagement from "./components_office_use_only/Properties_Manageme
 import TodoBankTransaction from './components_office_use_only/BankTransaction/TodoBankTransaction';
 import Main from './components_office_use_only/ExpanseTodo/Main';
 import NewBookingTable from './components_office_use_only/NewBooking/NewBookingTable';
+import Tab from './components_office_use_only/NewBooking/Tab';
+import ClientNavigation from './components_office_use_only/ClientCreation/ClientNavigation';
+import ClientTab from './components_office_use_only/ClientCreation/ClientTab';
 // import Footer from './components/Footer';
 // import { useAuth } from './context/AuthContext';
 
@@ -400,7 +403,15 @@ function App() {
           path="/gpgs-actions/new-booking-list"
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
-              <NewBookingTable />
+              <Tab />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/gpgs-actions/client-list"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+              <ClientTab />
             </ProtectedRoute>
           }
         />

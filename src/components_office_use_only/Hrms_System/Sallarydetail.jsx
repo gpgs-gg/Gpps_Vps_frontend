@@ -2352,6 +2352,7 @@ const lastDateOfSelectedMonth = new Date(selectedYear, monthIndex + 1, 0)
     else{
       sum = monthDaysArr.reduce((total, val) => total + (typeof val === "number" ? val : 0), 0);
     }
+
     return Math.max(0, Math.min(sum, 30));
   };
 

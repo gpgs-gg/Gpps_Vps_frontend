@@ -275,7 +275,7 @@ const stats = [
   { title: "Booking Done", value: finalLeads.filter(l => l.LeadStatus === "Booked").length, accent: "border-green-500 whitespace-nowrap" },
   { title: "Follow Up", value: finalLeads.filter(l => l.LeadStatus === "Follow Up").length, accent: "border-red-500 whitespace-nowrap" },
   { title: "Ringing", value: finalLeads.filter(l => l.LeadStatus === "Ringing").length, accent: "border-red-500 whitespace-nowrap" },
-  { title: "Visited Not Done", value: finalLeads.filter(l => l.Visited === "No").length, accent: "border-red-500 whitespace-nowrap" },
+  { title: "Visit Schedule", value: finalLeads.filter(l => l.Reason === "Visit Schedule").length, accent: "border-red-500 whitespace-nowrap" },
   // { title: "Intrested But Depalyed", value: finalLeads.filter(l => l.LeadStatus === "Intrested but Delayed ").length, accent: "border-yellow-500 whitespace-nowrap" },
   { title: "Lost", value: finalLeads.filter(l => l.LeadStatus === "Lost").length, accent: "border-cyan-500" },
 ];

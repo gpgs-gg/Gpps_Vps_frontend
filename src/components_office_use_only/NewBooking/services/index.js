@@ -123,3 +123,38 @@ export const useEmployeeDetails = () => {
   });
 };
 
+
+
+const updateClientMasterTable= async (data) => {
+  const response = await apiClient.post("/update-client-master-table", data);
+  return response.data;
+};
+
+export const useUpdateClientMasterTable = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateClientMasterTable,
+    onSuccess: () => {
+      // 🔄 Refetch ticket sheet after update
+      queryClient.invalidateQueries(["client-master-table"]);
+    },
+  });
+};
+
+const updateNewBookingTable= async (data) => {
+  const response = await apiClient.post("/update-new-booking-table", data);
+  return response.data;
+};
+
+export const useUpdateNewBookingTable = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateNewBookingTable,
+    onSuccess: () => {
+      // 🔄 Refetch ticket sheet after update
+      queryClient.invalidateQueries(["new-booking-table"]);
+    },
+  });
+};

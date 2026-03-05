@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import LeadsNavigation from "./LeadsNavigation";
 import { useApp } from "../TicketSystem/AppProvider";
+import Navigation from "./Navigation";
+import { useNewBookingData } from "./services";
 
-function LeadsTab() {
+function Tab() {
   const [activeTab, setActiveTab] = useState("Dashboard");
-  const [activeLead, setActiveLead] = useState("BulkUploadLeads");
   const { setSelectedClient } = useApp(null);
+  const [editingClient, setEditingClient] = useState(null);
+  const { data: NewBookingSheetData, isPending: isNewBookingPending } = useNewBookingData();
 
   const tabClass = (tab) =>
     `
@@ -20,16 +22,16 @@ function LeadsTab() {
 
   return (
     <>
-      <div className="relative mt-24 pt-2 px-4 sm:px-6 bg-[#F8F9FB] w-full border-gray-200 no-print overflow-hidden">
+      <div className="relative mt-24 pt-2 px-4 sm:px-6 bg-transparent w-full border-gray-200 no-print overflow-hidden">
 
         {/* Background Text */}
         <div className="absolute inset-0 flex items-center justify-end pointer-events-none select-none pr-6">
-          <h1 className="text-[50px] font-bold text-gray-500 opacity-20 whitespace-nowrap">
-            PG Leads List
+          <h1 className="text-[40px] font-bold text-gray-500 opacity-20 whitespace-nowrap">
+            PG New BOOKING List
           </h1>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs Section */}
         <div
           className="
       relative
@@ -46,34 +48,32 @@ function LeadsTab() {
           </button>
 
           <button
-            className={tabClass("leadsList")}
+            className={activeTab === "Tab4" ? tabClass("Tab4") : tabClass("Tab2")}
             onClick={() => {
-              setActiveTab("leadsList");
+              setActiveTab("Tab2");
               setSelectedClient(null);
             }}
           >
-            <span> <i className="fa-solid fa-table-list"></i> Leads List</span>
-          </button>
-
-
-          <button
-            className={activeTab === "UpdateLead" ? tabClass("UpdateLead") : tabClass("CreateLead")}
-            onClick={() => {
-              setActiveTab("CreateLead");
-              // setSelectedClient(null);
-              // setActiveLead("BulkUploadLeads");
-            }}
-          >
             <span>
-              {activeTab === "UpdateLead" ? <i className="fas fa-edit"></i> : <i className="fas fa-plus-circle"></i>} {activeTab === "UpdateLead" ? "Update Lead" : "Create Leads"}              
+              {activeTab === "Tab4" ?
+                <i className="fas fa-edit"></i> :
+                <i className="fa-solid fa-table-list"></i>}
+              {activeTab === "Tab4" ? " Update New Booking" : " New Booking List"}
             </span>
           </button>
 
+          <button
+            className={tabClass("Tab3")}
+            onClick={() => setActiveTab("Tab3")}
+          >
+            <span>
+              <i className="fas fa-user-plus"></i> Move to PG Client List
+            </span>
+          </button>
         </div>
-
       </div>
-      <LeadsNavigation activeTab={activeTab} setActiveTab={setActiveTab}
-        activeLead={activeLead} setActiveLead={setActiveLead}
+      <Navigation NewBookingSheetData={NewBookingSheetData} activeTab={activeTab} setActiveTab={setActiveTab} setEditingClient={setEditingClient} editingClient={editingClient}
+        isNewBookingPending={isNewBookingPending}
       />
 
     </>
@@ -81,4 +81,4 @@ function LeadsTab() {
   );
 }
 
-export default LeadsTab;
+export default Tab;

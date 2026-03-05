@@ -475,7 +475,7 @@ const CellWithTooltip = ({ value, fullValue, colIndex, columnKey }) => {
       //   View Attachment
       // </a>
       columnKey === "EBCalnDate" ? (
-        formatDate(value)
+      value
       ) : columnKey === "FlatEB" && value ? (
         `₹ ${Number(value).toFixed(2).toLocaleString("en-IN")}`
       ) : (
@@ -638,75 +638,84 @@ const CellWithTooltip = ({ value, fullValue, colIndex, columnKey }) => {
     <>
       <div className="min-h-screen w-auto bg-gray-50 pt-16">
         {/* NAVBAR */}
-        <nav className="px-1 sm:px-6 shadow-sm">
-          <div
-            className="
+   {/* NAVBAR */}
+<nav className="relative px-1 sm:px-6 shadow-sm overflow-hidden">
+
+   <div className="absolute inset-0 flex items-end justify-end pr-6 mt-10 ">
+  <h1 className="text-[40px] font-bold text-gray-500 opacity-20 whitespace-nowrap ">
+   ELECTRICITY BILL INFO
+  </h1>
+</div>
+
+  {/* Tabs */}
+  <div
+    className="
+      relative z-10
       grid grid-cols-2 gap-2 mt-10
       sm:flex sm:flex-row sm:space-x-6 sm:space-y-0
     "
-          >
-            {/* dashboard */}
-            <button
-              onClick={() => {
-                setActiveTab("DASHBOARD");
-                setEditingRow(null);
-              }}
-              className={`
-    flex items-center space-x-2 px-3 py-2 text-md sm:text-lg font-medium
-    rounded-md sm:rounded-t-lg border-b-2 transition-colors
-    ${
-      activeTab === "DASHBOARD"
-        ? "text-orange-600 border-orange-600 bg-orange-50"
-        : "text-black border-transparent hover:text-gray-900 hover:border-gray-300"
-    }
-  `}
-            >
-              <i className="fas fa-tachometer-alt"></i>
-              <span className="">Dashboard</span>
-            </button>
+  >
+    {/* dashboard */}
+    <button
+      onClick={() => {
+        setActiveTab("DASHBOARD");
+        setEditingRow(null);
+      }}
+      className={`
+        flex items-center space-x-2 px-3 py-2 text-md sm:text-lg font-medium
+        rounded-md sm:rounded-t-lg border-b-2 transition-colors
+        ${
+          activeTab === "DASHBOARD"
+            ? "text-orange-600 border-orange-600 bg-orange-50"
+            : "text-black border-transparent hover:text-gray-900 hover:border-gray-300"
+        }
+      `}
+    >
+      <i className="fas fa-tachometer-alt"></i>
+      <span>Dashboard</span>
+    </button>
 
-            {/* all eb info */}
-            <button
-              onClick={() => {
-                setActiveTab("EB");
+    {/* all eb info */}
+    <button
+      onClick={() => {
+        setActiveTab("EB");
+        setEditingRow(null);
+      }}
+      className={`
+        flex items-center space-x-2 px-3 py-2 text-md sm:text-lg font-medium
+        rounded-md sm:rounded-t-lg border-b-2 transition-colors
+        ${
+          activeTab === "EB"
+            ? "text-orange-600 border-orange-600 bg-orange-50"
+            : "text-black border-transparent hover:text-gray-900 hover:border-gray-300"
+        }
+      `}
+    >
+      <i className="fas fa-ticket-alt"></i>
+      <span>All EB Info</span>
+    </button>
 
-                setEditingRow(null);
-              }}
-              className={`
-    flex items-center space-x-2 px-3 py-2 text-md sm:text-lg font-medium
-    rounded-md sm:rounded-t-lg border-b-2 transition-colors
-    ${
-      activeTab === "EB"
-        ? "text-orange-600 border-orange-600 bg-orange-50"
-        : "text-black border-transparent hover:text-gray-900 hover:border-gray-300"
-    }
-  `}
-            >
-              <i className="fas fa-ticket-alt"></i>
-              <span>All EB Info</span>
-            </button>
-            {/* create new record */}
-            <button
-              onClick={() => {
-                setActiveTab("CREATE");
-
-                setEditingRow(null);
-              }}
-              className={`
-    flex items-center space-x-2 px-3 py-2 text-md sm:text-lg font-medium
-    rounded-md sm:rounded-t-lg border-b-2 transition-colors
-    ${
-      activeTab === "CREATE"
-        ? "text-orange-600 border-orange-600 bg-orange-50"
-        : "text-black border-transparent hover:text-gray-900 hover:border-gray-300"
-    }
-  `}
-            >
-              <i className="fas fa-plus-circle"></i>
-              <span>Create New</span>
-            </button>
-          </div>
-        </nav>
+    {/* create new record */}
+    <button
+      onClick={() => {
+        setActiveTab("CREATE");
+        setEditingRow(null);
+      }}
+      className={`
+        flex items-center space-x-2 px-3 py-2 text-md sm:text-lg font-medium
+        rounded-md sm:rounded-t-lg border-b-2 transition-colors
+        ${
+          activeTab === "CREATE"
+            ? "text-orange-600 border-orange-600 bg-orange-50"
+            : "text-black border-transparent hover:text-gray-900 hover:border-gray-300"
+        }
+      `}
+    >
+      <i className="fas fa-plus-circle"></i>
+      <span>Create New</span>
+    </button>
+  </div>
+</nav>
 
         {/* Dashboard */}
         {activeTab === "DASHBOARD" && (
@@ -833,7 +842,7 @@ const CellWithTooltip = ({ value, fullValue, colIndex, columnKey }) => {
                     </div>
 
                     {/* EB CALCULATION STATUS SELECT */}
-                    <div>
+                    {/* <div>
                       <label className="block text-lg  whitespace-nowrap font-medium text-gray-700 mb-1">
                         EB Calculation Status
                       </label>
@@ -848,7 +857,7 @@ const CellWithTooltip = ({ value, fullValue, colIndex, columnKey }) => {
                         menuPortalTarget={portalTarget}
                         menuPosition="absolute"
                       />
-                    </div>
+                    </div> */}
 
                     {/* EB PAID SELECT */}
                     <div>

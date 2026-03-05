@@ -546,61 +546,72 @@ export default function TodoBankTransaction() {
     <div className='min-h-screen w-auto bg-gray-50 pt-24'>
 
       {/* ================= TOP TABS ================= */}
-      <nav className="px-0 sm:px-0 shadow-sm">
-        <div className="bg-white rounded-t-lg  px-2 pt-2 flex items-center relative gap-6">
+    <nav className="px-0 sm:px-0 shadow-sm">
+  <div className="relative bg-gray-50 rounded-t-lg px-2 pt-2 flex items-center gap-6 overflow-hidden">
 
-          {/* Left buttons */}
-          <div className="flex gap-6">
-            <button
-              onClick={() => {
-                setActiveTab("DASHBOARD");
-                setEditingRow(null);
-                reset();
-              }}
-              className={`flex items-center space-x-2 px-3 py-2 text-md sm:text-lg font-medium rounded-md sm:rounded-t-lg border-b-2 transition-colors
-      ${activeTab === "DASHBOARD"
-                  ? "text-orange-600 border-orange-600 bg-orange-50"
-                  : "text-black border-transparent hover:text-gray-900 hover:border-gray-300"}`}
-            >
-              <i className="fas fa-tachometer-alt"></i>
-              <span>Dashboard</span>
-            </button>
+    {/* Flowing Background Text */}
+   <div className="absolute inset-0 flex items-center justify-end pointer-events-none select-none pr-6 animate-floatRight">
+  <h1 className="text-[50px] font-bold text-gray-500 opacity-20 whitespace-nowrap">
+    Bank Transaction List
+  </h1>
+</div>
 
-            <button
-              onClick={() => {
-                setActiveTab("LIST");
-                setEditingRow(null);
-                reset();
-              }}
-              className={`flex items-center space-x-2 px-3 py-2 text-md sm:text-lg font-medium rounded-md sm:rounded-t-lg border-b-2 transition-colors
-      ${activeTab === "LIST" ? "text-orange-600 border-orange-600 bg-orange-50"
-                  : "text-black border-transparent hover:text-gray-900 hover:border-gray-300"}`}
-            >
-              <i className="fas fa-ticket-alt"></i>
-              <span>All Info</span>
-            </button>
-          </div>
+    {/* Left buttons */}
+    <div className="relative z-10 flex gap-6">
+      <button
+        onClick={() => {
+          setActiveTab("DASHBOARD");
+          setEditingRow(null);
+          reset();
+        }}
+        className={`flex items-center space-x-2 px-3 py-2 text-md sm:text-lg font-medium rounded-md sm:rounded-t-lg border-b-2 transition-colors
+        ${
+          activeTab === "DASHBOARD"
+            ? "text-orange-600 border-orange-600 bg-orange-50"
+            : "text-black border-transparent hover:text-gray-900 hover:border-gray-300"
+        }`}
+      >
+        <i className="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+      </button>
 
-          {/* Center heading */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 font-bold text-xl text-gray-800">
-            Bank Transaction
-          </div>
+      <button
+        onClick={() => {
+          setActiveTab("LIST");
+          setEditingRow(null);
+          reset();
+        }}
+        className={`flex items-center space-x-2 px-3 py-2 text-md sm:text-lg font-medium rounded-md sm:rounded-t-lg border-b-2 transition-colors
+        ${
+          activeTab === "LIST"
+            ? "text-orange-600 border-orange-600 bg-orange-50"
+            : "text-black border-transparent hover:text-gray-900 hover:border-gray-300"
+        }`}
+      >
+        <i className="fas fa-ticket-alt"></i>
+        <span>All Info</span>
+      </button>
+    </div>
 
-          {/* Right buttons */}
-          {editingRow && (
-            <button
-              className={`flex items-center space-x-2 px-3 py-2 text-md sm:text-lg font-medium rounded-md sm:rounded-t-lg border-b-2 transition-colors
-      ${activeTab === "CREATE"
-                  ? "text-orange-600 border-orange-600 bg-orange-50"
-                  : "text-black border-transparent hover:text-gray-900 hover:border-gray-300"}`}
-            >
-              <i className="fas fa-edit"></i>
-              <span>Update Transaction Info</span>
-            </button>
-          )}
+ 
 
-        </div>
-      </nav>
+    {/* Right buttons */}
+    {editingRow && (
+      <button
+        className={`relative z-10 flex items-center space-x-2 px-3 py-2 text-md sm:text-lg font-medium rounded-md sm:rounded-t-lg border-b-2 transition-colors
+        ${
+          activeTab === "CREATE"
+            ? "text-orange-600 border-orange-600 bg-orange-50"
+            : "text-black border-transparent hover:text-gray-900 hover:border-gray-300"
+        }`}
+      >
+        <i className="fas fa-edit"></i>
+        <span>Update Transaction Info</span>
+      </button>
+    )}
+  </div>
+</nav>
+
 
       {/* ================= DASHBOARD ================= */}
       {activeTab === "DASHBOARD" && (

@@ -74,6 +74,7 @@ export const TicketFilters = () => {
 
 
     const allowedClientDepartments = ['Maintenance', 'Sales', 'Accounts', 'Housekeeping'];
+    
 const DepartmentOptions = [
   { label: "All Departments", value: "" },
   ...(

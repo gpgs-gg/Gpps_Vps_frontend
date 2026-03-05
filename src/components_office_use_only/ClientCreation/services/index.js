@@ -3,8 +3,9 @@ import axios from "axios";
 
 const apiClient = axios.create({
   baseURL: `${process.env.REACT_APP_BASE_URL}`, // for vercel deployement
-  // baseURL: "http://localhost:3000/api", // for Local Developement
+  // baseURL: "http://localhost:5000/api", // for Local Developement
 });
+
 
 const fetchClientDetailsData = async () => {
   const response = await apiClient.get("/Clients-details");
@@ -76,3 +77,19 @@ export const useUploadClientDocs = () => {
   });
 };
 
+
+const postClientMasterDeatails = async (data)=> {
+    const result =await apiClient.post('/insert-property-row',data)
+  return result.data
+};
+
+export const useCreateClientMasterDetails =() =>{
+    const queryClient = useQueryClient(); 
+
+    return useMutation({
+      mutationFn: postClientMasterDeatails,
+      onSuccess:()=>{
+        queryClient.invalidateQueries(['ClientMasterDetails'])
+      }
+    })
+  }

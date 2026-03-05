@@ -16,6 +16,8 @@ function LeadsNavigation({activeTab, setActiveTab  , activeLead, setActiveLead})
     return <LeadsTable setActiveTab={setActiveTab} activeLead={activeLead} setActiveLead={setActiveLead} />;
   case "CreateLead":
    return <ClientLeads activeLead={activeLead} setActiveLead={setActiveLead} setActiveTab={setActiveTab}/>;
+  case "UpdateLead":
+   return <ClientLeads activeLead={activeLead} setActiveLead={setActiveLead} setActiveTab={setActiveTab}/>;
   default:
     // code block
 }

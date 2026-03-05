@@ -165,15 +165,15 @@ export const CreateAndEdit = ({
 
   const propertyCodeOptions = editingRow
     ? propertyCodes.map((code) => ({
+      value: code,
+      label: code,
+    }))
+    : propertyCodes
+      .filter((code) => !normalizedExistingCodes.includes(normalize(code)))
+      .map((code) => ({
         value: code,
         label: code,
-      }))
-    : propertyCodes
-        .filter((code) => !normalizedExistingCodes.includes(normalize(code)))
-        .map((code) => ({
-          value: code,
-          label: code,
-        }));
+      }));
   //console.log("property code options : ", propertyCodeOptions);
   const assigneeOptions = reviewerOptions;
 
@@ -217,7 +217,8 @@ export const CreateAndEdit = ({
         toast.warn("Please select a valid month before saving.");
         return;
       }
-
+console.log("editingRow.WorkLogs:", editingRow?.WorkLogs);
+console.log("formData.WorkLogHistory:", formData.WorkLogHistory);
       /* ==================================================
        🚫 DUPLICATE PROPERTY CHECK (
     ================================================== */
@@ -357,7 +358,6 @@ export const CreateAndEdit = ({
 
       // 1️⃣ Old attachment URLs
       const oldUrls = existingAttachments.map((f) => f.url);
-      console.log("oldurl of image : ", oldUrls);
 
       // 2️⃣ Append new files
       files.forEach((file) => {
@@ -366,7 +366,6 @@ export const CreateAndEdit = ({
 
       // 3️⃣ Send old URLs to backend
       multipartData.append("existingAttachments", JSON.stringify(oldUrls));
-      console.log("multipartData : ", multipartData);
 
       if (editingRow) {
         await updateMutation.mutateAsync({
@@ -520,7 +519,7 @@ export const CreateAndEdit = ({
             </div>
 
             {/*  date  */}
-            <div className="">
+            {/* <div className="">
               <label className="block text-sm font-medium text-black mb-2">
                 EB Calculation Date
               </label>
@@ -543,6 +542,37 @@ export const CreateAndEdit = ({
                     className="w-full border-2 border-orange-300 rounded-md px-3 py-2
                    focus:outline-none focus:ring-2 focus:ring-orange-300"
                   />
+                )}
+              />
+            </div> */}
+
+
+
+
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">
+              EB Calculation Date
+              </label>
+              <Controller
+                control={control}
+                  name="EBCalnDate"
+                // rules={{ required: "Flat EB is required" }}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <input
+                      type="number"
+                      {...field}
+                      disabled
+                      placeholder="Enter Flat EB"
+                      className="w-full border-2 border-orange-300 rounded-md px-3 py-2
+            focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    />
+                    {error && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {error.message}
+                      </p>
+                    )}
+                  </>
                 )}
               />
             </div>
@@ -614,7 +644,7 @@ export const CreateAndEdit = ({
                     {...field}
                     placeholder="Enter sub meter details"
                     className="w-full  border-2 border-orange-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-300"
-                    // disabled={editingRow} // Disable when editing
+                  // disabled={editingRow} // Disable when editing
                   />
                 )}
               />

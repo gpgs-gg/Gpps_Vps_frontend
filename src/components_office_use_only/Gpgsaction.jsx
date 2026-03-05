@@ -190,23 +190,30 @@ const Gpgsaction = () => {
 
               {activePopup === "SALES" && (
                 <>
+                 <Link to="/gpgs-actions/leads-list" className={subBtnClasses}>
+                    📋 PG Leads
+                  </Link>
                   <Link to="/gpgs-actions/beds-avilable" className={subBtnClasses}>
                     🛏️ Bed Status
                   </Link>
                   <Link to="/gpgs-actions/new-booking" className={subBtnClasses}>
                     ➕ New Booking
                   </Link>
-                  <Link to="/gpgs-actions/leads-list" className={subBtnClasses}>
-                    📋 PG Leads
+                  <Link to="/gpgs-actions/new-booking-list" className={subBtnClasses}>
+                    📋 New Booking List
                   </Link>
+                  <Link to="/gpgs-actions/client-list" className={subBtnClasses}>
+                    📋PG Client List
+                  </Link>
+                 
                 </>
               )}
 
               {activePopup === "ACCOUNTS" && (
                 <>
-                  <Link to="/gpgs-actions/Client-Creation" className={subBtnClasses}>
+                  {/* <Link to="/gpgs-actions/Client-Creation" className={subBtnClasses}>
                     Client Creation
-                  </Link>
+                  </Link> */}
                   <Link to="/gpgs-actions/bank-transaction" className={subBtnClasses}>
                     Bank Transaction
                   </Link>
@@ -224,6 +231,12 @@ const Gpgsaction = () => {
                   </Link>
                   <Link to="/gpgs-actions/eb-calculated-list" className={subBtnClasses}>
                     View Calculated EBs
+                  </Link>
+                    <Link to="/gpgs-actions/new-booking-list" className={subBtnClasses}>
+                    📋 New Booking List
+                  </Link>
+                    <Link to="/gpgs-actions/client-list" className={subBtnClasses}>
+                    📋 PG Client List
                   </Link>
                 </>
               )}

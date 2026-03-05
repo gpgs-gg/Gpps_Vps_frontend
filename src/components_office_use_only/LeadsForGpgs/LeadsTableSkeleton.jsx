@@ -1,7 +1,7 @@
 export const LeadsTableSkeleton = () => {
   return (
     <div className="max-w-full mx-auto mt-3 p-2 bg-gray-50 rounded-lg shadow-md animate-pulse">
-      
+
       {/* ===== FILTER BAR SKELETON ===== */}
       <div className="flex flex-wrap gap-3 mb-4 justify-center">
         {Array.from({ length: 6 }).map((_, i) => (
@@ -19,7 +19,7 @@ export const LeadsTableSkeleton = () => {
             <tr>
               {Array.from({ length: 12 }).map((_, i) => (
                 <th key={i} className="p-4">
-                  <div className="h-4 bg-black text-gray-200  rounded" />
+                  <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
                 </th>
               ))}
             </tr>

@@ -1,298 +1,957 @@
 import React, { useEffect, useRef, useState } from "react";
 import Select from "react-select";
 import DatePicker from "react-datepicker";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import "react-datepicker/dist/react-datepicker.css";
 import {
-    useDynamicDetails,
-
+  useDynamicDetails,
 } from "../TicketSystem/Services/index";
-import { useNewBookingData } from "./services";
-function NewBookingTable() {
-    const { data: dynamicData } = useDynamicDetails();
-    const { data: NewBookingSheetData } = useNewBookingData();
+import { useUpdateClientMasterTable, useUpdateNewBookingTable } from "./services";
+import { SelectStyles } from "../../Config";
+import { useUpdateClientCreation } from "../ClientCreation/services";
+import { toast } from "react-toastify";
+import { FullTableSkeleton, TableSkeleton } from "./Skeleton";
+import { Link } from "react-router-dom";
 
-    const [rows, setRows] = useState([]);
-    const [editedRows, setEditedRows] = useState([]);
-    const [editingCell, setEditingCell] = useState(null);
-    //   const [selectedLeadNos, setSelectedLeadNos] = useState([]);
-    const [hasChanges, setHasChanges] = useState(false);
+function NewBookingTable({ activeTab, setActiveTab, setEditingClient, NewBookingSheetData, isNewBookingPending }) {
+  const { data: dynamicData } = useDynamicDetails();
+  // const { data: NewBookingSheetData } = useNewBookingData();
+  const { mutate: updateNewBooking, isPending: isUpdatingBooking } = useUpdateNewBookingTable();
+  const { mutate: updateClientMasterTable, isPending } = useUpdateClientMasterTable();
 
-    const menuOpenRef = useRef(false);
+  // ========== FILTER STATES ==========
+  const [searchInput, setSearchInput] = useState("");
+  const [dateRange, setDateRange] = useState({ from: null, to: null });
+  const [isDefaultMode, setIsDefaultMode] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(null);
 
-    /* ================= LOAD DATA ================= */
-    useEffect(() => {
-        if (NewBookingSheetData?.data) {
-            setRows(NewBookingSheetData?.data);
-            setEditedRows(NewBookingSheetData?.data); // clone for editing
-        }
-    }, [NewBookingSheetData]);
 
-    const paginatedRows = editedRows; // (pagination logic add karu shakto later)
+  const [currentPage, setCurrentPage] = useState(() => {
+    const saved = localStorage.getItem("currentPage");
+    const parsed = Number(saved);
+    return !isNaN(parsed) && parsed > 0 ? parsed : 1;
+  });
+  const [rows, setRows] = useState([]);
+  const [editedRows, setEditedRows] = useState([]);
+  const [editingCell, setEditingCell] = useState(null);
+  const PerPage = 20;
+  //   const [selectedLeadNos, setSelectedLeadNos] = useState([]);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [savingRow, setSavingRow] = useState(null);
 
-    /* ================= HANDLE EDIT ================= */
-    const handleCellEdit = (rowIndex, field, value) => {
-        setEditedRows((prev) => {
-            const updated = [...prev];
-            updated[rowIndex] = { ...updated[rowIndex], [field]: value };
-            return updated;
-        });
-        setHasChanges(true);
-    };
+  const menuOpenRef = useRef(false);
 
-    /* ================= OPTIONS ================= */
-    const getOptions = (field) => {
-        if (!dynamicData?.data) return [];
+  /* ================= LOAD DATA ================= */
+  useEffect(() => {
+    if (NewBookingSheetData?.data) {
+      setRows(NewBookingSheetData?.data);
+      setEditedRows(NewBookingSheetData?.data); // clone for editing
+    }
+  }, [NewBookingSheetData]);
 
-        const unique = (key) =>
-            Array.from(
-                new Set(dynamicData.data.map((i) => i[key]).filter(Boolean))
-            ).map((v) => ({ label: v, value: v }));
+  // ========== FILTERING LOGIC ==========
+  const filteredBySearchAndDate = editedRows.filter((row) => {
+    // ✅ Search filter (all columns)
+    if (searchInput.trim() !== "") {
+      const search = searchInput.toLowerCase();
 
-        switch (field) {
-            case "Gender":
-                return unique("Gender");
-            case "Reason":
-                return unique("Reason");
-            case "LeadStatus":
-                return unique("LeadStatus");
-            case "FieldMember":
-                return unique("FieldMember");
-            default:
-                return [];
-        }
-    };
+      const rowString = Object.values(row)
+        .join(" ")
+        .toLowerCase();
 
-    /* ================= EDITABLE CELL ================= */
-    const EditableCell = ({ rowIndex, field }) => {
-        const isEditing =
-            editingCell?.rowIndex === rowIndex &&
-            editingCell?.field === field;
+      if (!rowString.includes(search)) return false;
+    }
+    // Date range filter (using the "Date" field)
+    if (dateRange.from || dateRange.to) {
+      const rowDateStr = row.Date;
+      if (!rowDateStr) return false; // no date -> exclude from range filter
 
-        const value = editedRows[rowIndex]?.[field] || "";
+      const rowDate = parse(rowDateStr, "d MMM yyyy", new Date());
+      if (isNaN(rowDate)) return false; // invalid date -> exclude
 
-        const selectFields = [
-            "Gender",
-            "LeadStatus",
-            "Reason",
-            "FieldMember",
-        ];
+      if (dateRange.from) {
+        const from = new Date(dateRange.from);
+        from.setHours(0, 0, 0, 0);
+        if (rowDate < from) return false;
+      }
+      if (dateRange.to) {
+        const to = new Date(dateRange.to);
+        to.setHours(23, 59, 59, 999);
+        if (rowDate > to) return false;
+      }
+    }
+    return true;
+  });
 
-        if (!isEditing) {
-            return (
-                <td
-                    className="cursor-pointer px-5"
-                    onDoubleClick={() => setEditingCell({ rowIndex, field })}
-                >
-                    {value || "-"}
-                </td>
-            );
-        }
+  // Apply active tab filter
+  const normalize = (val) =>
+    (val ?? "").toString().trim().toLowerCase();
 
-        /* ===== SELECT FIELD ===== */
-        if (selectFields.includes(field)) {
-            const options = getOptions(field);
+  const filteredRows =
+    activeTab === "Tab3"
+      ? filteredBySearchAndDate.filter((ele) => {
+        const bookingStatus = normalize(ele.BookingStatus);
+        // const clientMaster = normalize(ele.AddedToClientMaster);
+        const Status = normalize(ele.Status);
+        return bookingStatus === "booked" && Status?.toLowerCase()?.trim() !== "closed";
+      })
+      : filteredBySearchAndDate;
 
-            return (
-                <td className="border relative text-center whitespace-nowrap">
-                    <Select
-                        autoFocus
-                        value={options.find((o) => o.value === value) || null}
-                        options={options}
-                        menuPortalTarget={document.body}
-                        menuPosition="fixed"
-                        onChange={(selected) => {
-                            handleCellEdit(rowIndex, field, selected?.value || "");
-                            setEditingCell(null);
-                        }}
-                        onBlur={() => setEditingCell(null)}
-                    />
-                </td>
-            );
-        }
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchInput, dateRange, activeTab]);
 
-        /* ===== DATE FIELD ===== */
-        // if (field === "FollowupDate") {
-        //   return (
-        //     <td className="border text-center ">
-        //       <DatePicker
-        //         selected={value ? new Date(value) : null}
-        //         dateFormat="d MMM yyyy"
-        //         className="w-full text-center bg-transparent outline-none"
-        //         onChange={(date) => {
-        //           const formatted = date
-        //             ? format(date, "d MMM yyyy")
-        //             : "";
-        //           handleCellEdit(rowIndex, field, formatted);
-        //           setEditingCell(null);
-        //         }}
-        //         onBlur={() => setEditingCell(null)}
-        //       />
-        //     </td>
-        //   );
-        // }
+  const totalPages = Math.ceil(filteredRows.length / PerPage);
+  const paginatedRows = filteredRows.slice(
+    (currentPage - 1) * PerPage,
+    currentPage * PerPage
+  );
 
-        /* ===== INPUT FIELD ===== */
-        return (
-            <td className="border relative ">
-                <div className="absolute inset-0 flex items-center justify-center z-10">
-                    <input
-                        autoFocus
-                        defaultValue={value}
-                        className="h-full w-full bg-transparent border-2 text-center focus:outline-none"
-                        onBlur={(e) => {
-                            handleCellEdit(rowIndex, field, e.target.value);
-                            setEditingCell(null);
-                        }}
-                    />
-                </div>
-            </td>
+  /* ================= HANDLE EDIT ================= */
+  const handleCellEdit = (rowIndex, field, value) => {
+    setEditedRows((prev) => {
+      const updated = [...prev];
+      updated[rowIndex] = { ...updated[rowIndex], [field]: value };
+      return updated;
+    });
+    setHasChanges(true);
+  };
+
+  /* ================= OPTIONS ================= */
+  const getOptions = (field) => {
+    if (!dynamicData?.data) return [];
+
+    const unique = (key) =>
+      Array.from(
+        new Set(dynamicData.data.map((i) => i[key]).filter(Boolean))
+      ).map((v) => ({ label: v, value: v }));
+
+    switch (field) {
+      case "Gender":
+        return unique("Gender");
+      case "Reason":
+        return unique("Reason");
+      case "LeadStatus":
+        return unique("LeadStatus");
+      case "FieldMember":
+        return unique("FieldMember");
+      default:
+        return [];
+    }
+  };
+
+  /* ================= EDITABLE CELL ================= */
+  // const EditableCell = ({ rowIndex, field }) => {
+  //   const isEditing =
+  //     editingCell?.rowIndex === rowIndex &&
+  //     editingCell?.field === field;
+
+  //   const value = editedRows[rowIndex]?.[field] || "";
+
+  //   const fieldOrder = [
+  //     "EmployeeName",
+  //     "ClientFullName",
+  //     "WhatsAppNo",
+  //     "CallingNo",
+  //     "EmgyCont1FullName",
+  //     "EmgyCont1No",
+  //     "EmgyCont2FullName",
+  //     "EmgyCont2No",
+  //     "TempPropCode",
+  //     "TempRoomNo",
+  //     "TempBedNo",
+  //     "TempACRoom",
+  //     "TempBedDOJ",
+  //     "TempBedLDt",
+  //     "TempBedRentAmtt",
+  //     "TempBedRentComnt",
+  //     "TempBedMonthlyFixRent",
+  //     "PermPropCode",
+  //     "PermBedNo"
+  //   ];
+
+  //   const selectFields = [
+  //     "PermPropCode",
+  //   ];
+
+  //   if (!isEditing) {
+  //     return (
+  //       <td
+  //         className="cursor-pointer px-5"
+  //         onDoubleClick={() => setEditingCell({ rowIndex, field })}
+  //       >
+  //         {value || "-"}
+  //       </td>
+  //     );
+  //   }
+
+  //   const getNextCell = (rowIndex, field, direction = "right") => {
+  //     const colIndex = fieldOrder.indexOf(field);
+  //     let newRow = rowIndex;
+  //     let newCol = colIndex;
+
+  //     if (direction === "right") {
+  //       newCol++;
+  //       if (newCol >= fieldOrder.length) {
+  //         newCol = 0;
+  //         newRow++;
+  //       }
+  //     } else if (direction === "left") {
+  //       newCol--;
+  //       if (newCol < 0) {
+  //         newCol = fieldOrder.length - 1;
+  //         newRow--;
+  //       }
+  //     } else if (direction === "down") newRow++;
+  //     else if (direction === "up") newRow--;
+
+  //     if (newRow < 0) newRow = 0;
+  //     if (newRow >= editedRows.length) newRow = editedRows.length - 1;
+
+  //     return { rowIndex: newRow, field: fieldOrder[newCol] };
+  //   };
+
+  //   /* ===== SELECT FIELD ===== */
+  //   if (selectFields.includes(field)) {
+  //     const options = getOptions(field);
+
+  //     return (
+  //       <td className="border relative text-center whitespace-nowrap">
+  //         <Select
+  //           autoFocus
+  //           isClearable
+  //           value={options.find(o => o.value === value) || null}
+  //           options={options}
+  //           styles={SelectStyles}
+  //           menuShouldScrollIntoView
+  //           backspaceRemovesValue={false}
+  //           menuPlacement="bottom"
+  //           menuPosition="fixed"
+  //           menuPortalTarget={document.body}
+  //           onMenuOpen={() => {
+  //             menuOpenRef.current = true;
+  //           }}
+  //           onMenuClose={() => {
+  //             menuOpenRef.current = false;
+  //           }}
+  //           onKeyDown={(e) => {
+  //             if (menuOpenRef.current) return;
+
+  //             let next;
+  //             switch (e.key) {
+  //               case "Tab":
+  //                 e.preventDefault();
+  //                 setEditingCell(
+  //                   getNextCell(rowIndex, field, e.shiftKey ? "left" : "right")
+  //                 );
+  //                 break;
+
+  //               case "ArrowRight":
+  //                 e.preventDefault();
+  //                 setEditingCell(getNextCell(rowIndex, field, "right"));
+  //                 break;
+
+  //               case "ArrowLeft":
+  //                 e.preventDefault();
+  //                 setEditingCell(getNextCell(rowIndex, field, "left"));
+  //                 break;
+
+  //               case "ArrowDown":
+  //                 e.preventDefault();
+  //                 setEditingCell(getNextCell(rowIndex, field, "down"));
+  //                 break;
+
+  //               case "ArrowUp":
+  //                 e.preventDefault();
+  //                 setEditingCell(getNextCell(rowIndex, field, "up"));
+  //                 break;
+
+  //               case "Escape":
+  //                 setEditingCell(null);
+  //                 break;
+  //             }
+  //           }}
+  //           onChange={(selected) => {
+  //             handleCellEdit(rowIndex, field, selected?.value || "");
+  //           }}
+  //         />
+  //       </td>
+  //     );
+  //   }
+
+  //   /* ===== DATE FIELD ===== */
+  //   // if (field === "FollowupDate") {
+  //   //   return (
+  //   //     <td className="border text-center ">
+  //   //       <DatePicker
+  //   //         selected={value ? new Date(value) : null}
+  //   //         dateFormat="d MMM yyyy"
+  //   //         className="w-full text-center bg-transparent outline-none"
+  //   //         onChange={(date) => {
+  //   //           const formatted = date
+  //   //             ? format(date, "d MMM yyyy")
+  //   //             : "";
+  //   //           handleCellEdit(rowIndex, field, formatted);
+  //   //           setEditingCell(null);
+  //   //         }}
+  //   //         onBlur={() => setEditingCell(null)}
+  //   //       />
+  //   //     </td>
+  //   //   );
+  //   // }
+
+  //   /* ===== INPUT FIELD ===== */
+  //   return (
+  //     <td className="border relative ">
+  //       <div className="absolute inset-0 flex items-center justify-center z-10">
+  //         <input
+  //           autoFocus
+  //           defaultValue={value}
+  //           className="h-full w-full bg-transparent border-2 text-center focus:outline-none"
+  //           onBlur={(e) => {
+  //             handleCellEdit(rowIndex, field, e.target.value);
+  //             setEditingCell(null);
+  //           }}
+  //           onKeyDown={(e) => {
+  //             let next;
+
+  //             switch (e.key) {
+  //               case "Enter":
+  //                 e.preventDefault();
+  //                 next = getNextCell(rowIndex, field, e.shiftKey ? "down" : "right");
+  //                 handleCellEdit(rowIndex, field, e.target.value);
+  //                 setEditingCell(next);
+  //                 break;
+
+  //               case "Tab":
+  //                 e.preventDefault();
+  //                 next = getNextCell(rowIndex, field, e.shiftKey ? "left" : "right");
+  //                 handleCellEdit(rowIndex, field, e.target.value);
+  //                 setEditingCell(next);
+  //                 break;
+
+  //               case "ArrowRight":
+  //                 e.preventDefault();
+  //                 next = getNextCell(rowIndex, field, "right");
+  //                 handleCellEdit(rowIndex, field, e.target.value);
+  //                 setEditingCell(next);
+  //                 break;
+
+  //               case "ArrowLeft":
+  //                 e.preventDefault();
+  //                 next = getNextCell(rowIndex, field, "left");
+  //                 handleCellEdit(rowIndex, field, e.target.value);
+  //                 setEditingCell(next);
+  //                 break;
+
+  //               case "ArrowDown":
+  //                 e.preventDefault();
+  //                 next = getNextCell(rowIndex, field, "down");
+  //                 handleCellEdit(rowIndex, field, e.target.value);
+  //                 setEditingCell(next);
+  //                 break;
+
+  //               case "ArrowUp":
+  //                 e.preventDefault();
+  //                 next = getNextCell(rowIndex, field, "up");
+  //                 handleCellEdit(rowIndex, field, e.target.value);
+  //                 setEditingCell(next);
+  //                 break;
+
+  //               case "Escape":
+  //                 setEditingCell(null);
+  //                 break;
+  //             }
+  //           }}
+  //         />
+  //       </div>
+  //     </td>
+  //   );
+  // };
+
+  const handleSave = (client, rowIndex) => {
+    setSavingRow(rowIndex);
+
+    const payload = {
+      Role: "client",
+      IsActive: "Yes",
+      PropertyCode: client.PermPropCode,
+      Name: client.ClientFullName,
+      WhatsAppNo: client.WhatsAppNo,
+      CallingNo: client.CallingNo,
+      EmgyCont1FullName: client.EmgyCont1FullName,
+      EmgyCont1No: client.EmgyCont1No,
+      EmgyCont2FullName: client.EmgyCont2FullName,
+      EmgyCont2No: client.EmgyCont2No,
+      EmailID: client.EmailId,
+      LoginID: client.EmailId,
+      BedNo: client.PermBedNo,
+      DOJ: client.PermBedDOJ,
+      TemporaryPropCode: client.TempPropCode,
+      // TempRoomNo: client.TempRoomNo,
+      // TempBedNo: client.TempBedNo,
+      // TempACRoom: client.TempACRoom,
+      // TempBedDOJ: client.TempBedDOJ,
+      // TempBedLDt: client.TempBedLDt,
+      // TempBedRentAmtt: client.TempBedRentAmtt,
+      // TempBedRentComnt: client.TempBedRentComnt,
+      // TempBedMonthlyFixRent: client.TempBedMonthlyFixRent,
+      // PermRoomNo: client.PermRoomNo,
+      // PermACRoom: client.PermACRoom,
+      // PermBedMonthlyFixRent: client.PermBedMonthlyFixRent,
+      // PermBedDepositAmt: client.PermBedDepositAmt,
+      // PermBedLDt: client.PermBedLDt,
+      // PermBedRentAmt: client.PermBedRentAmt,
+      // PermBedRentComnt: client.PermBedRentComnt,
+      // ProcessingFeesAmt: client.ProcessingFeesAmt,
+      // UpcomingRentHikeDt: client.UpcomingRentHikeDt,
+      // UpcomingRentHikeAmt: client.UpcomingRentHikeAmt,
+      // AskForBAOrFA: client.AskForBAOrFA,
+      // BookingAmt: client.BookingAmt,
+      // TotalAmt: client.TotalAmt,
+      // BalanceAmt: client.BalanceAmt,
+      // AmtReceived: client.AmtReceived,
+      // TempPGShtUpdated: client.TempPGShtUpdated,
+      // MainPGSheetUpdated: client.MainPGSheetUpdated,
+      // WorkLogs: client.WorkLogs,
+      // AddToWhatsAppGrp: client.AddToWhatsAppGrp,
+      // Status: client.Status,
+      // UpdatedBy: client.UpdatedBy,
+      // UpdatedDt: client.UpdatedDt,
+      // ReviewedBy: client.ReviewedBy,
+      // ReviewedDate: client.ReviewedDate,
+      // Comments: client.Comments
+    }
+
+    const NewBookingPayload = {
+      NewBookingId: client.NewBookingId,
+      AddedToClientMaster: "Yes",
+    }
+
+    updateClientMasterTable(payload, {
+      onSuccess: () => {
+        // toast.success(response?.message || "Client moved successfully!");
+        // setSavingRow(null);
+        updateNewBooking(NewBookingPayload, {
+          onSuccess: (response) => {
+            toast.success("Client moved successfully!");
+            setSavingRow(null);
+          },
+        })
+      },
+      onError: (error) => {
+        toast.error(
+          error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          "Failed to move client. Please try again.",
         );
-    };
+        setSavingRow(null);
+      },
+    });
+  }
 
-    /* ================= RENDER ================= */
+  const handleEdit = (Client) => {
+    setEditingClient(Client);
+    setActiveTab("Tab4");
+  }
+
+  useEffect(() => {
+    localStorage.setItem("currentPage", currentPage);
+  }, [currentPage]);
+
+  const goToPrevious = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const goToNext = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+
+
+  const [showMsgPopup, setShowMsgPopup] = useState(false);
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [whatsAppMsg, setWhatsAppMsg] = useState("");
+
+  const generateWhatsappMessage = (c) => {
+
+    const hasTemp = c.TempPropCode && c.TempPropCode.trim() !== "";
+    const hasPerm = c.PermPropCode && c.PermPropCode.trim() !== "";
+
+    const permRentExists = Number(c.PermBedRentAmt) > 0;
+
+    // Join Date priority
+    const joinDate = c.PermBedDOJ || c.TempBedDOJ;
+
+    const isValidHike =
+      c.UpcomingRentHikeDt &&
+      joinDate &&
+      new Date(c.UpcomingRentHikeDt) > new Date(joinDate);
+
+    let message =
+      `Payment Details For ${c.ClientFullName}  ( Contact No : ${c.WhatsAppNo} )
+
+`;
+
+    /* ================= TEMP ================= */
+    if (hasTemp) {
+      message += `Temporary PG Facility Code: ${c.TempPropCode}
+Room No.: ${c.TempRoomNo || "NA"}
+Bed No.: ${c.TempBedNo || "NA"}
+AC Room: ${c.TempACRoom || "NA"}
+Start Date: ${c.TempBedDOJ || "NA"}
+Last Date: ${c.TempBedLDt || "NA"}
+Temporary Bed Rent Amount: ₹${c.TempBedRentAmt || 0}
+(This rent is from ${c.TempBedDOJ || "NA"} to ${c.TempBedLDt || "NA"}, monthly fixed rent is ₹${c.TempBedMonthlyFixRent || 0})
+`;
+    }
+
+    /* ================= PERMANENT ================= */
+    if (hasPerm) {
+      message += `Permanent PG Facility Code: ${c.PermPropCode}
+Room No.: ${c.PermRoomNo || "NA"}
+Bed No.: ${c.PermBedNo || "NA"}
+AC Room: ${c.PermACRoom || "NA"}
+Start Date: ${c.PermBedDOJ || "NA"}
+Last Date: ${c.PermBedLDt || "NA"}
+Permanent Bed Rent Amount: ₹${c.PermBedRentAmt || 0}
+(This rent is from ${c.PermBedDOJ || "NA"} to ${c.PermBedLDt || "NA"}, monthly fixed rent is ₹${c.PermBedMonthlyFixRent || c.PermBedRentAmt || 0})
+Permanent Bed Deposit Amount: ₹${c.PermBedDepositAmt || 0}
+`;
+    }
+    /* ================= COMMON ================= */
+    const rentNote = permRentExists
+      ? "( Please Note : Permanent Bed Rent is included )"
+      : "( Please Note : Rent amount is NOT included )";
+    message += `Processing Fees: ₹${c.ProcessingFeesAmt || 0}
+Total Amount to be paid: ₹${c.TotalAmt || 0}  ${rentNote}
+
+📌 The booking is confirmed only after full amount ₹${c.TotalAmt || 0} is received by us.
+📌 Payment is not refundable if you cancel the booking for any reason. Please read the agreement file sent to your WhatsApp and contact us if you have any concerns.
+
+`;
+
+    /* ================= RENT HIKE (BOTTOM) ================= */
+    if (isValidHike) {
+      message += `📌 Upcoming Rent Hike Details — Date: ${c.UpcomingRentHikeDt} | Amount: ₹${c.UpcomingRentHikeAmt || 0}
+
+`;
+    }
+
+    /* ================= FOOTER ================= */
+
+    message += `Gopal's Paying Guest Services
+(Customer Care No: 8928191814 | Service Hours: 10AM to 7PM)
+
+Note: This is a system-generated message and does not require a signature.`;
+
+    return message;
+  };
+
+  const handleMsgRegenerate = (client) => {
+    const msg = generateWhatsappMessage(client);
+
+    setSelectedClient(client);
+    setWhatsAppMsg(msg);
+    setShowMsgPopup(true);
+  };
+  const sendToWhatsapp = () => {
+    if (!selectedClient?.WhatsAppNo) return;
+
+    const phone = selectedClient.WhatsAppNo.replace(/\D/g, "");
+    const encodedMsg = encodeURIComponent(whatsAppMsg);
+
+    const url = `https://wa.me/91${phone}?text=${encodedMsg}`;
+
+    window.open(url, "_blank");
+
+    setShowMsgPopup(false);
+  };
+
+  if (isNewBookingPending) {
     return (
-        <div className="max-w-full mx-auto mt-40 p-2  max-h-[600px] bg-gray-50 rounded-lg shadow-md">
-            <div className="overflow-y-auto max-h-[480px] hidden md:block bg-white rounded-lg shadow">
-                <table className="min-w-full border">
-                    <thead className="bg-black text-center text-white sticky top-0 z-20 whitespace-nowrap ">
-                        <tr>
-                            <th className="p-4 border">Sr No</th>
-                            <th className="px-4 border">Date</th>
-                            <th className="px-4 border">ID</th>
-                            <th className="px-4 border">Employee Name</th>
-                            <th className="px-4 border">Client Full Name</th>
-                            <th className="px-4 border">WhatsApp No</th>
-                            <th className="px-4 border">Calling No</th>
-                            <th className="px-4 border">EmgyCont1 Full Name</th>
-                            <th className="px-4 border">EmgyCont1 No</th>
-                            <th className="px-4 border">EmgyCont2 Full Name</th>
-                            <th className="px-4 border">EmgyCont2 No</th>
-                            <th className="px-4 border">TempProp Code</th>
-                            <th className="px-4 border">Temp Room No</th>
-                            <th className="px-4 border">Temp Bed No</th>
-                            <th className="px-4 border">Temp AC Room</th>
-                            <th className="px-4 border">Temp Bed DOJ</th>
-                            <th className="px-4 border">Temp Bed LDt</th>
-                            <th className="px-4 border">Temp Bed Rent Amtt</th>
-                            <th className="px-4 border">Temp Bed Rent Comnt</th>
-                            <th className="px-4 border">Temp Bed Monthly Fix Rent</th>
-                            <th className="px-4 border">Perm Prop Code</th>
-                            <th className="px-4 border">Perm Bed No</th>
-                            <th className="px-4 border">Perm Room No</th>
-                            <th className="px-4 border">Perm AC Room</th>
-                            <th className="px-4 border">Perm Bed Monthly Fix Rent</th>
-                            <th className="px-4 border">Perm Bed Deposit Amt</th>
-                            <th className="px-4 border">Perm Bed DOJ</th>
-                            <th className="px-4 border">Perm Bed LDt</th>
-                            <th className="px-4 border">Perm Bed Rent Amt</th>
-                            <th className="px-4 border">Perm Bed Rent Comnt</th>
-                            <th className="px-4 border">Processing Fees Amt</th>
-                            <th className="px-4 border">Upcoming Rent Hike Dt</th>
-                            <th className="px-4 border">Upcoming Rent Hike Amt</th>
-                            <th className="px-4 border">Ask For BA Or FA</th>
-                            <th className="px-4 border">Booking Amt</th>
-                            <th className="px-4 border">Total Amt</th>
-                            <th className="px-4 border">Balance Amt</th>
-                            <th className="px-4 border">Email Id</th>
-                            <th className="px-4 border">Amt Received</th>
-                            <th className="px-4 border">Temp PGSht Updated</th>
-                            <th className="px-4 border">Main PG Sheet Updated</th>
-                            <th className="px-4 border">Worklogs</th>
-                            <th className="px-4 border">Add To WhatsApp Grp</th>
-                            <th className="px-4 border">Status</th>
-                            <th className="px-4 border">Updated By</th>
-                            <th className="px-4 border">Updated Dt</th>
-                            <th className="px-4 border">Reviewed By</th>
-                            <th className="px-4 border">Reviewed Date</th>
-                            <th className="px-4 border">Comments</th>
-                            {/* <th className="px-4">WorkLogs</th> */}
-                        </tr>
-                    </thead>
+      <TableSkeleton />
+    );
+  }
+  /* ================= RENDER ================= */
+  return (
+    <div className="max-w-full mx-auto p-2 max-h-[600px] bg-gray-50 shadow-md">
+      {/* Search & Date Range Controls */}
+      <div className="flex justify-between items-center gap-5 mb-2">
 
-                    <tbody className="py-5">
-                        {paginatedRows?.slice(0, 20).map((client, index) => {
-                            const globalIndex = index + 1;
-                            // agar pagination ho to:
-                            // const globalIndex = index + 1 + (currentPage - 1) * rowsPerPage;
+        <div className="flex justify-center items-center gap-5">
+          <div className="flex items-center gap-2 bg-white border border-orange-400 px-3 py-1 rounded-md z-30 shadow">
+            <input
+              type="text"
+              value={searchInput}
+              placeholder="Search"
+              onChange={(e) => setSearchInput(e.target.value)}
+              isClearable={true}
+              className="w-full text-center outline-none text-sm"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 bg-white border border-orange-400 px-3 py-1 rounded-md z-30 shadow">
+            <span className="text-sm text-orange-600 font-medium">From</span>
+            <DatePicker
+              selected={dateRange.from}
+              onChange={(date) => {
+                setDateRange((p) => ({ ...p, from: date }));
+                setIsDefaultMode(false);
+              }}
+              selectsStart
+              startDate={dateRange.from}
+              endDate={dateRange.to}
+              dateFormat="dd MMM yyyy"
+              isClearable
+              placeholderText="Enter Date"
+              className="w-28 text-center outline-none text-sm"
+            />
+
+            <span className="text-sm text-orange-600 font-medium">To</span>
+
+            <DatePicker
+              selected={dateRange.to}
+              onChange={(date) => {
+                setDateRange((p) => ({ ...p, to: date }));
+                setIsDefaultMode(false);
+              }}
+              selectsEnd
+              startDate={dateRange.from}
+              endDate={dateRange.to}
+              minDate={dateRange.from}
+              isClearable
+              dateFormat="dd MMM yyyy"
+              placeholderText="Enter Date"
+              className="w-28 text-center outline-none text-sm"
+            />
+          </div>
+
+        </div>
+        <Link to={"/gpgs-actions/client-list"} className="border bg-black text-white p-1 px-2 rounded-md mr-5">
+          <i class="fa-solid fa-arrow-right"></i> Client List
+        </Link>
+      </div>
+
+      <div className="overflow-y-auto max-h-[480px] bg-white shadow">
+        <table className="min-w-full border border-blue-500">
+          <thead className="bg-black text-center text-white sticky top-0 z-20 whitespace-nowrap">
+            <tr>
+              <th className="p-4 sticky left-[0px] z-20 bg-black border text-white">Sr No</th>
+              <th className="p-4 sticky left-[60px] z-20 bg-black border text-white">Client Full Name</th>
+              <th className="px-4 border">Date</th>
+              <th className="px-4 border">WhatsApp No</th>
+              <th className="px-4 border">Calling No</th>
+              <th className="px-4 border">EmgyCont1 Full Name</th>
+              <th className="px-4 border">EmgyCont1 No</th>
+              <th className="px-4 border">EmgyCont2 Full Name</th>
+              <th className="px-4 border">EmgyCont2 No</th>
+              <th className="px-4 border">TempProp Code</th>
+              <th className="px-4 border">Temp Room No</th>
+              <th className="px-4 border">Temp Bed No</th>
+              <th className="px-4 border">Temp AC Room</th>
+              <th className="px-4 border">Temp Bed DOJ</th>
+              <th className="px-4 border">Temp Bed LDt</th>
+              <th className="px-4 border">Temp Bed Rent Amtt</th>
+              <th className="px-4 border">Temp Bed Rent Comnt</th>
+              <th className="px-4 border">Temp Bed Monthly Fix Rent</th>
+              <th className="px-4 border">Perm Prop Code</th>
+              <th className="px-4 border">Perm Bed No</th>
+              <th className="px-4 border">Perm Room No</th>
+              <th className="px-4 border">Perm AC Room</th>
+              <th className="px-4 border">Perm Bed Monthly Fix Rent</th>
+              <th className="px-4 border">Perm Bed Deposit Amt</th>
+              <th className="px-4 border">Perm Bed DOJ</th>
+              <th className="px-4 border">Perm Bed LDt</th>
+              <th className="px-4 border">Perm Bed Rent Amt</th>
+              <th className="px-4 border">Perm Bed Rent Comnt</th>
+              <th className="px-4 border">Processing Fees Amt</th>
+              <th className="px-4 border">Upcoming Rent Hike Dt</th>
+              <th className="px-4 border">Upcoming Rent Hike Amt</th>
+              <th className="px-4 border">Ask For BA Or FA</th>
+              <th className="px-4 border">Booking Amt</th>
+              <th className="px-4 border">Total Amt</th>
+              <th className="px-4 border">Balance Amt</th>
+              <th className="px-4 border">Email Id</th>
+              <th className="px-4 border">Booking Status</th>
+              <th className="px-4 border">Temp PGSht Updated</th>
+              <th className="px-4 border">Main PG Sheet Updated</th>
+              <th className="px-4 border">Attachments</th>
+              <th className="px-4 border">Worklogs</th>
+              <th className="px-4 border">Add To WhatsApp Grp</th>
+              <th className="px-4 border">Status</th>
+              {/* <th className="px-4 border">Updated By</th>
+              <th className="px-4 border">Updated Dt</th>
+              <th className="px-4 border">Reviewed By</th>
+              <th className="px-4 border">Reviewed Date</th>
+              <th className="px-4 border">Comments</th> */}
+              <th className="px-4 border">ID</th>
+              <th className="px-4 border">Sales Team Member</th>
+              <th className="px-7 sticky right-0 bg-black text-white border z-50">Action</th>
+              {/* <th className="px-4">WorkLogs</th> */}
+            </tr>
+          </thead>
+
+          <tbody className="py-5">
+            {paginatedRows.map((client, index) => {
+              const actualIndex = (currentPage - 1) * PerPage + index;
+              const displayIndex = actualIndex + 1;
+
+              return (
+                <tr key={actualIndex} className="text-center border">
+                  <td className="sticky left-[0px] bg-gray-100 z-10">
+                    {client.NewBookingId || displayIndex}
+                  </td>
+
+                  <td className="sticky left-[60px] bg-gray-100 z-10">
+                    {client.ClientFullName}
+                  </td>
+
+                  <td className="whitespace-nowrap">{client.Date}</td>
+
+                  <td>{client.WhatsAppNo}</td>
+                  <td>{client.CallingNo}</td>
+                  <td>{client.EmgyCont1FullName}</td>
+                  <td>{client.EmgyCont1No}</td>
+                  <td>{client.EmgyCont2FullName}</td>
+                  <td>{client.EmgyCont2No}</td>
+                  <td>{client.TempPropCode}</td>
+                  <td>{client.TempRoomNo}</td>
+                  <td>{client.TempBedNo}</td>
+                  <td>{client.TempACRoom}</td>
+                  <td>{client.TempBedDOJ}</td>
+                  <td>{client.TempBedLDt}</td>
+                  <td>{client.TempBedRentAmtt}</td>
+                  <td>{client.TempBedRentComnt}</td>
+                  <td>{client.TempBedMonthlyFixRent}</td>
+                  <td>{client.PermPropCode}</td>
+                  <td>{client.PermBedNo}</td>
+                  <td>{client.PermRoomNo}</td>
+                  <td>{client.PermACRoom}</td>
+                  <td>{client.PermBedMonthlyFixRent}</td>
+                  <td>{client.PermBedDepositAmt}</td>
+                  <td>{client.PermBedDOJ}</td>
+                  <td>{client.PermBedLDt}</td>
+                  <td>{client.PermBedRentAmt}</td>
+                  <td>{client.PermBedRentComnt}</td>
+                  <td>{client.ProcessingFeesAmt}</td>
+                  <td>{client.UpcomingRentHikeDt}</td>
+                  <td>{client.UpcomingRentHikeAmt}</td>
+                  <td>{client.AskForBAOrFA}</td>
+                  <td>{client.BookingAmt}</td>
+                  <td>{client.TotalAmt}</td>
+                  <td>{client.BalanceAmt}</td>
+                  <td>{client.EmailId}</td>
+                  <td>{client.BookingStatus}</td>
+                  <td>{client.TempPGShtUpdated}</td>
+                  <td>{client.MainPGSheetUpdated}</td>
+
+                  <div className="flex gap-2 mt-1 max-h-48 overflow-auto">
+                    {client.Attachments ? (
+                      client.Attachments.split(",").map((url, idx) => {
+                        const trimmedUrl = url.trim();
+                        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedUrl);
+                        const isVideo = /\.(mp4|webm|avi|mov|mkv)$/i.test(trimmedUrl);
+
+                        if (!isImage && !isVideo) return null;
+
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            className="w-10 h-10 border rounded-md overflow-hidden bg-gray-100 hover:ring-2 hover:ring-blue-400 relative cursor-pointer"
+                            title={trimmedUrl}
+                            onClick={() => {
+                              if (isImage) {
+                                setSelectedImage(trimmedUrl);
+                              } else if (isVideo) {
+                                // setVideoModalUrl(trimmedUrl);
+                              }
+                            }}
+                          >
+                            {isImage ? (
+                              <img
+                                src={trimmedUrl}
+                                alt={`Attachment ${idx + 1}`}
+                                loading="lazy"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <video
+                                src={trimmedUrl}
+                                className="w-full h-full object-cover"
+                                muted
+                                playsInline
+                              />
+                            )}
+                          </button>
+                        );
+                      })
+                    ) : (
+                      <p className="text-sm text-gray-500">No Attachments</p>
+                    )}
+                  </div>
+
+
+
+                  {/* WorkLogs Hover */}
+                  <td className="relative px-2 group">
+                    {/* ===== Preview (Latest log only) ===== */}
+                    <div className="text-xs text-gray-700 cursor-pointer whitespace-pre-wrap break-words">
+                      {client.WorkLogs
+                        ? client.WorkLogs
+                          .split("\n")               // split logs
+                          .filter(Boolean)[0]        // TOP (latest log)
+                          ?.substring(0, 28)         // preview length
+                        : "No WorkLogs"}
+                    </div>
+
+                    {/* ===== Full WorkLogs on Hover ===== */}
+                    {client.WorkLogs && (
+                      <div className="absolute z-50 hidden text-start group-hover:block bg-white border p-5 rounded-lg shadow-xl w-[480px] max-h-[250px] overflow-y-auto cursor-pointer right-12 whitespace-pre-wrap break-words text-sm">
+                        {client.WorkLogs
+                          .split(/\n(?=\[)/) // split before every [
+                          .map((log, index) => {
+                            const lines = log.split("\n").filter(Boolean);
+                            if (!lines.length) return null;
+
+                            const meta = lines[0]; // [date - user]
+                            const message = lines.slice(1).join("\n").trim(); // actual comment
+
+                            if (!message || message === "undefined") return null;
 
                             return (
-                                <tr key={globalIndex} className="text-center border">
-                                    <td className="py-7">{globalIndex}</td>
-                                    <td className="py-7 whitespace-nowrap">{client.Date}</td>
-
-                                    <EditableCell rowIndex={index} field="ID" />
-                                    <EditableCell rowIndex={index} field="EmployeeName" />
-                                    <EditableCell rowIndex={index} field="ClientFullName" />
-                                    <EditableCell rowIndex={index} field="WhatsAppNo" />
-                                    <EditableCell rowIndex={index} field="CallingNo" />
-                                    <EditableCell rowIndex={index} field="EmgyCont1FullName" />
-                                    <EditableCell rowIndex={index} field="EmgyCont1No" />
-                                    <EditableCell rowIndex={index} field="EmgyCont2FullName" />
-                                    <EditableCell rowIndex={index} field="EmgyCont2No" />
-                                    <EditableCell rowIndex={index} field="TempPropCode" />
-                                    <EditableCell rowIndex={index} field="TempRoomNo" />
-                                    <EditableCell rowIndex={index} field="TempBedNo" />
-                                    <EditableCell rowIndex={index} field="TempACRoom" />
-                                    <EditableCell rowIndex={index} field="TempBedDOJ" />
-                                    <EditableCell rowIndex={index} field="TempBedLDt" />
-                                    <EditableCell rowIndex={index} field="TempBedRentAmtt" />
-                                    <EditableCell rowIndex={index} field="TempBedRentComnt" />
-                                    <EditableCell rowIndex={index} field="TempBedMonthlyFixRent" />
-                                    <EditableCell rowIndex={index} field="PermPropCode" />
-                                    <EditableCell rowIndex={index} field="PermBedNo" />
-                                    <EditableCell rowIndex={index} field="PermRoomNo" />
-                                    <EditableCell rowIndex={index} field="PermACRoom" />
-                                    <EditableCell rowIndex={index} field="PermBedMonthlyFixRent" />
-                                    <EditableCell rowIndex={index} field="PermBedDepositAmt" />
-                                    <EditableCell rowIndex={index} field="PermBedDOJ" />
-                                    <EditableCell rowIndex={index} field="PermBedLDt" />
-                                    <EditableCell rowIndex={index} field="PermBedRentAmt" />
-                                    <EditableCell rowIndex={index} field="PermBedRentComnt" />
-                                    <EditableCell rowIndex={index} field="ProcessingFeesAmt" />
-                                    <EditableCell rowIndex={index} field="UpcomingRentHikeDt" />
-                                    <EditableCell rowIndex={index} field="UpcomingRentHikeAmt" />
-                                    <EditableCell rowIndex={index} field="AskForBAOrFA" />
-                                    <EditableCell rowIndex={index} field="BookingAmt" />
-                                    <EditableCell rowIndex={index} field="TotalAmt" />
-                                    <EditableCell rowIndex={index} field="BalanceAmt" />
-                                    <EditableCell rowIndex={index} field="EmailId" />
-                                    <EditableCell rowIndex={index} field="AmtReceived" />
-                                    <EditableCell rowIndex={index} field="TempPGShtUpdated" />
-                                    <EditableCell rowIndex={index} field="MainPGSheetUpdated" />
-                                    <td className="relative px-2 group">
-                                        {/* ===== Preview (Short Address) ===== */}
-                                        <div className="text-xs text-gray-700 cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px]">
-                                            {client["WorkLogs"]
-                                                ? client["WorkLogs"].substring(0, 25)
-                                                : "-"}
-                                        </div>
-
-                                        {/* ===== Full Address on Hover ===== */}
-                                        {client["WorkLogs"] && (
-                                            <div className="absolute z-50 hidden group-hover:block bg-white border p-4 rounded-lg shadow-xl 
-      w-[350px] max-h-[200px] overflow-y-auto right-10 whitespace-pre-wrap break-words text-sm">
-                                                {client["WorkLogs"]}
-                                            </div>
-                                        )}
-                                    </td>
-                                    <EditableCell rowIndex={index} field="AddToWhatsAppGrp" />
-                                    <EditableCell rowIndex={index} field="Status" />
-                                    <EditableCell rowIndex={index} field="UpdatedBy" />
-                                    <EditableCell rowIndex={index} field="UpdatedDt" />
-                                    <EditableCell rowIndex={index} field="ReviewedBy" />
-                                    <EditableCell rowIndex={index} field="ReviewedDate" />
-                                    <EditableCell rowIndex={index} field="Comments" />
-
-                                </tr>
+                              <div key={index} className="mb-2">
+                                <div className="text-gray-500 text-xs">{meta}</div>
+                                <div className="font-semibold text-gray-800">
+                                  {message}
+                                </div>
+                              </div>
                             );
-                        })}
+                          })}
+                      </div>
+                    )}
+                  </td>
 
-                    </tbody>
-                </table>
-            </div>
+                  <td>{client.AddToWhatsAppGrp}</td>
+                  <td>{client.Status}</td>
+                  <td>{client.ID}</td>
+                  <td>{client.EmployeeName}</td>
+
+                  {/* Action Buttons */}
+                  <td className="flex justify-center items-center gap-5 px-10 sticky right-0 h-20 bg-gray-100">
+                    {activeTab !== "Tab3" && (
+                      <>
+                        <button
+                          className="text-orange-500 text-lg rounded transition"
+                          onClick={() => handleEdit(client, client.NewBookingId)}
+                        >
+                          <i className="fa-solid fa-eye"></i>
+                        </button>
+
+                        <button
+                          className="text-orange-500 text-lg rounded transition"
+                          onClick={() => handleEdit(client, client.NewBookingId)}
+                        >
+                          <i className="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button
+                          className="text-orange-500 text-lg rounded transition"
+                          onClick={() => handleMsgRegenerate(client)}
+                        >
+                          <i className="fa fa-paper-plane" aria-hidden="true"></i>
+                        </button>
+                      </>
+                    )}
+
+                    {activeTab === "Tab3" && (
+                      <button
+                        className="bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 transition disabled:opacity-60"
+                        onClick={() => handleSave(client, actualIndex)}
+                        disabled={savingRow === actualIndex}
+                      >
+                        {
+                          savingRow === actualIndex
+                            ? "Moving..."
+                            : client?.AddedToClientMaster?.toLowerCase()?.trim() === "yes"
+                              ? "Moved"
+                              : "Move"
+                        }                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-center items-center gap-6 mt-3">
+        <span className="text-sm text-gray-700">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          disabled={currentPage === 1}
+          onClick={goToPrevious}
+          className="px-4 py-2 bg-black text-white rounded disabled:opacity-50"
+        >
+          <i className="fa-solid fa-arrow-left"></i> Previous
+        </button>
+        <button
+          disabled={currentPage === totalPages}
+          onClick={goToNext}
+          className="px-4 py-2 bg-black text-white rounded disabled:opacity-50"
+        >
+          Next <i className="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+      {/* Image Modal */}
+      {selectedImage && (
+        <div
+          onClick={() => setSelectedImage(null)}
+          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[9999] cursor-pointer h-screen"
+        >
+          <img
+            src={selectedImage}
+            alt="Full View"
+            className="max-w-[90vw] max-h-[90vh] rounded shadow-lg"
+          />
         </div>
-    );
+      )}
+      {showMsgPopup && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+          <div className="bg-white w-[800px] rounded-lg shadow-lg p-5">
+
+            <h2 className="text-lg text-gray-500 font-semibold mb-3">
+              Preview WhatsApp Message
+            </h2>
+
+            <textarea
+              value={whatsAppMsg}
+              onChange={(e) => setWhatsAppMsg(e.target.value)}
+              className="w-full h-72 border rounded p-3 text-sm"
+            />
+
+            <div className="flex justify-end gap-3 mt-4">
+
+              <button
+                onClick={() => setShowMsgPopup(false)}
+                className="px-4 py-2 bg-gray-300 rounded"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={sendToWhatsapp}
+                className="px-4 py-2 bg-green-500 text-white rounded"
+              >
+               <i class="fa-brands fa-whatsapp"></i> Send
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default NewBookingTable;

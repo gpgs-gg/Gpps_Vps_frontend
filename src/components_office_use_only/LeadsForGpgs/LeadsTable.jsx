@@ -344,7 +344,7 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
   /* ------------------- Handle Edit Client --------------------- */
   const handleEdit = (client) => {
     setSelectedClient(client);
-    setActiveTab("CreateLead");
+    setActiveTab("UpdateLead");
     setActiveLead("CreateSingleLead");
 
   };
@@ -640,47 +640,55 @@ function LeadsTable({ setActiveTab, activeLead, setActiveLead }) {
       }
 
 
-for (const row of payload) {
-  const {
-    LeadNo,
-    LeadStatus,
-    Reason,
-    FollowupDate
-  } = row;
+      for (const row of payload) {
+        const {
+          LeadNo,
+          LeadStatus,
+          Reason,
+          FollowupDate
+        } = row;
 
-  // // 🔴 LeadStatus required
-  // if (!LeadStatus?.trim()) {
-  //   toast.dismiss();
-  //   toast.error(
-  //     `Lead Status is required (LeadNo: ${LeadNo})`,
-  //     { toastId: `leadstatus-${LeadNo}` }
-  //   );
-  //   setSaving(false);
-  //   return;
-  // }
+        // 👉 Find original row
+        const originalRow = rows.find(r => r.LeadNo === LeadNo);
 
-  // 🔴 Reason required for ANY LeadStatus
-  if (LeadStatus?.trim() && !Reason?.trim()) {
-    toast.dismiss();
-    toast.error(
-      `Reason is required when Lead Status is selected (LeadNo: ${LeadNo})`,
-      { toastId: `reason-${LeadNo}` }
-    );
-    setSaving(false);
-    return;
-  }
+        const finalLeadStatus =
+          LeadStatus ?? originalRow?.LeadStatus;
 
-  // 🔴 Follow-up Date ONLY for Follow Up
-  if (LeadStatus === "Follow Up" && !FollowupDate) {
-    toast.dismiss();
-    toast.error(
-      `Follow-up Date is required when Lead Status is Follow Up (LeadNo: ${LeadNo})`,
-      { toastId: `followup-${LeadNo}` }
-    );
-    setSaving(false);
-    return;
-  }
-} /* =========================
+        const finalReason =
+          Reason ?? originalRow?.Reason;
+
+        const finalFollowupDate =
+          FollowupDate ?? originalRow?.FollowupDate;
+
+        // 🔴 Reason required except Booked & New
+        if (
+          finalLeadStatus?.trim() !== "Booked" &&
+          finalLeadStatus?.trim() !== "New" &&
+          !finalReason?.trim()
+        ) {
+          toast.dismiss();
+          toast.error(
+            `Reason is required when Lead Status is ${finalLeadStatus} (LeadNo: ${LeadNo})`,
+            { toastId: `reason-${LeadNo}` }
+          );
+          setSaving(false);
+          return;
+        }
+
+        // 🔴 Follow-up Date only for Follow Up
+        if (
+          finalLeadStatus === "Follow Up" &&
+          !finalFollowupDate
+        ) {
+          toast.dismiss();
+          toast.error(
+            `Follow-up Date is required when Lead Status is Follow Up (LeadNo: ${LeadNo})`,
+            { toastId: `followup-${LeadNo}` }
+          );
+          setSaving(false);
+          return;
+        }
+      } /* =========================
          🟢 STEP 4: API CALL
       ========================= */
 
@@ -932,7 +940,7 @@ for (const row of payload) {
             className="w-full text-center bg-transparent outline-none  "
             shouldFocusOnRender
             isClearable
-              minDate={addDays(startOfDay(new Date()), 1)}
+            minDate={addDays(startOfDay(new Date()), 1)}
 
             /* 🔥 IMPORTANT FIX */
             /* 🔥 MAIN FIX */
@@ -1083,6 +1091,7 @@ for (const row of payload) {
         {/* ===== FILTER BAR ===== */}
         <div className="flex flex-wrap justify-center items-center gap-3 mb-3  relative">
           <div className="flex  flex-wrap gap-2 items-center mx-auto">
+
             <div className="flex items-center gap-2 bg-white border border-orange-400 px-3 py-1 rounded-xl z-30 shadow">
 
 
@@ -1231,7 +1240,6 @@ for (const row of payload) {
               </button>
             )}
 
-
             <button
               onClick={handleAppliedDefalut}
               className={`px-4 py-1 rounded flex items-center gap-2 transition
@@ -1244,8 +1252,6 @@ for (const row of payload) {
               Default Filter
             </button>
 
-
-
             <div >
               <button
                 onClick={handleSave}
@@ -1255,7 +1261,15 @@ for (const row of payload) {
                 {saving ? "Saving..." : "Save"}
               </button>
             </div>
+            <div className="">
+              Total:{" "}
+              <span className="text-orange-500">
+                ({isAnyFilterApplied ? filteredRows.length : rows.length})
+              </span>
+            </div>
           </div>
+
+
           {selectedLeadNos.length > 0 && (
             <button
               onClick={() => setShowTransferModal(true)}
@@ -1265,20 +1279,15 @@ for (const row of payload) {
             </button>
           )}
 
-          <div className="text-end px-5">
-            Total:{" "}
-            <span className="text-orange-500">
-              ({isAnyFilterApplied ? filteredRows.length : rows.length})
-            </span>
-          </div>
+
         </div>
 
         {/* ===== TABLE ===== */}
         <div className="overflow-y-auto max-h-[450px] hidden md:block bg-white rounded-lg shadow">
           <table className="min-w-full border">
             <thead className="bg-black text-white px-10 sticky top-0 text-center z-20 whitespace-nowrap rounded">
-              <tr>
-                <th className="p-4 sticky left-0 z-20 bg-black text-white">
+              <tr >
+                <th className="p-4 sticky left-0 z-20  bg-black text-white">
                   <input
                     type="checkbox"
                     className="w-10 scale-150 accent-orange-500"
@@ -1297,26 +1306,26 @@ for (const row of payload) {
                 </th>
 
                 {/* Lead Id */}
-                <th className="p-4 sticky left-[60px] z-20 bg-black text-white">
+                <th className="p-4 sticky left-[60px] z-20 bg-black border text-white">
                   Lead Id
                 </th>
 
                 {/* Date */}
-                <th className="px-7 sticky left-[140px] z-20 bg-black text-white">
+                <th className="px-7 sticky left-[140px] border z-20 bg-black text-white">
                   Date
                 </th>
-                <th className="px-7">Client Name</th>
-                <th className="px-7">Gender</th>
-                <th className="px-7">Calling No</th>
-                <th className="px-7">WhatsApp No</th>
-                <th className="px-7">Followup Date</th>
-                <th className="px-7">Lead Status</th>
-                <th className="px-7">Reason</th>
-                <th className="px-7">Field Member</th>
-                <th className="px-7">Comments</th>
-                <th className="rounded-r px-7">WorkLogs</th>
-                <th className="rounded-r px-7">Assignee</th>
-                <th className="px-7 sticky right-0 bg-black text-white z-50">Action</th>
+                <th className="px-7 border">Client Name</th>
+                <th className="px-7 border">Gender</th>
+                <th className="px-7 border">Calling No</th>
+                <th className="px-7 border">WhatsApp No</th>
+                <th className="px-7 border">Followup Date</th>
+                <th className="px-7 border">Lead Status</th>
+                <th className="px-7 border">Reason</th>
+                <th className="px-7 border">Field Member</th>
+                <th className="px-7 border">Comments</th>
+                <th className="rounded-r px-7 border">WorkLogs</th>
+                <th className="rounded-r px-7 border">Assignee</th>
+                <th className="px-7 sticky right-0 bg-black text-white border z-50">Action</th>
 
               </tr>
             </thead>
@@ -1354,7 +1363,7 @@ for (const row of payload) {
                     <EditableCell rowIndex={index} field="LeadStatus" />
                     <EditableCell rowIndex={index} field="Reason" />
                     <EditableCell rowIndex={index} field="FieldMember" />
-                    <EditableCell rowIndex={index} field="newWorkLog" />
+                    <EditableCell rowIndex={index} field="WorkLog" />
 
                     <td className="relative px-2 group">
                       {/* ===== Preview (Latest log only) ===== */}
@@ -1367,7 +1376,6 @@ for (const row of payload) {
                           : "No WorkLogs"}
                       </div>
 
-                      {/* ===== Full WorkLogs on Hover ===== */}
                       {/* ===== Full WorkLogs on Hover ===== */}
                       {client.WorkLogs && (
                         <div className="absolute z-50 hidden text-start group-hover:block bg-white border p-5 rounded-lg shadow-xl w-[480px] max-h-[250px] overflow-y-auto cursor-pointer right-12 whitespace-pre-wrap break-words text-sm">

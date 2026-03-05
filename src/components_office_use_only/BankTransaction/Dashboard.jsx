@@ -21,6 +21,7 @@ const Dashboard = ({ data = [] }) => {
 
     const open = data.filter(r => r.StatusForView?.toLowerCase() === "open").length;
     const wip = data.filter(r => r.StatusForView?.toLowerCase() === "wip").length;
+    const roadblock = data.filter(r => r.StatusForView?.toLowerCase() === "roadblock").length;
     const updated = data.filter(r => r.StatusForView?.toLowerCase() === "updated").length;
     const reviewDone = data.filter(r => r.StatusForView?.toLowerCase() === "review done").length;
 
@@ -28,6 +29,7 @@ const Dashboard = ({ data = [] }) => {
       total,
       open,
       wip,
+      roadblock,
       updated,
       reviewDone
     };
@@ -35,7 +37,7 @@ const Dashboard = ({ data = [] }) => {
   }, [data]);
 
   return (
-    <div className="overflow-auto bg-white space-y-6">
+    <div className="overflow-auto bg-white  space-y-6">
 
       {/* HEADER */}
       {/* <div>
@@ -48,13 +50,14 @@ const Dashboard = ({ data = [] }) => {
       </div> */}
 
       {/* STATS GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
 
         <StatCard title="Total Records" value={stats.total} color="#2563eb" />
 
         <StatCard title="Open" value={stats.open} color="#ef4444" />
 
         <StatCard title="WIP" value={stats.wip} subtitle="Work In Progress" color="#f59e0b" />
+        <StatCard title="Roadblock" value={stats.roadblock} color="#f97316" />
 
         <StatCard title="Updated" value={stats.updated} color="#3b82f6" />
 
