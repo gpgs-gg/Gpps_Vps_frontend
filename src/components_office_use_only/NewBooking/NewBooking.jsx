@@ -1264,7 +1264,7 @@ const NewBooking = ({ editingClient, setEditingClient }) => {
   return (
     <div className="max-w-8xl mx-auto bg-[#F8F9FB] min-h-screen">
       <div className="bg-[#F8F9FB] shadow-lg rounded-xl ">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-10 p-3">
           {/* === CLIENT DETAILS === */}
           <section className="bg-white border border-gray-200 rounded-lg p-2 shadow-sm">
             <h3 className="text-xl font-semibold mb-4 border-b pb-2 bg-black text-white p-2 rounded-sm">Client Details</h3>
