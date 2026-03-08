@@ -32,6 +32,7 @@ import { useApp } from './components_office_use_only/TicketSystem/AppProvider';
 import LoaderPage from './components_office_use_only/NewBooking/LoaderPage';
 // import BedAvailabeDetails from './components/BedAvailabeDetails';
 import EBCalculation from './components_office_use_only/EBCalculation/EBCalculation';
+import EmployeesTable from './components_office_use_only/EmployeeDetails/EmployeesTable';
 import HouseKeeping from './components_office_use_only/DailyToDoHouseKeeping/HouseKeeping';
 import Maintenance from './components_office_use_only/DailyToDoMaintenance/Maintanance';
 import EBSheetDetails from './components_office_use_only/EBCalculation/EBSheetDetails';
@@ -206,38 +207,38 @@ function App() {
 
 
 
-// useEffect(() => {
-//   const onContext = (e) => e.preventDefault();
+  // useEffect(() => {
+  //   const onContext = (e) => e.preventDefault();
 
-//   const onKeyDown = (e) => {
-//     // F12
-//     if (e.key === 'F12') {
-//       e.preventDefault();
-//     }
+  //   const onKeyDown = (e) => {
+  //     // F12
+  //     if (e.key === 'F12') {
+  //       e.preventDefault();
+  //     }
 
-//     // Ctrl / Cmd + Shift + I / J / C
-//     if (
-//       (e.ctrlKey || e.metaKey) &&
-//       e.shiftKey &&
-//       ['I', 'J', 'C'].includes(e.key)
-//     ) {
-//       e.preventDefault();
-//     }
+  //     // Ctrl / Cmd + Shift + I / J / C
+  //     if (
+  //       (e.ctrlKey || e.metaKey) &&
+  //       e.shiftKey &&
+  //       ['I', 'J', 'C'].includes(e.key)
+  //     ) {
+  //       e.preventDefault();
+  //     }
 
-//     // Ctrl / Cmd + U (view source)
-//     if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
-//       e.preventDefault();
-//     }
-//   };
+  //     // Ctrl / Cmd + U (view source)
+  //     if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+  //       e.preventDefault();
+  //     }
+  //   };
 
-//   document.addEventListener('contextmenu', onContext);
-//   document.addEventListener('keydown', onKeyDown);
+  //   document.addEventListener('contextmenu', onContext);
+  //   document.addEventListener('keydown', onKeyDown);
 
-//   return () => {
-//     document.removeEventListener('contextmenu', onContext);
-//     document.removeEventListener('keydown', onKeyDown);
-//   };
-// }, []);
+  //   return () => {
+  //     document.removeEventListener('contextmenu', onContext);
+  //     document.removeEventListener('keydown', onKeyDown);
+  //   };
+  // }, []);
 
 
 
@@ -317,7 +318,7 @@ function App() {
           path="/gpgs-actions/property-management"
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
-              < PropertyManagement/>
+              < PropertyManagement />
             </ProtectedRoute>
           }
         />
@@ -346,7 +347,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-  
+
         <Route
           path="/gpgs-actions/maintenance-todo"
           element={
@@ -369,7 +370,7 @@ function App() {
           path="/gpgs-actions/eb-calculated-list"
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
-              <EBSheetDetails/>
+              <EBSheetDetails />
             </ProtectedRoute>
           }
         />
@@ -377,7 +378,7 @@ function App() {
           path="/gpgs-actions/eb-info"
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
-              <EBInfo/>
+              <EBInfo />
             </ProtectedRoute>
           }
         />
@@ -385,7 +386,7 @@ function App() {
           path="/gpgs-actions/bank-transaction"
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
-              <TodoBankTransaction/>
+              <TodoBankTransaction />
             </ProtectedRoute>
           }
         />
@@ -488,7 +489,14 @@ function App() {
             />
           )
         }
-
+        <Route
+          path="/gpgs-actions/employee-details"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+              <EmployeesTable />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/gpgs-actions/leads-list"

@@ -25,7 +25,6 @@ function NewBookingForm({ editingClient, setActiveTab }) {
   // ✅ Attachment States
   const [files, setFiles] = useState([]);
   const [existingAttachments, setExistingAttachments] = useState([]);
-  console.log("files", files)
   /* =========================
      Build Dynamic Options
   ========================== */
@@ -50,11 +49,9 @@ function NewBookingForm({ editingClient, setActiveTab }) {
   const selectOptionNewBookingBedStaus = buildOptions("NewBookingBedStaus");
   const selectOptionACNonAC = buildOptions("ACNonAC");
   const selectOptionAskForBAOrFA = buildOptions("AskForBAOrFA");
-
   /* =========================
      Edit Auto Fill
   ========================== */
-
   const convertToSelect = (value) =>
     value
       ? {

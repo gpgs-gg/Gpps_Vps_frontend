@@ -238,6 +238,9 @@ const Gpgsaction = () => {
                     <Link to="/gpgs-actions/client-list" className={subBtnClasses}>
                     📋 PG Client List
                   </Link>
+                    <Link to="/gpgs-actions/employee-details" className={subBtnClasses}>
+                    📋GG Employee List
+                  </Link>
                 </>
               )}
 

@@ -1096,11 +1096,11 @@ const NewBooking = ({ editingClient, setEditingClient }) => {
       UpcomingRentHikeAmt: data.PermUpcomingRentHikeAmt,
       TotalAmt: TotalAmt,
       BookingAmt:
-        data.AskForBAOrFA?.trim() === "Full_Amount "
+        data.AskForBAOrFA?.trim() === "Full_Amount"
           ? TotalAmt
           : Number(data.PermBedMonthlyFixRent),
       BalanceAmt:
-        data.AskForBAOrFA?.trim() === "Full_Amount "
+        data.AskForBAOrFA?.trim() === "Full_Amount"
           ? 0
           : TotalAmt - Number(data.PermBedMonthlyFixRent),
     };
@@ -1175,9 +1175,9 @@ const NewBooking = ({ editingClient, setEditingClient }) => {
           EmgyCont1No: "",
           EmgyCont2FullName: "",
           EmgyCont2No: "",
-          AskForBAOrFA: "",
+          AskForBAOrFA: null,
           // Reset all permanent fields
-          PermPropCode: "",
+          PermPropCode: null,
           PermBedNo: "",
           PermRoomNo: "",
           PermACRoom: "",
@@ -1191,7 +1191,7 @@ const NewBooking = ({ editingClient, setEditingClient }) => {
           PermUpcomingRentHikeAmt: "",
           PermComments: "",
           // Reset all temporary fields
-          TempPropCode: "",
+          TempPropCode: null,
           TempBedNo: "",
           TempRoomNo: "",
           TempACRoom: "",
@@ -1207,14 +1207,14 @@ const NewBooking = ({ editingClient, setEditingClient }) => {
           EmailId: "",
         });
         setValue(`SalesMemeber`, "Search & Select Employee");
-        setValue(`AskForBAOrFA`, "SelectAskFor");
+        setValue(`AskForBAOrFA`,"AskForBAOrFA");
 
         // Reset checkboxes and tabs
         setShowtemporary(false);
         // setActiveTab('');
         setSelctedSheetId(null);
         setSelectedBedNumber(null);
-        // window.location.reload()
+        window.location.reload()
       },
       onError: () => {
         // alert("❌ Failed to submit. Try again.");
@@ -1317,6 +1317,7 @@ const NewBooking = ({ editingClient, setEditingClient }) => {
                 />
                 {renderError('AskForBAOrFA')}
               </div>
+              
             </div>
 
           </section>

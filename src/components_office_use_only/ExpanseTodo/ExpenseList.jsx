@@ -19,7 +19,8 @@ function ExpenseList() {
     const { decryptedUser } = useApp();
     const apiData = data?.data || [];
     const { data: dynamicData } = useDynamicDetails();
-
+    const [previewUrl, setPreviewUrl] = useState(null);
+    console.log("previewUrl", previewUrl)
     //  --------------- COLUMNS & HEADINGS ---------------
     const employeeSelectStyles = {
         control: (base, state) => ({
@@ -68,6 +69,7 @@ function ExpenseList() {
         "Vendor",
         "Comments",
         "VehicleNo",
+        "Attachment",
         "WorkLog"
     ];
 
@@ -79,6 +81,7 @@ function ExpenseList() {
         "Vendor",
         "Comments",
         "Vehicle No",
+        "Attachment",
         "WorkLog"
     ];
 
@@ -110,6 +113,7 @@ function ExpenseList() {
     const [searchInput, setSearchInput] = useState("");
     const [searchData, setSearchData] = useState("");
     const [openFilter, setOpenFilter] = useState(null);
+    const handleClose = () => setPreviewUrl(null);
     // Ref for menu open state
     const menuOpenRef = useRef(false);
 
@@ -240,8 +244,171 @@ function ExpenseList() {
     };
 
     // ------------- SAVE ALL CHANGES ---------------
+    // const saveAll = async () => {
+    //     // STEP 1: VEHICLE VALIDATION
+    //     const vehicleRequiredCategories = [
+    //         "Petrol",
+    //         "Maintenance",
+    //         "Insurance",
+    //         "PUC",
+    //     ];
+
+    //     for (let i = 0; i < rows.length; i++) {
+    //         const row = rows[i];
+    //         const category = row.Category;
+    //         const vehicleNo = row.VehicleNo;
+    //         const SrNo = row.SrNo;
+    //         if (
+    //             vehicleRequiredCategories.includes(category) &&
+    //             !vehicleNo?.trim()
+    //         ) {
+    //             toast.dismiss();
+    //             toast.error(
+    //                 `Vehicle number is required for Sr. No. ${SrNo} in the ${category} category.`,
+    //                 { toastId: "vehicle-required" }
+    //             );
+    //             return;
+    //         }
+    //     }
+
+    //     // STEP 2: SAVE LOGIC
+    //     const payload = rows
+    //         .filter((r) => r.__isNew || r.__isEdited)
+    //         .map((r) => {
+    //             const clean = { ...r };
+    //             const original = originalRows.find((o) => o.SrNo === r.SrNo);
+
+    //             const oldLog = clean.WorkLog || "";
+    //             const logHeader = `[${formatLogDate()} -(${decryptedUser?.employee?.EmployeeID}) ${decryptedUser?.employee?.Name}]`;
+
+    //             let changeLogs = [];
+
+    //             // FIELD CHANGE DETECTION
+    //             if (original) {
+    //                 Object.keys(r).forEach((key) => {
+    //                     if (
+    //                         !["WorkLog", "Comments", "__isNew", "__isEdited", "SrNo", "Date"].includes(key) &&
+    //                         r[key] !== original[key]
+    //                     ) {
+    //                         changeLogs.push(
+    //                             `${key} changed from "${original[key] || ""}" to "${r[key] || ""}"`
+    //                         );
+    //                     }
+    //                 });
+    //             } else {
+    //                 // New row - add creation log
+    //                 changeLogs.push("Expense Created");
+
+    //                 // Log all fields that were filled
+    //                 Object.keys(r).forEach((key) => {
+    //                     if (
+    //                         !["WorkLog", "Comments", "__isNew", "__isEdited", "SrNo", "Date", "Amount"].includes(key) &&
+    //                         r[key] && r[key] !== ""
+    //                     ) {
+    //                         changeLogs.push(`${key} set to "${r[key]}"`);
+    //                     }
+    //                 });
+    //             }
+
+    //             // COMMENT LOG
+    //             const newComment = clean.Comments?.trim();
+    //             if (newComment) {
+    //                 changeLogs.push(`Comment: ${newComment}`);
+    //             }
+
+    //             // FINAL WORKLOG BUILD
+    //             if (changeLogs.length > 0) {
+    //                 const finalLog = `${logHeader}\n${changeLogs.join("\n")}`;
+    //                 clean.WorkLog = oldLog
+    //                     ? `${finalLog}\n\n${oldLog}`
+    //                     : finalLog;
+
+    //             }
+
+    //             clean.Comments = "";
+
+    //             // Clean up temporary flags but KEEP SrNo for API
+    //             delete clean.__isNew;
+    //             delete clean.__isEdited;
+
+    //             return clean;
+    //         });
+
+    //     if (!payload.length) {
+    //         toast.warn("No changes found");
+    //         return;
+    //     }
+
+    //      const formData = new FormData();
+    //     // Add all fields
+    //     Object.keys(payload).forEach((key) => {
+    //         formData.append(key, payload[key]);
+    //     });
+    //     formData.append("Attachment", previewUrl)
+    //     await updateExpense({  formData });
+    //     toast.success("Expenses Updated successfully!");
+
+    //     // Refresh data
+    //     await refetch();
+
+    //     setEditingCell(null);
+    // };
+
+
+    const formatDateTime = () => {
+        const now = new Date();
+        return now.toLocaleString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+        });
+    };
+
+
+
+    const generateWorklog = (oldRow = {}, newRow, userName, empId) => {
+        let changes = [];
+
+        // Detect changes for each key
+        Object.keys(newRow).forEach((key) => {
+            // Skip non-essential keys
+            if (["WorkLog", "Comments", "__isNew", "__isEdited", 'Attachment'].includes(key)) return;
+
+            const oldValue = oldRow?.[key] ?? "";
+            const newValue = newRow?.[key] ?? "";
+
+            if (oldValue !== newValue) {
+                changes.push(`${key} changed from "${oldValue}" to "${newValue}"`);
+            }
+        });
+
+        // New row
+        if (!oldRow?.SrNo) {
+            changes.unshift("Expense Created");
+        }
+
+        // Add comment if any
+        if (newRow.Comments?.trim()) {
+            changes.push(`Comment: ${newRow.Comments.trim()}`);
+        }
+
+        if (changes.length === 0) {
+            return oldRow?.WorkLog || "";
+        }
+
+        const logHeader = `[${formatDateTime()} - (${empId}) ${userName}]`;
+
+        return `${logHeader}\n${changes.join("\n")}${oldRow?.WorkLog ? "\n\n" + oldRow.WorkLog : ""}`;
+    };
+
+
+
+
+
     const saveAll = async () => {
-        // STEP 1: VEHICLE VALIDATION
         const vehicleRequiredCategories = [
             "Petrol",
             "Maintenance",
@@ -249,83 +416,55 @@ function ExpenseList() {
             "PUC",
         ];
 
-        for (let i = 0; i < rows.length; i++) {
-            const row = rows[i];
-            const category = row.Category;
-            const vehicleNo = row.VehicleNo;
-            const SrNo = row.SrNo;
+        // ✅ Vehicle validation
+        for (let row of rows) {
             if (
-                vehicleRequiredCategories.includes(category) &&
-                !vehicleNo?.trim()
+                vehicleRequiredCategories.includes(row.Category) &&
+                !row.VehicleNo?.trim()
             ) {
-                toast.dismiss();
                 toast.error(
-                    `Vehicle number is required for Sr. No. ${SrNo} in the ${category} category.`,
-                    { toastId: "vehicle-required" }
+                    `Vehicle number is required for Sr. No. ${row.SrNo}`
                 );
                 return;
             }
         }
 
-        // STEP 2: SAVE LOGIC
+        // ✅ Prepare payload (REMOVE attachment from JSON)
         const payload = rows
             .filter((r) => r.__isNew || r.__isEdited)
-            .map((r) => {
-                const clean = { ...r };
-                const original = originalRows.find((o) => o.SrNo === r.SrNo);
+            .map((row) => {
+                const original = originalRows.find(
+                    (o) => o.SrNo === row.SrNo
+                );
 
-                const oldLog = clean.WorkLog || "";
-                const logHeader = `[${formatLogDate()} -(${decryptedUser?.employee?.EmployeeID}) ${decryptedUser?.employee?.Name}]`;
+                const clean = { ...row };
 
-                let changeLogs = [];
-
-                // FIELD CHANGE DETECTION
-                if (original) {
-                    Object.keys(r).forEach((key) => {
-                        if (
-                            !["WorkLog", "Comments", "__isNew", "__isEdited", "SrNo", "Date"].includes(key) &&
-                            r[key] !== original[key]
-                        ) {
-                            changeLogs.push(
-                                `${key} changed from "${original[key] || ""}" to "${r[key] || ""}"`
-                            );
-                        }
-                    });
-                } else {
-                    // New row - add creation log
-                    changeLogs.push("Expense Created");
-
-                    // Log all fields that were filled
-                    Object.keys(r).forEach((key) => {
-                        if (
-                            !["WorkLog", "Comments", "__isNew", "__isEdited", "SrNo", "Date", "Amount"].includes(key) &&
-                            r[key] && r[key] !== ""
-                        ) {
-                            changeLogs.push(`${key} set to "${r[key]}"`);
-                        }
-                    });
-                }
-
-                // COMMENT LOG
-                const newComment = clean.Comments?.trim();
-                if (newComment) {
-                    changeLogs.push(`Comment: ${newComment}`);
-                }
-
-                // FINAL WORKLOG BUILD
-                if (changeLogs.length > 0) {
-                    const finalLog = `${logHeader}\n${changeLogs.join("\n")}`;
-                    clean.WorkLog = oldLog
-                        ? `${finalLog}\n\n${oldLog}`
-                        : finalLog;
-
-                }
+                // 🔥 Worklog
+                clean.WorkLog = generateWorklog(
+                    original || {},
+                    row,
+                    decryptedUser?.employee?.Name,
+                    decryptedUser?.employee?.EmployeeID
+                );
 
                 clean.Comments = "";
 
-                // Clean up temporary flags but KEEP SrNo for API
                 delete clean.__isNew;
                 delete clean.__isEdited;
+
+                // ✅ REMOVE ATTACHMENT FROM JSON
+                delete clean.Attachment;
+
+                // ✅ stringify only normal objects
+                Object.keys(clean).forEach((key) => {
+                    if (
+                        typeof clean[key] === "object" &&
+                        clean[key] !== null &&
+                        !Array.isArray(clean[key])
+                    ) {
+                        clean[key] = JSON.stringify(clean[key]);
+                    }
+                });
 
                 return clean;
             });
@@ -334,13 +473,93 @@ function ExpenseList() {
             toast.warn("No changes found");
             return;
         }
-        console.log("Payload to save:", payload);
-        await updateExpense({ data: payload });
+
+        const formData = new FormData();
+        formData.append("data", JSON.stringify(payload));
+
+        // ✅ Attach binary files separately
+        // rows.forEach((row) => {
+        //     const attachments = row.Attachment;
+
+        //     if (!attachments) return;
+
+        //     if (Array.isArray(attachments)) {
+        //         attachments.forEach((file) => {
+        //             if (file instanceof File) {
+        //                 formData.append("Attachment", file); // 🔥 binary
+        //             }
+        //         });
+        //     } else if (attachments instanceof File) {
+        //         formData.append("Attachment", attachments);
+        //     }
+        // });
+
+
+        rows.forEach((row, rowIndex) => {
+
+            const attachments = row.Attachment;
+            if (!attachments) return;
+
+            const srNo = row.SrNo;
+
+            if (Array.isArray(attachments)) {
+
+                attachments.forEach((file) => {
+
+                    if (file instanceof File) {
+
+                        if (row.__isNew) {
+
+                            // ✅ new row
+                            formData.append(
+                                "Attachment",
+                                file,
+                                `${file.name}__ROW__${rowIndex}`
+                            );
+
+                        } else {
+
+                            // ✅ existing row
+                            formData.append(
+                                "Attachment",
+                                file,
+                                `${file.name}__SRNO__${srNo}`
+                            );
+
+                        }
+
+                    }
+
+                });
+
+            } else if (attachments instanceof File) {
+
+                if (row.__isNew) {
+
+                    formData.append(
+                        "Attachment",
+                        attachments,
+                        `${attachments.name}__ROW__${rowIndex}`
+                    );
+
+                } else {
+
+                    formData.append(
+                        "Attachment",
+                        attachments,
+                        `${attachments.name}__SRNO__${srNo}`
+                    );
+
+                }
+
+            }
+
+        });
+
+        await updateExpense(formData);
+
         toast.success("Expenses Updated successfully!");
-
-        // Refresh data
         await refetch();
-
         setEditingCell(null);
     };
 
@@ -360,14 +579,12 @@ function ExpenseList() {
 
     const deleteLastNewRow = () => {
         setRows(prev => {
-            const lastNewIndex = [...prev]
-                .map((row, index) => ({ row, index }))
-                .reverse()
-                .find(item => item.row.__isNew)?.index;
 
-            if (lastNewIndex === undefined) return prev;
+            const firstNewIndex = prev.findIndex(row => row.__isNew);
 
-            return prev.filter((_, index) => index !== lastNewIndex);
+            if (firstNewIndex === -1) return prev;
+
+            return prev.filter((_, index) => index !== firstNewIndex);
         });
 
         setEditingCell(null);
@@ -471,8 +688,23 @@ function ExpenseList() {
     // ------------ EDITABLE CELL COMPONENT ---------------
     const EditableCell = ({ rowData, rowIndex, colIndex }) => {
         const field = columns[colIndex];
-        const value = rowData?.[field] || "";
+        // const value =
+        //     field === "Attachment"
+        //         ? rowData?.[field] instanceof File
+        //             ? rowData[field].name
+        //             : rowData?.[field] || ""
+        //         : rowData?.[field] || "";
 
+        const attachmentValue = rowData?.[field];
+
+        const value =
+            field === "Attachment"
+                ? Array.isArray(attachmentValue)
+                    ? attachmentValue
+                    : attachmentValue
+                        ? [attachmentValue]
+                        : null   // ✅ EMPTY ला null ठेवा
+                : attachmentValue || "";
         const isReadOnly =
             field === "SrNo" ||
             field === "Date" ||
@@ -548,27 +780,263 @@ function ExpenseList() {
         }
 
 
-
-
-        /* ================= NORMAL VIEW ================= */
-        if (!isEditing) {
-            return (
-                <td
-                    className="px-3 py-2 border-b text-center cursor-pointer hover:bg-orange-50"
-                    onDoubleClick={() => setEditingCell({ rowIndex, field })}
-                >
-                    {value || "-"}
-                </td>
-            );
-        }
-
-
         const openSelectMenu = () => {
             if (selectRef.current) {
                 // Try to open the menu
                 selectRef.current.onMenuOpen();
             }
         };
+
+        /* ================= NORMAL VIEW ================= */
+        /* ================= NORMAL VIEW ================= */
+        if (!isEditing) {
+            return (
+                <td
+                    className="px-3 py-2 border-b text-center hover:bg-orange-50 cursor-pointer"
+                    onDoubleClick={() => {
+                        if (field === "Attachment" && Array.isArray(value) && value.length > 0) {
+                            setPreviewUrl(value[0]);
+                        } else {
+                            setEditingCell({ rowIndex, field });
+                        }
+                    }}
+                >
+
+                    {/* ✅ Attachment → Multiple Images Support */}
+                    {field === "Attachment" && value ? (
+                        <>
+                            {(() => {
+
+                                // 🔥 Normalize attachments
+                                const attachments = Array.isArray(value)
+                                    ? value.flatMap(v =>
+                                        typeof v === "string"
+                                            ? v.split(",").map(i => i.trim()).filter(Boolean)
+                                            : v
+                                    )
+                                    : value
+                                        ? value.split(",").map(v => v.trim()).filter(Boolean)
+                                        : [];
+
+                                return (
+                                    <>
+                                        <div className="flex flex-wrap gap-2 justify-center">
+
+                                            {attachments.map((item, index) => {
+
+                                                const isFile = item instanceof File;
+                                                const cleanUrl = isFile
+                                                    ? URL.createObjectURL(item)
+                                                    : item;
+
+                                                const isPdf = isFile
+                                                    ? item.type === "application/pdf"
+                                                    : /\.pdf($|\?)/i.test(cleanUrl);
+
+                                                return (
+                                                    <div key={index} className="relative">
+
+                                                        {/* Remove button only for new files */}
+                                                        {isFile && (
+                                                            <button
+                                                                className="absolute -top-2 -right-2 bg-red-500 text-white
+                      w-4 h-4 rounded-full text-[10px] flex items-center
+                      justify-center z-10"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+
+                                                                    const updated = [...attachments];
+                                                                    updated.splice(index, 1);
+
+                                                                    handleCellEdit(rowIndex, field, updated);
+                                                                }}
+                                                            >
+                                                                ✕
+                                                            </button>
+                                                        )}
+
+                                                        {/* PDF */}
+                                                        {isPdf ? (
+                                                            <div
+                                                                className="w-12 h-12 flex items-center justify-center
+                                                                    bg-red-100 border border-red-400 rounded
+                                                                   cursor-pointer text-red-600 text-xs font-bold"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    window.open(cleanUrl, "_blank");
+                                                                }}
+                                                            >
+                                                                PDF
+                                                            </div>
+                                                        ) : (
+                                                            <img
+                                                                src={cleanUrl}
+                                                                alt="attachment"
+                                                                className="w-12 h-12 object-cover rounded
+                                                                  border border-gray-300 cursor-pointer"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setPreviewUrl(cleanUrl);
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+
+                                        </div>
+
+                                        {/* Upload */}
+                                        <label className="cursor-pointer text-orange-500 text-xs">
+                                            Upload
+                                            <input
+                                                type="file"
+                                                multiple
+                                                className="hidden"
+                                                onChange={(e) => {
+
+                                                    const files = Array.from(e.target.files);
+                                                    if (!files.length) return;
+
+                                                    handleCellEdit(
+                                                        rowIndex,
+                                                        field,
+                                                        [...attachments, ...files]
+                                                    );
+                                                }}
+                                            />
+                                        </label>
+                                    </>
+                                );
+                            })()}
+                        </>
+                    ) : (
+                        value || "-"
+                    )}
+                </td>
+            );
+        }
+
+
+
+        /* ================= ATTACHMENT FIELD ================= */
+
+        if (field === "Attachment") {
+            const attachments = Array.isArray(value) ? value : [];
+
+            return (
+                <td className="border-b text-center p-2">
+
+                    {/* 🔥 Always show container if field is Attachment */}
+                    <div className="flex flex-col items-center gap-2">
+
+                        {/* ================= Thumbnails ================= */}
+                        {attachments.length > 0 && (
+                            <div className="flex flex-wrap gap-2 justify-center">
+
+                                {attachments.map((item, index) => {
+
+                                    const url =
+                                        item instanceof File
+                                            ? URL.createObjectURL(item)
+                                            : item;
+
+                                    const isPdf =
+                                        item instanceof File
+                                            ? item.type === "application/pdf"
+                                            : url.toLowerCase().endsWith(".pdf");
+                                    return (
+                                        <div key={index} className="relative">
+
+                                            <div >
+                                                {/* 🔥 PDF */}
+                                                {isPdf ? (
+                                                    <div
+                                                        className="w-12 h-12 flex items-center justify-center 
+                                               bg-red-100 border border-red-400 rounded 
+                                               cursor-pointer text-red-600 text-xs font-bold"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            window.open(url, "_blank");
+                                                        }}
+                                                    >
+                                                        PDF
+                                                    </div>
+
+
+                                                ) : (
+                                                    /* 🔥 IMAGE */
+                                                    <img
+                                                        src={url}
+                                                        alt="pdf"
+                                                        className="w-12 h-12 object-cover rounded 
+                                               border border-gray-300 cursor-pointer"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setPreviewUrl(url);
+                                                        }}
+                                                    />
+                                                )}
+
+                                            </div>
+
+                                            {/* ❌ Delete */}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const updated =
+                                                        attachments.filter((_, i) => i !== index);
+
+                                                    handleCellEdit(
+                                                        rowIndex,
+                                                        field,
+                                                        updated
+                                                    );
+                                                }}
+                                                className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1"
+                                            >
+                                                ✕
+                                            </button>
+
+                                        </div>
+                                    );
+                                })}
+
+                            </div>
+
+
+
+                        )}
+
+                        {/* ================= Always Show Add Button ================= */}
+
+                        <label className="cursor-pointer text-orange-500 text-xs">
+                            Upload
+
+                            <input
+                                type="file"
+                                multiple
+                                className="hidden"
+                                onChange={(e) => {
+
+                                    const files = Array.from(e.target.files);
+                                    if (!files.length) return;
+
+                                    handleCellEdit(
+                                        rowIndex,
+                                        field,
+                                        [...attachments, ...files]
+                                    );
+                                }}
+                            />
+                        </label>
+
+                    </div>
+                </td>
+            );
+        }
+
+
 
         /* ================= SELECT FIELD ================= */
         if (selectFields.includes(field)) {
@@ -764,7 +1232,6 @@ function ExpenseList() {
         );
     };
 
-
     if (isPending) return (
         <TableSkeleton />
 
@@ -832,7 +1299,7 @@ function ExpenseList() {
                             </button>
 
                             {openFilter === f.key && (
-                                <div className="absolute right-0 w-52 bg-white border rounded-xl shadow-xl z-50 p-5 border-orange-300">
+                                <div className="absolute right-0 w-fit bg-white border rounded-xl shadow-xl z-50 p-5 border-orange-300">
                                     <div className="flex gap-2 mb-2 flex-wrap">
                                         <button
                                             onClick={() =>
@@ -962,6 +1429,31 @@ function ExpenseList() {
                                     No expenses found
                                 </td>
                             </tr>
+                        )}
+                        {previewUrl && (
+                            <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50" onClick={handleClose}>
+
+                                <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-4 relative"
+
+                                >
+
+                                    {/* Close Button */}
+                                    {/* <button
+                                        onClick={() => setPreviewUrl(null)}
+                                        className="absolute top-2 right-3 text-red-500 text-lg font-bold"
+                                    >
+                                        ✕
+                                    </button> */}
+
+                                    {/* Image Preview */}
+                                    <img
+                                        src={previewUrl}
+                                        alt="Preview"
+                                        className="w-full max-h-[80vh] object-contain rounded"
+                                    />
+
+                                </div>
+                            </div>
                         )}
                     </tbody>
                 </table>

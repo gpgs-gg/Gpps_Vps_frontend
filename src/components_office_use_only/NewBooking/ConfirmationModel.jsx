@@ -115,7 +115,7 @@ const ConfirmationModel = ({
     } = formPreviewData;
 
 
-    // console.log(2323,UpcomingRentHikeDt , UpcomingRentHikeAmt)
+    console.log(2323 , AskForBAOrFA)
 
  const parsePermBedDOJ = (dateStr) => {
     if (!dateStr) return null;
@@ -187,9 +187,9 @@ Total Amount to be paid: ₹${totalAmount}
 
     msg += "\n\n";
 
-    if (AskForBAOrFA === "Booking_Amount ") {
+    if (AskForBAOrFA?.trim() === "Booking_Amount") {
       msg += `📌 The booking is confirmed only after the booking amount ₹${PermBedMonthlyFixRent} is received by us. The balance amount ₹${balanceAmount} is to be paid before possession on the date of joining.\n`;
-    } else if (AskForBAOrFA === "Full_Amount ") {
+    } else if (AskForBAOrFA?.trim() === "Full_Amount") {
       msg += `📌 The booking is confirmed only after full amount ₹${totalAmount} is received by us.\n`;
     }
 
@@ -461,7 +461,7 @@ Total Amount to be paid: ₹${totalAmount}
             </section>
           </div>
           <section className="text-sm p-2 text-gray-600 border-t pt-2">
-            {formPreviewData.AskForBAOrFA === "Booking_Amount " && (
+            {formPreviewData.AskForBAOrFA === "Booking_Amount" && (
               <p>
                 📌 The booking is confirmed only after the booking amount ₹{" "}
                 {formPreviewData.PermBedMonthlyFixRent} is received by us.
@@ -474,7 +474,7 @@ Total Amount to be paid: ₹${totalAmount}
                 is to be paid before possession on the date of joining.
               </p>
             )}
-            {formPreviewData.AskForBAOrFA === "Full_Amount " && (
+            {formPreviewData.AskForBAOrFA === "Full_Amount" && (
               <p>
                 📌 The booking is confirmed only after full amount ₹{" "}
                 {
