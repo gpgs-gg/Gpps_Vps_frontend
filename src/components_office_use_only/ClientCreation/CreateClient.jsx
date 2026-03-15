@@ -1182,40 +1182,50 @@ const CreateClient = ({ selectUpdateClient, setSelectUpdateClient, setActiveTab 
 
         const clientData = selectUpdateClient || filterClientData;
 
+        const formData = new FormData();
+        let hasFiles = false;
+
         Object.keys(uploadedDocs).forEach((type) => {
 
-            if (uploadedDocs[type].length > 0) {
+            const files = uploadedDocs[type]; 
 
-                const formData = new FormData();
+            if (files.length > 0) {
+                hasFiles = true;
 
-                uploadedDocs[type].forEach((file) => {
-                    formData.append("files", file);
-                });
-
-                formData.append("ID", clientData.ClientID);
-                formData.append("propertyCode", clientData.PropertyCode);
-                formData.append("name", clientData.Name);
-                formData.append("updateField", type); // ✅ IMPORTANT
-
-                uploadClientDocs(formData, {
-                    onSuccess: () => {
-
-                        toast.success(`uploaded successfully`);
-
-                        setUploadedDocs((prev) => ({
-                            ...prev,
-                            [type]: [],
-                        }));
-
-                        setPendingDocType(null);
-                    },
-                    onError: (error) => {
-                        toast.error("Upload failed");
-                        setPendingDocType(null);
-                    }
+                files.forEach((file) => {
+                    formData.append("files", file);   // 👈 multer expects this
+                    formData.append("updateField", type);    // 👈 send document type
                 });
             }
 
+        });
+
+        if (!hasFiles) {
+            toast.warning("Please upload at least one document");
+            return;
+        }
+
+        formData.append("ID", clientData.ClientID);
+        formData.append("propertyCode", clientData.PropertyCode);
+        formData.append("name", clientData.Name);
+
+        uploadClientDocs(formData, {
+            onSuccess: () => {
+                toast.success("All documents uploaded successfully");
+
+                setUploadedDocs({
+                    AddharCard: [],
+                    PanCard: [],
+                    Photo: [],
+                    CollageID: [],
+                    CompanyID: [],
+                    ClientAgreement: [],
+                    ClientPoliceNoc: [],
+                });
+            },
+            onError: () => {
+                toast.error("Upload failed");
+            }
         });
 
     };

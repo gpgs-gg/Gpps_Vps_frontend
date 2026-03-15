@@ -50,7 +50,6 @@ const OverView = () => {
 
 
     const { data: pgMainSheetData } = usePropertySheetData(mainSheetId);
-      console.log(111111111, decryptedUser?.employee)
     const mainSheetDataForNameWise = useMemo(() => {
         return pgMainSheetData?.data?.length > 0
             ? pgMainSheetData?.data?.filter((ele) => ele.ClientID.trim() === decryptedUser?.employee?.ClientID?.trim()) : []

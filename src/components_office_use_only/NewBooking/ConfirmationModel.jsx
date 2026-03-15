@@ -150,7 +150,7 @@ const ConfirmationModel = ({
       Number(TempBedRentAmt || 0);
 
     const balanceAmount =
-      totalAmount - (AskForBAOrFA === "Booking_Amount " ? Number(PermBedMonthlyFixRent) : 0);
+      totalAmount - (AskForBAOrFA === "Booking_Amount" ? Number(PermBedMonthlyFixRent) : 0);
 
     let msg = `Payment Details For ${ClientFullName} ( Contact No : ${CallingNo} )`;
     msg += "\n";

@@ -213,5 +213,44 @@ export const Managers = ["Sr. Manager", "Manager", "Team Leader", "Chairman & Gr
 
 
 
+ const formatDateTime = () => {
+    const now = new Date();
+    return now.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const normalize = (val) =>
+    (val ?? "N/A").toString().trim() || "N/A";
+
+
+export  const generateWorklog = (oldData, newData, userName, empId) => {
+    let changes = [];
+
+    Object.keys(newData).forEach((key) => {
+      const oldValue = normalize(oldData?.[key]);
+      const newValue = normalize(newData?.[key]);
+
+      if (oldValue !== newValue) {
+        changes.push(
+          `${key} changed from ${oldValue} to ${newValue}`
+        );
+      }
+    });
+
+    if (changes.length === 0) return oldData?.WorkLog || "";
+
+    const logHeader = `[${formatDateTime()} - (${empId}) ${userName}]`;
+
+    return `${logHeader}\n${changes.join("\n")}\n\n${oldData?.WorkLog || ""
+      }`;
+  };
+
+
 
 

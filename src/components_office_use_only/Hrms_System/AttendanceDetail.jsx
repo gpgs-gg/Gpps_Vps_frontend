@@ -332,8 +332,6 @@ const AttendanceDetail = () => {
         attendanceList?.find(ele => ele.EmployeeID === user.employee?.EmployeeID && ele.Date === currentDate) || [];
 
     let { InTime, MinHours, HalfDayHrs } = filteredDataForTotalHours || {};
-
-
     // Watch Filters
     const selectedEmployee = watch("EmployeeID")?.value || "";
     const selectedDate = watch("Date") || "";

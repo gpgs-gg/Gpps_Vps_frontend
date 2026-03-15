@@ -586,6 +586,8 @@ const PropertyFormSection = memo(({
 });
 
 const NewBooking = ({ editingClient, setEditingClient }) => {
+
+   console.log("editingClient", editingClient)
   const [showPermanent, setShowPermanent] = useState(true);
   const [showtemporary, setShowtemporary] = useState(false);
   const [activeTab, setActiveTab] = useState('permanent');
@@ -761,14 +763,19 @@ const NewBooking = ({ editingClient, setEditingClient }) => {
     setPermanentPropertyFilledChecked(permCount)
   }, [formData]);
 
-  const convertToInputDate = (dateStr) => {
-    if (!dateStr) return "";
+const convertToInputDate = (dateStr) => {
+  if (!dateStr) return "";
 
-    const date = new Date(dateStr);
-    if (isNaN(date)) return "";
+  const date = new Date(dateStr);
+  if (isNaN(date)) return "";
 
-    return date.toISOString().split("T")[0];
-  };
+  // Get year, month, day in local time
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // months 0-11
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
 
 
   useEffect(() => {
@@ -847,6 +854,7 @@ const NewBooking = ({ editingClient, setEditingClient }) => {
         setValue('selectedPermMonth', `${month}${year}`);
       }
     }
+
     if (editingClient.TempBedDOJ) {
       const date = new Date(editingClient.TempBedDOJ);
       if (!isNaN(date)) {
@@ -1208,13 +1216,12 @@ const NewBooking = ({ editingClient, setEditingClient }) => {
         });
         setValue(`SalesMemeber`, "Search & Select Employee");
         setValue(`AskForBAOrFA`,"AskForBAOrFA");
-
         // Reset checkboxes and tabs
         setShowtemporary(false);
         // setActiveTab('');
         setSelctedSheetId(null);
         setSelectedBedNumber(null);
-        window.location.reload()
+        // window.location.reload()
       },
       onError: () => {
         // alert("❌ Failed to submit. Try again.");

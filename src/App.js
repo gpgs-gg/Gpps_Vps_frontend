@@ -43,6 +43,7 @@ import TodoBankTransaction from './components_office_use_only/BankTransaction/To
 import Main from './components_office_use_only/ExpanseTodo/Main';
 import NewBookingTable from './components_office_use_only/NewBooking/NewBookingTable';
 import Tab from './components_office_use_only/NewBooking/Tab';
+import NoticeTab from './components_office_use_only/NoticeAndFnF/Tab';
 import ClientNavigation from './components_office_use_only/ClientCreation/ClientNavigation';
 import ClientTab from './components_office_use_only/ClientCreation/ClientTab';
 // import Footer from './components/Footer';
@@ -405,6 +406,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
               <Tab />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/gpgs-actions/notice-fnf-bedstatus"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+              <NoticeTab />
             </ProtectedRoute>
           }
         />
